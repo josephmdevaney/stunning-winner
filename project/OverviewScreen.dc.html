@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="padding:28px; display:flex; flex-direction:column; gap:22px;">
+
+  <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px;">
+    <sc-for list="{{ stats }}" as="s" hint-placeholder-count="4">
+      <div style="background:white; border:1px solid oklch(0.9 0.01 90); border-radius:12px; padding:18px 20px;">
+        <div style="font-size:12px; font-weight:600; color:oklch(0.5 0.02 260); letter-spacing:0.02em;">{{ s.label }}</div>
+        <div style="font-size:28px; font-weight:700; margin-top:8px; {{ s.valueStyle }}">{{ s.value }}</div>
+        <div style="font-size:12px; color:oklch(0.55 0.02 260); margin-top:4px;">{{ s.sub }}</div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="background:white; border:1px solid oklch(0.9 0.01 90); border-radius:12px; overflow:hidden;">
+    <div style="display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid oklch(0.92 0.01 90);">
+      <div style="font-size:15px; font-weight:600;">Repeat expansion panel</div>
+      <div style="display:flex; gap:8px;">
+        <div style="padding:6px 12px; border-radius:20px; background:oklch(0.5 0.16 220); color:white; font-size:12px; font-weight:600;">All loci</div>
+        <div style="padding:6px 12px; border-radius:20px; background:oklch(0.95 0.01 90); color:oklch(0.4 0.02 260); font-size:12px; font-weight:600;">Pathogenic panel</div>
+        <div style="padding:6px 12px; border-radius:20px; background:oklch(0.95 0.01 90); color:oklch(0.4 0.02 260); font-size:12px; font-weight:600;">Novel candidates</div>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1.6fr 0.8fr 0.7fr 0.7fr 1fr 0.6fr 1.3fr; gap:12px; padding:10px 20px; font-size:11px; font-weight:600; color:oklch(0.5 0.02 260); letter-spacing:0.04em; text-transform:uppercase; border-bottom:1px solid oklch(0.94 0.01 90);">
+      <div>Gene</div><div>Region (GRCh38)</div><div>Motif</div><div>Allele 1</div><div>Allele 2</div><div>Zygosity</div><div>Depth</div><div>Status</div>
+    </div>
+
+    <sc-for list="{{ loci }}" as="l" hint-placeholder-count="8">
+      <div onClick="{{ l.onClick }}" style="display:grid; grid-template-columns:1fr 1.6fr 0.8fr 0.7fr 0.7fr 1fr 0.6fr 1.3fr; gap:12px; padding:14px 20px; align-items:center; font-size:13.5px; cursor:pointer; border-bottom:1px solid oklch(0.96 0.005 90);" style-hover="background:oklch(0.975 0.005 220);">
+        <div style="font-weight:600;">{{ l.gene }}</div>
+        <div style="font-family:'IBM Plex Mono'; font-size:12px; color:oklch(0.5 0.02 260);">{{ l.region }}</div>
+        <div style="font-family:'IBM Plex Mono'; font-weight:600;">{{ l.motif }}</div>
+        <div style="font-family:'IBM Plex Mono';">{{ l.a1 }}</div>
+        <div style="font-family:'IBM Plex Mono'; font-weight:700;">{{ l.a2 }}</div>
+        <div style="color:oklch(0.5 0.02 260);">{{ l.zygosity }}</div>
+        <div style="font-family:'IBM Plex Mono'; color:oklch(0.5 0.02 260);">{{ l.depth }}x</div>
+        <div>
+          <span style="padding:4px 10px; border-radius:20px; font-size:11.5px; font-weight:600; color:white; {{ l.badgeStyle }}">{{ l.status }}</span>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 1200, &quot;height&quot;: 900}, &quot;loci&quot;: {&quot;editor&quot;: null, &quot;default&quot;: [], &quot;tsType&quot;: &quot;any[]&quot;}, &quot;onSelectLocus&quot;: {&quot;editor&quot;: null, &quot;default&quot;: null, &quot;tsType&quot;: &quot;(id:string)=&gt;void&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const loci = this.props.loci || [];
+    const pathoCount = loci.filter(l => l.status === 'Full expansion').length;
+    const meanDepth = loci.length ? Math.round(loci.reduce((a,l)=>a+l.depth,0)/loci.length) : 0;
+
+    return {
+      stats: [
+        { label:'Loci analyzed', value: String(loci.length), sub:'Disease-associated panel', valueStyle:'' },
+        { label:'Pathogenic findings', value: String(pathoCount), sub:'Above clinical threshold', valueStyle:'color:oklch(0.55 0.20 25);' },
+        { label:'Mean read depth', value: meanDepth + 'x', sub:'HiFi consensus reads', valueStyle:'' },
+        { label:'Sample QC', value:'Pass', sub:'All loci sufficiently covered', valueStyle:'color:oklch(0.55 0.14 150);' },
+      ],
+      loci: loci.map(l => ({
+        ...l,
+        badgeStyle: `background:${l.statusColor};`,
+        onClick: () => this.props.onSelectLocus && this.props.onSelectLocus(l.id),
+      })),
+    };
+  }
+}
+
+</script>
+</body>
+</html>

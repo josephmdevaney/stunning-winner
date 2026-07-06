@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="padding:28px; display:flex; flex-direction:column; gap:20px;">
+
+  <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px;">
+    <sc-for list="{{ qcStats }}" as="s" hint-placeholder-count="4">
+      <div style="background:white; border:1px solid oklch(0.9 0.01 90); border-radius:12px; padding:18px 20px;">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <div style="font-size:12px; font-weight:600; color:oklch(0.5 0.02 260);">{{ s.label }}</div>
+          <div style="width:8px; height:8px; border-radius:50%; {{ s.dotStyle }}"></div>
+        </div>
+        <div style="font-size:26px; font-weight:700; margin-top:8px;">{{ s.value }}</div>
+        <div style="font-size:12px; color:oklch(0.55 0.02 260); margin-top:4px;">{{ s.sub }}</div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+    <div style="background:white; border:1px solid oklch(0.9 0.01 90); border-radius:12px; padding:20px 24px;">
+      <div style="font-size:14.5px; font-weight:600; margin-bottom:2px;">HiFi read length distribution</div>
+      <div style="font-size:12px; color:oklch(0.55 0.02 260); margin-bottom:14px;">Across all mapped reads, genome-wide</div>
+      {{ lengthHistSvg }}
+    </div>
+    <div style="background:white; border:1px solid oklch(0.9 0.01 90); border-radius:12px; padding:20px 24px;">
+      <div style="font-size:14.5px; font-weight:600; margin-bottom:2px;">Coverage depth by chromosome</div>
+      <div style="font-size:12px; color:oklch(0.55 0.02 260); margin-bottom:14px;">Mean read depth, target panel loci</div>
+      {{ depthChartSvg }}
+    </div>
+  </div>
+
+  <div style="background:white; border:1px solid oklch(0.9 0.01 90); border-radius:12px; overflow:hidden;">
+    <div style="padding:16px 20px; border-bottom:1px solid oklch(0.92 0.01 90); font-size:15px; font-weight:600;">Per-locus coverage adequacy</div>
+    <div style="display:grid; grid-template-columns:1fr 0.8fr 1fr 1fr 1.2fr; padding:10px 20px; font-size:11px; font-weight:600; color:oklch(0.5 0.02 260); letter-spacing:0.04em; text-transform:uppercase; border-bottom:1px solid oklch(0.94 0.01 90);">
+      <div>Gene</div><div>Depth</div><div>Min required</div><div>Flanking mapq</div><div>Flag</div>
+    </div>
+    <sc-for list="{{ qcRows }}" as="r" hint-placeholder-count="8">
+      <div style="display:grid; grid-template-columns:1fr 0.8fr 1fr 1fr 1.2fr; padding:12px 20px; align-items:center; font-size:13.5px; border-bottom:1px solid oklch(0.96 0.005 90);">
+        <div style="font-weight:600;">{{ r.gene }}</div>
+        <div style="font-family:'IBM Plex Mono';">{{ r.depth }}x</div>
+        <div style="font-family:'IBM Plex Mono'; color:oklch(0.5 0.02 260);">10x</div>
+        <div style="font-family:'IBM Plex Mono';">{{ r.mapq }}</div>
+        <div><span style="padding:4px 10px; border-radius:20px; font-size:11.5px; font-weight:600; color:white; {{ r.flagStyle }}">{{ r.flag }}</span></div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="background:white; border:1px solid oklch(0.9 0.01 90); border-radius:12px; padding:20px 24px; display:grid; grid-template-columns:repeat(3,1fr); gap:24px;">
+    <div>
+      <div style="font-size:12px; font-weight:600; color:oklch(0.5 0.02 260); text-transform:uppercase; letter-spacing:0.04em;">Instrument</div>
+      <div style="font-weight:600; font-size:14.5px; margin-top:6px;">Revio · SMRT Cell 25M</div>
+    </div>
+    <div>
+      <div style="font-size:12px; font-weight:600; color:oklch(0.5 0.02 260); text-transform:uppercase; letter-spacing:0.04em;">Mean HiFi read Q</div>
+      <div style="font-weight:600; font-size:14.5px; margin-top:6px;">Q32 (99.94% accuracy)</div>
+    </div>
+    <div>
+      <div style="font-size:12px; font-weight:600; color:oklch(0.5 0.02 260); text-transform:uppercase; letter-spacing:0.04em;">Genome-wide mean coverage</div>
+      <div style="font-weight:600; font-size:14.5px; margin-top:6px;">34.2x</div>
+    </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 1200, &quot;height&quot;: 900}}">
+class Component extends DCLogic {
+  seededRand(seed) {
+    let s = seed;
+    return () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
+  }
+
+  renderVals() {
+    const rng = this.seededRand(42);
+
+    // read length histogram (HiFi typically 10-20kb)
+    const bins = [];
+    for (let i=0;i<18;i++){
+      const center = 4 + i*1.5;
+      const peak = Math.exp(-Math.pow(center-13,2)/18) * 100;
+      bins.push(Math.max(2, Math.round(peak + rng()*6)));
+    }
+    const hW=380, hH=170, hPad=28;
+    const maxB = Math.max(...bins);
+    const barW = (hW-hPad*2)/bins.length;
+    const hBars = bins.map((v,i)=>{
+      const barH = (v/maxB)*(hH-30);
+      const x = hPad + i*barW;
+      const y = hH-20-barH;
+      return `<rect x="${x+1}" y="${y}" width="${barW-2}" height="${barH}" fill="oklch(0.6 0.14 220)" opacity="0.85" rx="1"/>`;
+    }).join('');
+    const hAxisLabels = [0,5,10,17].map(i=>{
+      const x = hPad + i*barW;
+      return `<text x="${x}" y="${hH-6}" font-size="9.5" fill="oklch(0.5 0.02 260)" text-anchor="middle" font-family="IBM Plex Mono">${(4+i*1.5).toFixed(0)}kb</text>`;
+    }).join('');
+    const lengthHistSvg = React.createElement('svg',{width:'100%',viewBox:`0 0 ${hW} ${hH}`, style:{display:'block'}, dangerouslySetInnerHTML:{__html:`<g>${hBars}<line x1="${hPad}" y1="${hH-20}" x2="${hW-hPad}" y2="${hH-20}" stroke="oklch(0.85 0.01 90)"/>${hAxisLabels}</g>`}});
+
+    // depth by chromosome bar chart
+    const chroms = ['chr4','chr9(C9orf72)','chr9(FXN)','chr6','chr14','chr19','chrX'];
+    const depths = [32,28,22,36,39,40,41];
+    const dW=380, dH=170, dPad=30;
+    const barW2 = (dW-dPad*2)/chroms.length;
+    const maxD = 45;
+    const dBars = depths.map((v,i)=>{
+      const barH = (v/maxD)*(dH-40);
+      const x = dPad + i*barW2;
+      const y = dH-24-barH;
+      const low = v < 25;
+      return `<rect x="${x+3}" y="${y}" width="${barW2-6}" height="${barH}" fill="${low?'oklch(0.62 0.15 75)':'oklch(0.6 0.14 220)'}" rx="2"/>`;
+    }).join('');
+    const dLabels = chroms.map((c,i)=>{
+      const x = dPad + i*barW2 + barW2/2;
+      return `<text x="${x}" y="${dH-8}" font-size="8.5" fill="oklch(0.5 0.02 260)" text-anchor="middle" font-family="IBM Plex Mono">${c}</text>`;
+    }).join('');
+    const thresholdY = dH-24-(10/maxD)*(dH-40);
+    const depthChartSvg = React.createElement('svg',{width:'100%',viewBox:`0 0 ${dW} ${dH}`, style:{display:'block'}, dangerouslySetInnerHTML:{__html:`<g>${dBars}<line x1="${dPad}" y1="${dH-24}" x2="${dW-dPad}" y2="${dH-24}" stroke="oklch(0.85 0.01 90)"/><line x1="${dPad}" y1="${thresholdY}" x2="${dW-dPad}" y2="${thresholdY}" stroke="oklch(0.7 0.15 25)" stroke-dasharray="4,3"/>${dLabels}</g>`}});
+
+    const qcData = [
+      { gene:'HTT', depth:32, mapq:'59', flag:'Pass' },
+      { gene:'FMR1', depth:41, mapq:'58', flag:'Pass' },
+      { gene:'C9orf72', depth:28, mapq:'54', flag:'Pass' },
+      { gene:'ATXN1', depth:36, mapq:'60', flag:'Pass' },
+      { gene:'ATXN3', depth:39, mapq:'57', flag:'Pass' },
+      { gene:'DMPK', depth:44, mapq:'60', flag:'Pass' },
+      { gene:'FXN', depth:22, mapq:'49', flag:'Low mapq' },
+      { gene:'CACNA1A', depth:37, mapq:'59', flag:'Pass' },
+    ];
+
+    return {
+      qcStats: [
+        { label:'Overall status', value:'Pass', sub:'8/8 loci sufficiently covered', dotStyle:'background:oklch(0.55 0.14 150);' },
+        { label:'Mean HiFi read length', value:'14.8kb', sub:'N50 16.2kb', dotStyle:'background:oklch(0.6 0.14 220);' },
+        { label:'Total reads mapped', value:'2.1M', sub:'Genome-wide, MAPQ≥20', dotStyle:'background:oklch(0.6 0.14 220);' },
+        { label:'Flagged loci', value:'1', sub:'FXN — low flanking mapq', dotStyle:'background:oklch(0.62 0.15 75);' },
+      ],
+      lengthHistSvg, depthChartSvg,
+      qcRows: qcData.map(r => ({ ...r, flagStyle: r.flag==='Pass' ? 'background:oklch(0.55 0.14 150);' : 'background:oklch(0.62 0.15 75);' })),
+    };
+  }
+}
+
+</script>
+</body>
+</html>

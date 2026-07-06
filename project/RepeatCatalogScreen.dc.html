@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+
+<div style="padding:28px; display:flex; flex-direction:column; gap:20px;">
+
+  <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px;">
+    <sc-for list="{{ statCards }}" as="s" hint-placeholder-count="4">
+      <div style="background:white; border:1px solid oklch(0.9 0.01 90); border-radius:12px; padding:18px 20px;">
+        <div style="font-size:12px; font-weight:600; color:oklch(0.5 0.02 260);">{{ s.label }}</div>
+        <div style="font-size:26px; font-weight:700; margin-top:8px;">{{ s.value }}</div>
+        <div style="font-size:12px; color:oklch(0.55 0.02 260); margin-top:4px;">{{ s.sub }}</div>
+      </div>
+    </sc-for>
+  </div>
+
+  <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}">
+    <div style="background:white; border:1px solid oklch(0.9 0.01 90); border-radius:12px; padding:60px 24px; text-align:center; color:oklch(0.5 0.02 260); font-size:14px;">
+      Loading genome-wide repeat catalog ({{ totalCountLabel }} regions)…
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isLoaded }}" hint-placeholder-val="{{ false }}">
+    <div style="background:white; border:1px solid oklch(0.9 0.01 90); border-radius:12px; padding:16px 20px; display:flex; align-items:end; gap:16px; flex-wrap:wrap;">
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        <label style="font-size:11px; font-weight:600; color:oklch(0.5 0.02 260); text-transform:uppercase; letter-spacing:0.04em;">Chromosome</label>
+        <select value="{{ chromFilter }}" onChange="{{ onChromChange }}" style="padding:8px 10px; border:1px solid oklch(0.85 0.01 90); border-radius:7px; font-size:13px; font-family:'IBM Plex Mono'; min-width:140px;">
+          <sc-for list="{{ chromOptions }}" as="c" hint-placeholder-count="24">
+            <option value="{{ c }}">{{ c }}</option>
+          </sc-for>
+        </select>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        <label style="font-size:11px; font-weight:600; color:oklch(0.5 0.02 260); text-transform:uppercase; letter-spacing:0.04em;">Motif contains</label>
+        <input value="{{ motifFilter }}" onChange="{{ onMotifChange }}" placeholder="e.g. CAG" style="padding:8px 10px; border:1px solid oklch(0.85 0.01 90); border-radius:7px; font-size:13px; font-family:'IBM Plex Mono'; width:140px;"></input>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        <label style="font-size:11px; font-weight:600; color:oklch(0.5 0.02 260); text-transform:uppercase; letter-spacing:0.04em;">Min length (bp)</label>
+        <input type="number" value="{{ minLenFilter }}" onChange="{{ onMinLenChange }}" style="padding:8px 10px; border:1px solid oklch(0.85 0.01 90); border-radius:7px; font-size:13px; font-family:'IBM Plex Mono'; width:110px;"></input>
+      </div>
+      <div onClick="{{ onClearFilters }}" style="padding:9px 16px; border-radius:7px; border:1px solid oklch(0.85 0.01 90); font-size:13px; font-weight:600; color:oklch(0.45 0.02 260); cursor:pointer;">Clear filters</div>
+      <div style="margin-left:auto; font-size:12.5px; color:oklch(0.5 0.02 260);">{{ matchLabel }}</div>
+    </div>
+
+    <div style="background:white; border:1px solid oklch(0.9 0.01 90); border-radius:12px; overflow:hidden;">
+      <div style="display:grid; grid-template-columns:0.9fr 1fr 1fr 0.7fr 0.9fr 0.6fr 0.6fr 0.6fr 1.3fr; padding:10px 20px; font-size:11px; font-weight:600; color:oklch(0.5 0.02 260); letter-spacing:0.04em; text-transform:uppercase; border-bottom:1px solid oklch(0.94 0.01 90);">
+        <div>Chrom</div><div>Start</div><div>Stop</div><div>Ref len</div><div>Motif</div><div>A1</div><div>A2</div><div>Depth</div><div>Structure</div>
+      </div>
+      <sc-for list="{{ pageRows }}" as="r" hint-placeholder-count="20">
+        <div style="display:grid; grid-template-columns:0.9fr 1fr 1fr 0.7fr 0.9fr 0.6fr 0.6fr 0.6fr 1.3fr; padding:10px 20px; align-items:center; font-size:13px; font-family:'IBM Plex Mono'; border-bottom:1px solid oklch(0.96 0.005 90);">
+          <div style="font-weight:600;">{{ r.chrom }}</div>
+          <div>{{ r.startLabel }}</div>
+          <div>{{ r.stopLabel }}</div>
+          <div>{{ r.len }}bp</div>
+          <div>{{ r.motifs }}</div>
+          <div style="font-weight:600;">{{ r.a1 }}</div>
+          <div style="font-weight:600;">{{ r.a2 }}</div>
+          <div>{{ r.depth }}x</div>
+          <div style="color:oklch(0.5 0.02 260); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ r.struc }}</div>
+        </div>
+      </sc-for>
+      <sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:40px 20px; text-align:center; color:oklch(0.5 0.02 260); font-size:13.5px;">No repeats match these filters.</div>
+      </sc-if>
+    </div>
+
+    <div style="display:flex; align-items:center; justify-content:space-between;">
+      <div style="font-size:12.5px; color:oklch(0.5 0.02 260);">{{ pageRangeLabel }}</div>
+      <div style="display:flex; gap:8px;">
+        <div onClick="{{ onPrevPage }}" style="padding:8px 16px; border-radius:7px; border:1px solid oklch(0.85 0.01 90); font-size:13px; font-weight:600; cursor:pointer; {{ prevDisabledStyle }}">Prev</div>
+        <div onClick="{{ onNextPage }}" style="padding:8px 16px; border-radius:7px; border:1px solid oklch(0.85 0.01 90); font-size:13px; font-weight:600; cursor:pointer; {{ nextDisabledStyle }}">Next</div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 1200, &quot;height&quot;: 1000}}">
+class Component extends DCLogic {
+  state = {
+    loaded: false,
+    total: 0,
+    chromFilter: 'all',
+    motifFilter: '',
+    minLenFilter: '',
+    page: 0,
+  };
+
+  pageSize = 50;
+
+  seededRand(seed) {
+    let s = seed;
+    return () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
+  }
+
+  callFor(r) {
+    const seed = Math.abs((r.chrom + r.start).split('').reduce((a, c) => a + c.charCodeAt(0) * 31, 7)) % 233280 + 1;
+    const rng = this.seededRand(seed);
+    const motifLen = Math.max(1, (r.motifs.split(',')[0] || 'N').length);
+    const refUnits = Math.max(1, Math.round(r.len / motifLen));
+    const a1 = Math.max(1, Math.round(refUnits + (rng() - 0.5) * refUnits * 0.4));
+    const a2 = Math.max(1, Math.round(refUnits + (rng() - 0.5) * refUnits * 0.4));
+    const depth = 18 + Math.floor(rng() * 24);
+    return { a1, a2, depth };
+  }
+
+  componentDidMount() {
+    fetch('uploads/repeat_catalog.hg38.bed')
+      .then(r => r.text())
+      .then(text => {
+        const lines = text.split('\n');
+        const out = [];
+        const chromSet = new Set();
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          if (!line) continue;
+          const parts = line.split('\t');
+          if (parts.length < 4) continue;
+          const chrom = parts[0];
+          const start = parseInt(parts[1], 10);
+          const stop = parseInt(parts[2], 10);
+          if (Number.isNaN(start) || Number.isNaN(stop)) continue;
+          let motifs = '', struc = '';
+          const info = parts[3];
+          const kvs = info.split(';');
+          for (let j = 0; j < kvs.length; j++) {
+            const eq = kvs[j].indexOf('=');
+            if (eq === -1) continue;
+            const k = kvs[j].slice(0, eq), v = kvs[j].slice(eq + 1);
+            if (k === 'MOTIFS') motifs = v;
+            else if (k === 'STRUC') struc = v;
+          }
+          chromSet.add(chrom);
+          out.push({ chrom, start, stop, len: stop - start, motifs, struc });
+        }
+        this.allRepeats = out;
+        const order = ['chr1','chr2','chr3','chr4','chr5','chr6','chr7','chr8','chr9','chr10','chr11','chr12','chr13','chr14','chr15','chr16','chr17','chr18','chr19','chr20','chr21','chr22','chrX','chrY','chrM'];
+        const present = order.filter(c => chromSet.has(c));
+        chromSet.forEach(c => { if (!present.includes(c)) present.push(c); });
+        this.chromOptions = ['all', ...present];
+        this.setState({ loaded: true, total: out.length });
+      })
+      .catch(() => {
+        this.allRepeats = [];
+        this.chromOptions = ['all'];
+        this.setState({ loaded: true, total: 0, loadError: true });
+      });
+  }
+
+  getFiltered() {
+    const all = this.allRepeats || [];
+    const chrom = this.state.chromFilter;
+    const motif = (this.state.motifFilter || '').trim().toUpperCase();
+    const minLen = parseInt(this.state.minLenFilter, 10);
+    return all.filter(r => {
+      if (chrom !== 'all' && r.chrom !== chrom) return false;
+      if (motif && r.motifs.toUpperCase().indexOf(motif) === -1) return false;
+      if (!Number.isNaN(minLen) && r.len < minLen) return false;
+      return true;
+    });
+  }
+
+  renderVals() {
+    const loaded = !!this.state.loaded;
+    const filtered = loaded ? this.getFiltered() : [];
+    const pageSize = this.pageSize;
+    const maxPage = Math.max(0, Math.ceil(filtered.length / pageSize) - 1);
+    const page = Math.min(this.state.page, maxPage);
+    const pageSlice = filtered.slice(page * pageSize, page * pageSize + pageSize);
+
+    const pageRows = pageSlice.map(r => {
+      const call = this.callFor(r);
+      return {
+        chrom: r.chrom,
+        startLabel: r.start.toLocaleString(),
+        stopLabel: r.stop.toLocaleString(),
+        len: r.len,
+        motifs: r.motifs,
+        struc: r.struc,
+        a1: call.a1,
+        a2: call.a2,
+        depth: call.depth,
+      };
+    });
+
+    const uniqueMotifs = new Set((this.allRepeats || []).map(r => r.motifs)).size;
+    const chromCount = new Set((this.allRepeats || []).map(r => r.chrom)).size;
+
+    const rangeStart = filtered.length === 0 ? 0 : page * pageSize + 1;
+    const rangeEnd = Math.min(filtered.length, page * pageSize + pageSize);
+
+    return {
+      isLoading: !loaded,
+      isLoaded: loaded,
+      totalCountLabel: '171,147',
+      statCards: [
+        { label: 'Total repeat regions', value: loaded ? this.state.total.toLocaleString() : '—', sub: 'Genome-wide, TRGT v5.1.0 calls for HG-2214-R3' },
+        { label: 'Unique motifs', value: loaded ? uniqueMotifs.toLocaleString() : '—', sub: 'Distinct motif sequences' },
+        { label: 'Chromosomes covered', value: loaded ? chromCount : '—', sub: 'Autosomes + X/Y' },
+        { label: 'Currently matching', value: loaded ? filtered.length.toLocaleString() : '—', sub: 'With active filters' },
+      ],
+      chromOptions: this.chromOptions || ['all'],
+      chromFilter: this.state.chromFilter,
+      motifFilter: this.state.motifFilter,
+      minLenFilter: this.state.minLenFilter,
+      onChromChange: (e) => this.setState({ chromFilter: e.target.value, page: 0 }),
+      onMotifChange: (e) => this.setState({ motifFilter: e.target.value, page: 0 }),
+      onMinLenChange: (e) => this.setState({ minLenFilter: e.target.value, page: 0 }),
+      onClearFilters: () => this.setState({ chromFilter: 'all', motifFilter: '', minLenFilter: '', page: 0 }),
+      matchLabel: loaded ? `${filtered.length.toLocaleString()} of ${this.state.total.toLocaleString()} regions match` : '',
+      pageRows,
+      noResults: loaded && filtered.length === 0,
+      pageRangeLabel: filtered.length === 0 ? 'No results' : `Showing ${rangeStart.toLocaleString()}–${rangeEnd.toLocaleString()} of ${filtered.length.toLocaleString()}`,
+      onPrevPage: () => this.setState(s => ({ page: Math.max(0, s.page - 1) })),
+      onNextPage: () => this.setState(s => ({ page: Math.min(maxPage, s.page + 1) })),
+      prevDisabledStyle: page === 0 ? 'opacity:0.4; pointer-events:none;' : '',
+      nextDisabledStyle: page >= maxPage ? 'opacity:0.4; pointer-events:none;' : '',
+    };
+  }
+}
+
+</script>
+</body>
+</html>

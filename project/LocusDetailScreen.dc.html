@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="padding:28px; display:grid; grid-template-columns:1fr 320px; gap:20px; align-items:start;">
+
+  <div style="display:flex; flex-direction:column; gap:20px; min-width:0;">
+
+    <div style="background:white; border:1px solid oklch(0.9 0.01 90); border-radius:12px; padding:20px 24px;">
+      <div style="display:flex; align-items:baseline; gap:12px;">
+        <div style="font-size:22px; font-weight:700;">{{ locus.gene }}</div>
+        <div style="font-family:'IBM Plex Mono'; font-size:13px; color:oklch(0.5 0.02 260);">{{ locus.region }}</div>
+      </div>
+      <div style="font-size:13.5px; color:oklch(0.45 0.02 260); margin-top:4px;">{{ locus.disease }}</div>
+      <div style="display:flex; gap:28px; margin-top:14px;">
+        <div><div style="font-size:11px; font-weight:600; color:oklch(0.5 0.02 260); text-transform:uppercase; letter-spacing:0.04em;">Motif</div><div style="font-family:'IBM Plex Mono'; font-weight:700; font-size:15px; margin-top:2px;">{{ locus.motif }}</div></div>
+        <div><div style="font-size:11px; font-weight:600; color:oklch(0.5 0.02 260); text-transform:uppercase; letter-spacing:0.04em;">Allele 1</div><div style="font-family:'IBM Plex Mono'; font-weight:700; font-size:15px; margin-top:2px;">{{ locus.a1 }} repeats</div></div>
+        <div><div style="font-size:11px; font-weight:600; color:oklch(0.5 0.02 260); text-transform:uppercase; letter-spacing:0.04em;">Allele 2</div><div style="font-family:'IBM Plex Mono'; font-weight:700; font-size:15px; margin-top:2px;">{{ locus.a2 }} repeats</div></div>
+        <div><div style="font-size:11px; font-weight:600; color:oklch(0.5 0.02 260); text-transform:uppercase; letter-spacing:0.04em;">Zygosity</div><div style="font-weight:600; font-size:15px; margin-top:2px;">{{ locus.zygosity }}</div></div>
+        <div><div style="font-size:11px; font-weight:600; color:oklch(0.5 0.02 260); text-transform:uppercase; letter-spacing:0.04em;">Read depth</div><div style="font-weight:600; font-size:15px; margin-top:2px;">{{ locus.depth }}x</div></div>
+      </div>
+    </div>
+
+    <div style="background:white; border:1px solid oklch(0.9 0.01 90); border-radius:12px; padding:20px 24px;">
+      <div style="font-size:14.5px; font-weight:600; margin-bottom:2px;">Read pileup</div>
+      <div style="font-size:12px; color:oklch(0.55 0.02 260); margin-bottom:14px;">Per-read repeat count, sorted · colored by allele cluster</div>
+      <div style="width:100%; overflow-x:auto;">{{ pileupSvg }}</div>
+      <div style="display:flex; gap:18px; margin-top:10px; font-size:12px; color:oklch(0.5 0.02 260);">
+        <div style="display:flex; align-items:center; gap:6px;"><div style="width:10px; height:10px; border-radius:2px; background:oklch(0.6 0.14 220);"></div>Allele 1 cluster</div>
+        <div style="display:flex; align-items:center; gap:6px;"><div style="width:10px; height:10px; border-radius:2px; background:oklch(0.6 0.18 25);"></div>Allele 2 cluster</div>
+        <div style="display:flex; align-items:center; gap:6px;"><div style="width:14px; height:2px; background:oklch(0.7 0.01 90);"></div>Reference upper limit</div>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+      <div style="background:white; border:1px solid oklch(0.9 0.01 90); border-radius:12px; padding:20px 24px;">
+        <div style="font-size:14.5px; font-weight:600; margin-bottom:2px;">Allele size distribution</div>
+        <div style="font-size:12px; color:oklch(0.55 0.02 260); margin-bottom:14px;">Read counts by repeat length</div>
+        {{ histogramSvg }}
+      </div>
+      <div style="background:white; border:1px solid oklch(0.9 0.01 90); border-radius:12px; padding:20px 24px;">
+        <div style="font-size:14.5px; font-weight:600; margin-bottom:2px;">Read alignment · CpG signal</div>
+        <div style="font-size:12px; color:oklch(0.55 0.02 260); margin-bottom:14px;">Per-read kinetics-derived methylation calls</div>
+        {{ methylationSvg }}
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:16px;">
+    <div style="background:white; border:1px solid oklch(0.9 0.01 90); border-radius:12px; padding:20px;">
+      <div style="font-size:13px; font-weight:600; color:oklch(0.5 0.02 260); text-transform:uppercase; letter-spacing:0.04em;">Interpretation</div>
+      <div style="margin-top:12px; padding:12px 14px; border-radius:8px; {{ interpBg }}">
+        <div style="font-size:14.5px; font-weight:700; {{ interpColor }}">{{ locus.status }}</div>
+        <div style="font-size:13px; color:oklch(0.35 0.02 260); margin-top:4px; line-height:1.5;">{{ locus.note }}</div>
+      </div>
+      <div style="margin-top:16px; display:flex; flex-direction:column; gap:10px; font-size:13px;">
+        <div style="display:flex; justify-content:space-between;"><span style="color:oklch(0.5 0.02 260);">Classification</span><span style="font-weight:600;">{{ locus.status }}</span></div>
+        <div style="display:flex; justify-content:space-between;"><span style="color:oklch(0.5 0.02 260);">Inheritance pattern</span><span style="font-weight:600;">Autosomal dominant</span></div>
+        <div style="display:flex; justify-content:space-between;"><span style="color:oklch(0.5 0.02 260);">Reads spanning locus</span><span style="font-weight:600;">{{ locus.depth }}</span></div>
+        <div style="display:flex; justify-content:space-between;"><span style="color:oklch(0.5 0.02 260);">Caller</span><span style="font-weight:600;">TRGT v5.1.0</span></div>
+      </div>
+    </div>
+
+    <div style="background:white; border:1px solid oklch(0.9 0.01 90); border-radius:12px; padding:20px;">
+      <div style="font-size:13px; font-weight:600; color:oklch(0.5 0.02 260); text-transform:uppercase; letter-spacing:0.04em;">Reference ranges</div>
+      <div style="margin-top:12px; display:flex; flex-direction:column; gap:8px; font-size:13px;">
+        <div style="display:flex; justify-content:space-between;"><span style="color:oklch(0.5 0.02 260);">Normal</span><span style="font-family:'IBM Plex Mono';">{{ locus.refNormal }}</span></div>
+        <div style="display:flex; justify-content:space-between;"><span style="color:oklch(0.5 0.02 260);">Intermediate</span><span style="font-family:'IBM Plex Mono';">{{ locus.refIntermediate }}</span></div>
+        <div style="display:flex; justify-content:space-between;"><span style="color:oklch(0.5 0.02 260);">Pathogenic</span><span style="font-family:'IBM Plex Mono';">{{ locus.refPathogenic }}</span></div>
+      </div>
+    </div>
+
+    <div style="padding:14px 16px; border-radius:8px; background:oklch(0.5 0.16 220); color:white; font-size:13px; font-weight:600; text-align:center; cursor:pointer;">Add to clinical report</div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 1200, &quot;height&quot;: 900}, &quot;locus&quot;: {&quot;editor&quot;: null, &quot;default&quot;: {}, &quot;tsType&quot;: &quot;any&quot;}}">
+class Component extends DCLogic {
+  seededRand(seed) {
+    let s = seed;
+    return () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
+  }
+
+  renderVals() {
+    const locus = this.props.locus || { gene:'—', a1:0, a2:0, depth:0 };
+    const rng = this.seededRand((locus.gene || 'X').split('').reduce((a,c)=>a+c.charCodeAt(0),1));
+    const nA1 = Math.max(6, Math.round(locus.depth * 0.5));
+    const nA2 = locus.a1 === locus.a2 ? 0 : Math.max(6, locus.depth - nA1);
+
+    const reads = [];
+    for (let i=0;i<nA1;i++) reads.push({ v: Math.max(1, Math.round(locus.a1 + (rng()-0.5)*locus.a1*0.15)), cluster:1 });
+    for (let i=0;i<nA2;i++) reads.push({ v: Math.max(1, Math.round(locus.a2 + (rng()-0.5)*locus.a2*0.1)), cluster:2 });
+    reads.sort((a,b)=>a.v-b.v);
+
+    const maxV = Math.max(...reads.map(r=>r.v), locus.a1, locus.a2, 1);
+    const W = 860, rowH = 10, gap = 3, leftPad = 50;
+    const H = reads.length * (rowH+gap) + 20;
+    const scaleX = (W - leftPad - 20) / maxV;
+    const color1 = 'oklch(0.6 0.14 220)', color2 = 'oklch(0.6 0.18 25)';
+
+    const bars = reads.map((r,i) => {
+      const y = 10 + i*(rowH+gap);
+      const w = Math.max(2, r.v*scaleX);
+      const c = r.cluster===1 ? color1 : color2;
+      return `<rect x="${leftPad}" y="${y}" width="${w}" height="${rowH}" rx="2" fill="${c}" opacity="0.85"/>`;
+    }).join('');
+
+    const ticks = [0, Math.round(maxV*0.25), Math.round(maxV*0.5), Math.round(maxV*0.75), Math.round(maxV)];
+    const tickEls = ticks.map(t => {
+      const x = leftPad + t*scaleX;
+      return `<line x1="${x}" y1="0" x2="${x}" y2="${H}" stroke="oklch(0.93 0.005 90)" stroke-width="1"/><text x="${x}" y="${H+14}" font-size="10" fill="oklch(0.5 0.02 260)" text-anchor="middle" font-family="IBM Plex Mono">${t}</text>`;
+    }).join('');
+
+    const pileupSvg = React.createElement('svg', { width: '100%', viewBox: `0 0 ${W} ${H+22}`, style:{ display:'block' } , dangerouslySetInnerHTML: { __html: `<g>${tickEls}<text x="4" y="${H/2}" font-size="10" fill="oklch(0.5 0.02 260)" transform="rotate(-90, 4, ${H/2})" text-anchor="middle" font-family="IBM Plex Mono">reads</text>${bars}</g>` } });
+
+    // histogram
+    const binSize = Math.max(1, Math.round(maxV/16));
+    const bins = {};
+    reads.forEach(r => { const b = Math.floor(r.v/binSize)*binSize; bins[b] = (bins[b]||0)+1; });
+    const binKeys = Object.keys(bins).map(Number).sort((a,b)=>a-b);
+    const maxCount = Math.max(...Object.values(bins), 1);
+    const hW = 360, hH = 160, hPad = 26;
+    const barW = (hW - hPad*2) / (binKeys.length || 1);
+    const hBars = binKeys.map((b,i) => {
+      const c = bins[b];
+      const barH = (c/maxCount) * (hH - 30);
+      const x = hPad + i*barW;
+      const y = hH - 20 - barH;
+      const isA1 = Math.abs(b - locus.a1) < Math.abs(b - locus.a2);
+      const fill = isA1 ? color1 : color2;
+      return `<rect x="${x+1}" y="${y}" width="${barW-2}" height="${barH}" fill="${fill}" opacity="0.85" rx="1"/>`;
+    }).join('');
+    const hAxis = `<line x1="${hPad}" y1="${hH-20}" x2="${hW-hPad}" y2="${hH-20}" stroke="oklch(0.85 0.01 90)" stroke-width="1"/>` +
+      binKeys.filter((_,i)=> i % Math.ceil(binKeys.length/6 || 1) === 0).map((b,i) => {
+        const idx = binKeys.indexOf(b);
+        const x = hPad + idx*barW + barW/2;
+        return `<text x="${x}" y="${hH-6}" font-size="9.5" fill="oklch(0.5 0.02 260)" text-anchor="middle" font-family="IBM Plex Mono">${b}</text>`;
+      }).join('');
+    const histogramSvg = React.createElement('svg', { width:'100%', viewBox:`0 0 ${hW} ${hH}`, style:{ display:'block' }, dangerouslySetInnerHTML:{ __html: `<g>${hBars}${hAxis}</g>` } });
+
+    // methylation / read alignment track
+    const mRows = 14;
+    const mW = 360, mRowH = 9, mGap = 2, mPad = 8;
+    const mH = mRows*(mRowH+mGap) + mPad;
+    const mBlocks = [];
+    for (let i=0;i<mRows;i++){
+      const y = mPad + i*(mRowH+mGap);
+      const len = 60 + rng()*260;
+      mBlocks.push(`<rect x="8" y="${y}" width="${len}" height="${mRowH}" rx="2" fill="oklch(0.93 0.01 90)"/>`);
+      const dots = Math.floor(len/22);
+      for (let d=0; d<dots; d++){
+        const meth = rng() > 0.45;
+        const dx = 8 + 10 + d*22;
+        if (dx < 8+len-6) mBlocks.push(`<circle cx="${dx}" cy="${y+mRowH/2}" r="2.6" fill="${meth?'oklch(0.55 0.18 300)':'oklch(0.8 0.01 90)'}"/>`);
+      }
+    }
+    const methylationSvg = React.createElement('svg', { width:'100%', viewBox:`0 0 ${mW} ${mH}`, style:{ display:'block' }, dangerouslySetInnerHTML:{ __html: `<g>${mBlocks.join('')}</g>` } });
+
+    const ranges = {
+      normal: locus.benign_max != null ? `≤${locus.benign_max}` : '—',
+      intermediate: locus.intermediate_min != null ? `${locus.intermediate_min}–${locus.intermediate_max ?? '?'}` : '—',
+      pathogenic: locus.pathogenic_min != null ? `≥${locus.pathogenic_min}` : '—',
+    };
+    const isPatho = locus.status === 'Full expansion';
+    const isInter = locus.status === 'Intermediate';
+
+    return {
+      locus: { ...locus, refNormal: ranges.normal, refIntermediate: ranges.intermediate, refPathogenic: ranges.pathogenic },
+      pileupSvg, histogramSvg, methylationSvg,
+      interpBg: isPatho ? 'background:oklch(0.96 0.03 25);' : isInter ? 'background:oklch(0.96 0.03 75);' : 'background:oklch(0.96 0.03 150);',
+      interpColor: isPatho ? 'color:oklch(0.5 0.20 25);' : isInter ? 'color:oklch(0.5 0.15 75);' : 'color:oklch(0.5 0.14 150);',
+    };
+  }
+}
+
+</script>
+</body>
+</html>

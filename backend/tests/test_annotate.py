@@ -15,6 +15,7 @@ GV01_VCF = REPO_ROOT / "backend" / "fixtures" / "gv_puretarget_panel" / "GV-01.t
 PURETARGET_V2_BED = REPO_ROOT / "backend" / "fixtures" / "panels" / "puretarget_v2.repeat_definitions.hg38.bed"
 BC2113_VCF = REPO_ROOT / "backend" / "fixtures" / "carrier_panel" / "bc2113.trgt.vcf"
 CARRIER_BED = REPO_ROOT / "backend" / "fixtures" / "panels" / "carrier_screen.repeat_definitions.hg38.bed"
+HG002_VCF = REPO_ROOT / "backend" / "fixtures" / "hg002_real" / "HG002.strchive_loci.trgt.vcf.gz"
 
 
 def _panel():
@@ -42,6 +43,17 @@ def test_genotyped_loci_classified_correctly():
 
     atxn1 = panel["SCA1_ATXN1"]
     assert atxn1.status == "Intermediate"
+
+
+def test_hg002_real_vwa1_normal_not_pathogenic():
+    """End-to-end regression test: HG002's real HMNR7_VWA1 call is 2/2 -- the exact
+    benign value. See test_strchive.py's test_classify_vwa1_deviation_not_contraction_direction
+    for why a naive contraction-direction check misclassified this as pathogenic."""
+    panel = {l.id: l for l in annotate_strchive_panel(HG002_VCF, STRCHIVE_JSON, sample="HG002")}
+    vwa1 = panel["HMNR7_VWA1"]
+    assert vwa1.genotyped
+    assert (vwa1.a1, vwa1.a2) == (2, 2)
+    assert vwa1.status == "Normal"
 
 
 def test_ungenotyped_loci_marked_no_call_not_fabricated():

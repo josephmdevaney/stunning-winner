@@ -69,6 +69,30 @@ def test_classify_contraction_locus_direction():
     assert "Below pathogenic threshold" in contracted.note
 
 
+def test_classify_vwa1_deviation_not_contraction_direction():
+    """Regression test for a real bug found against real HG002 TRGT output:
+    HMNR7_VWA1's pathogenic range (1-3) contains its own single benign value (2), per
+    GeneReviews: "any deviation from 2 motifs is thought to be pathogenic." The
+    contraction-direction check (call pathogenic when the smaller allele <=
+    pathogenic_max=3) misfires here -- it flagged HG002's real, completely normal 2/2
+    genotype as "Full expansion" just because 2 <= 3."""
+    loci = load_strchive_loci(STRCHIVE_JSON)
+    vwa1 = next(l for l in loci if l.id == "HMNR7_VWA1")
+    assert vwa1.benign_min == vwa1.benign_max == 2
+    assert vwa1.pathogenic_min == 1 and vwa1.pathogenic_max == 3
+
+    # HG002's real call.
+    normal = classify(vwa1, 2, 2)
+    assert normal.status == "Normal"
+
+    contraction = classify(vwa1, 2, 1)
+    assert contraction.status == "Full expansion"
+    assert "deviates from the benign value" in contraction.note
+
+    expansion = classify(vwa1, 3, 2)
+    assert expansion.status == "Full expansion"
+
+
 def test_classify_rfc1_motif_aware():
     """RFC1/CANVAS: pathogenicity depends on *which* motif expanded, not just length.
     A naive length-only check would misclassify a long benign-motif (AAAAG) expansion

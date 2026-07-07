@@ -145,7 +145,12 @@ def _annotate_locus(locus: StrchiveLocus, call: Optional[TrgtCall]) -> Annotated
     out.a1_purity, out.a2_purity = a1_purity, a2_purity
     out.a1_methylation, out.a2_methylation = a1_meth, a2_meth
     out.a1_motif, out.a2_motif = a1_motif, a2_motif
-    out.zygosity = "Homozygous" if a1 is not None and a1 == a2 else "Heterozygous"
+    if a1 is not None and a2 is None:
+        out.zygosity = "Hemizygous"
+    elif a1 is not None and a1 == a2:
+        out.zygosity = "Homozygous"
+    else:
+        out.zygosity = "Heterozygous"
 
     cls = strchive.classify(locus, a1, a2, a1_motif, a2_motif)
     out.status, out.status_color, out.note = cls.status, cls.status_color, cls.note

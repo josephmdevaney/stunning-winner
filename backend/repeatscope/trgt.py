@@ -59,14 +59,26 @@ def _parse_info(info: str) -> dict[str, str]:
     return fields
 
 
-def _parse_gt(gt: str) -> tuple[Optional[int], Optional[int], bool]:
+def _parse_gt(gt: str) -> tuple[Optional[int], Optional[int], bool, bool]:
+    """Parse GT into (hap1_idx, hap2_idx, phased, hemizygous).
+
+    A GT with no `/` or `|` separator (e.g. `1`, not `1/1`) is a real, valid TRGT
+    output -- trgt's own hemizygous calling mode for chrX/chrY loci in a male
+    sample emits exactly one allele index and a single-slot FORMAT array, not a
+    two-allele diploid call. Treating that single value as `hap1_idx` with
+    `hap2_idx=None` (rather than padding a second, nonexistent haplotype) is what
+    `hemizygous=True` signals to `TrgtCall._hap_values`.
+    """
     phased = "|" in gt
-    sep = "|" if phased else "/"
+    sep = "|" if phased else ("/" if "/" in gt else None)
+    if sep is None:
+        value = None if gt == "." else int(gt)
+        return value, None, False, True
     parts = gt.split(sep)
     alleles = tuple(None if p == "." else int(p) for p in parts)
     while len(alleles) < 2:
         alleles = alleles + (None,)
-    return alleles[0], alleles[1], phased
+    return alleles[0], alleles[1], phased, False
 
 
 def _parse_int_list(raw: str) -> list[Optional[int]]:
@@ -127,6 +139,7 @@ class TrgtCall:
     hap1_idx: Optional[int]
     hap2_idx: Optional[int]
     phased: bool
+    hemizygous: bool
     allele_length: list[Optional[int]]
     allele_length_range: list[Optional[tuple[int, int]]]
     allele_support: list[Optional[int]]
@@ -147,6 +160,13 @@ class TrgtCall:
         still independent per-haplotype-copy values (e.g. SD legitimately differs
         between them), not a single deduplicated value.
         """
+        if self.hemizygous:
+            # Exactly one physical haplotype was called (male chrX/chrY), so the
+            # FORMAT array has exactly one slot -- there's no "rank" to compute.
+            if self.hap1_idx is None or not per_allele:
+                return None, None
+            return per_allele[0], None
+
         if self.hap1_idx is None or self.hap2_idx is None:
             return None, None
         lo = min(self.hap1_idx, self.hap2_idx)
@@ -170,6 +190,8 @@ class TrgtCall:
 
     @property
     def genotyped(self) -> bool:
+        if self.hemizygous:
+            return self.hap1_idx is not None
         return self.hap1_idx is not None and self.hap2_idx is not None
 
     @property
@@ -293,13 +315,14 @@ def iter_trgt_records(path: str | Path, sample: str | None = None) -> Iterator[T
             fmt_d = dict(zip(fmt_keys, fmt_vals))
 
             gt = fmt_d.get("GT", "./.")
-            hap1_idx, hap2_idx, phased = _parse_gt(gt)
+            hap1_idx, hap2_idx, phased, hemizygous = _parse_gt(gt)
 
             yield TrgtCall(
                 chrom=chrom,
                 pos=int(pos),
                 end=int(info_d.get("END", pos)),
                 trid=info_d.get("TRID", ""),
+                hemizygous=hemizygous,
                 motifs=(info_d.get("MOTIFS", "").split(",") if info_d.get("MOTIFS") else []),
                 struc=info_d.get("STRUC", ""),
                 ref=ref,

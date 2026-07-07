@@ -38,6 +38,7 @@ from ..annotate import (
     resolve_panel_locus_ids,
     simulate_pileup_reads,
 )
+from ..paraphase import classify_gene, load_f8_inversion_calls, load_paraphase_calls
 from ..trgt import sample_names
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -68,6 +69,7 @@ _default_mode: str = ""
 _panels: dict[tuple[str, str], list[AnnotatedLocus]] = {}
 _panel_by_id: dict[tuple[str, str], dict[str, AnnotatedLocus]] = {}
 _catalog_caches: dict[tuple[str, str], list[dict]] = {}
+_paraphase_caches: dict[tuple[str, str], tuple[dict, dict]] = {}
 
 
 def _resolve_config_path(p: Optional[str]) -> Optional[str]:
@@ -116,11 +118,16 @@ def _load_modes() -> None:
             with open(nrt_path, encoding="utf-8") as f:
                 non_repeat_targets = json.load(f)
 
+        paraphase_dir = _resolve_config_path(cfg.get("paraphase_dir"))
+        if not (paraphase_dir and Path(paraphase_dir).is_dir()):
+            paraphase_dir = None
+
         modes[key] = {
             "label": cfg.get("label", key),
             "sample_paths": sample_paths,
             "locus_ids": locus_ids,
             "non_repeat_targets": non_repeat_targets,
+            "paraphase_dir": paraphase_dir,
         }
     _modes = modes
     _default_mode = next(
@@ -191,10 +198,36 @@ def _locus_summary(l: AnnotatedLocus) -> dict:
     }
 
 
-def _non_repeat_summary(target: dict) -> dict:
+def _get_paraphase(mode: str, sample: str) -> tuple[dict, dict]:
+    """Load this sample's real Paraphase per-gene calls + F8 inversion caller output,
+    if the mode's `paraphase_dir` has files for it -- most samples (all synthetic
+    ones) won't, and get an empty result, which is exactly what `classify_gene`
+    treats as "no real data for this gene"."""
+    key = (mode, sample)
+    if key not in _paraphase_caches:
+        paraphase_dir = _modes[mode]["paraphase_dir"]
+        calls: dict = {}
+        f8_calls: dict = {}
+        if paraphase_dir:
+            json_path = Path(paraphase_dir) / f"{sample}.paraphase.json"
+            if json_path.exists():
+                calls = load_paraphase_calls(json_path)
+            f8_path = Path(paraphase_dir) / f"{sample}.f8inversion.vcf"
+            if f8_path.exists():
+                f8_calls = load_f8_inversion_calls(f8_path)
+        _paraphase_caches[key] = (calls, f8_calls)
+    return _paraphase_caches[key]
+
+
+def _non_repeat_summary(target: dict, paraphase_calls: dict, f8_inv_calls: dict) -> dict:
     """A carrier-panel target whose variant type (CNV, gene conversion, structural
-    inversion, ...) a repeat-genotyping VCF can't express or call -- shown honestly
-    as "Not applicable" rather than omitted or misrepresented as a repeat result."""
+    inversion, ...) a repeat-genotyping VCF can't express or call. Shown as a real
+    Paraphase-derived finding when this sample has one; otherwise honestly as "Not
+    applicable" rather than omitted or misrepresented as a repeat result."""
+    finding = classify_gene(target["gene"], paraphase_calls, f8_inv_calls)
+    status = finding.status if finding else "Not applicable"
+    status_color = finding.status_color if finding else "oklch(0.6 0.02 260)"
+    note = finding.note if finding else f"Requires {target['tool']} -- {target['mechanism']} (not a tandem repeat)."
     return {
         "id": f"__non_repeat__{target['gene']}",
         "gene": target["gene"],
@@ -202,10 +235,10 @@ def _non_repeat_summary(target: dict) -> dict:
         "region": f"{target['chrom']}:{target['start']}-{target['stop']}",
         "motif": "—",
         "a1": None, "a2": None, "zygosity": None, "depth": None,
-        "status": "Not applicable",
-        "status_color": "oklch(0.6 0.02 260)",
-        "genotyped": False,
-        "note": f"Requires {target['tool']} -- {target['mechanism']} (not a tandem repeat).",
+        "status": status,
+        "status_color": status_color,
+        "genotyped": finding is not None,
+        "note": note,
         "clickable": False,
     }
 
@@ -247,7 +280,12 @@ def get_overview(mode: Optional[str] = None, sample: Optional[str] = None):
     under_covered = [l for l in genotyped if (l.depth or 0) < 10]
 
     non_repeat_targets = _modes[m]["non_repeat_targets"]
-    loci = [_locus_summary(l) for l in panel] + [_non_repeat_summary(t) for t in non_repeat_targets]
+    paraphase_calls, f8_inv_calls = _get_paraphase(m, s)
+    non_repeat_rows = [_non_repeat_summary(t, paraphase_calls, f8_inv_calls) for t in non_repeat_targets]
+    loci = [_locus_summary(l) for l in panel] + non_repeat_rows
+
+    loci_genotyped = len(genotyped) + sum(1 for r in non_repeat_rows if r["genotyped"])
+    pathogenic_findings = len(pathogenic) + sum(1 for r in non_repeat_rows if r["status"] == "Full expansion")
 
     return {
         "sample": s,
@@ -255,8 +293,8 @@ def get_overview(mode: Optional[str] = None, sample: Optional[str] = None):
         "caller": CALLER_LABEL,
         "stats": {
             "loci_analyzed": len(panel) + len(non_repeat_targets),
-            "loci_genotyped": len(genotyped),
-            "pathogenic_findings": len(pathogenic),
+            "loci_genotyped": loci_genotyped,
+            "pathogenic_findings": pathogenic_findings,
             "mean_read_depth": mean_depth,
             "qc_status": "Pass" if not under_covered else f"{len(under_covered)} loci below 10x",
         },

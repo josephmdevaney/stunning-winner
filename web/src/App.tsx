@@ -28,6 +28,7 @@ export default function App() {
   const [samples, setSamples] = useState<string[]>([])
   const [sample, setSample] = useState('')
   const [caller, setCaller] = useState('')
+  const [sex, setSex] = useState<string | null>(null)
 
   useEffect(() => {
     api.modes().then((m) => {
@@ -47,7 +48,10 @@ export default function App() {
 
   useEffect(() => {
     if (!mode || !sample) return
-    api.meta(mode, sample).then((m) => setCaller(m.caller))
+    api.meta(mode, sample).then((m) => {
+      setCaller(m.caller)
+      setSex(m.sex)
+    })
   }, [mode, sample])
 
   const goToLocus = (id: string) => {
@@ -83,7 +87,7 @@ export default function App() {
       />
 
       <div className="app-main" style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        <TopBar title={TITLES[screen]} sample={sample} modeLabel={activeModeLabel} />
+        <TopBar title={TITLES[screen]} sample={sample} modeLabel={activeModeLabel} sex={sex} />
 
         <div className="app-screenbody" style={{ flex: 1, overflowY: 'auto' }}>
           {!sample && mode && (

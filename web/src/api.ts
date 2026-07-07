@@ -4,6 +4,7 @@ export interface Meta {
   sample: string
   source_vcf: string
   caller: string
+  sex: string | null
 }
 
 export interface LocusSummary {

@@ -122,12 +122,19 @@ def _load_modes() -> None:
         if not (paraphase_dir and Path(paraphase_dir).is_dir()):
             paraphase_dir = None
 
+        sample_sex: dict[str, str] = {}
+        sex_path = _resolve_config_path(cfg.get("sample_sex"))
+        if sex_path and Path(sex_path).exists():
+            with open(sex_path, encoding="utf-8") as f:
+                sample_sex = json.load(f)
+
         modes[key] = {
             "label": cfg.get("label", key),
             "sample_paths": sample_paths,
             "locus_ids": locus_ids,
             "non_repeat_targets": non_repeat_targets,
             "paraphase_dir": paraphase_dir,
+            "sample_sex": sample_sex,
         }
     _modes = modes
     _default_mode = next(
@@ -265,7 +272,13 @@ def get_samples(mode: Optional[str] = None):
 def get_meta(mode: Optional[str] = None, sample: Optional[str] = None):
     m = _resolve_mode(mode)
     s = _resolve_sample(m, sample)
-    return {"sample": s, "mode": m, "source_vcf": _modes[m]["sample_paths"][s], "caller": CALLER_LABEL}
+    return {
+        "sample": s,
+        "mode": m,
+        "source_vcf": _modes[m]["sample_paths"][s],
+        "caller": CALLER_LABEL,
+        "sex": _modes[m]["sample_sex"].get(s),
+    }
 
 
 @app.get("/api/overview")

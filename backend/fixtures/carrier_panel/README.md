@@ -35,6 +35,10 @@ See `repeatscope/paraphase.py` for how these are turned into Overview findings -
 every finding is read directly off a field one of these two real tools already
 asserts (never a pathogenic-variant call re-derived from raw sequence here).
 
+`sample_sex.json`'s "M" for this sample is real, from the run's own
+`sample_sheet.csv` (`bam_id,sex` columns) -- and matches this VCF's own hemizygous
+chrX calling, unlike HG002's fixture (see that fixture's README).
+
 ## `CR-01` .. `CR-10` -- synthetic
 
 Hand-built, spec-accurate synthetic `trgt` v5.1.0 VCFs (same approach as
@@ -47,3 +51,7 @@ carriers, full-pathogenic carriers, a no-call) that a single real sample can't
 cover alone. They have no corresponding Paraphase data, so their non-repeat targets
 correctly show "Not applicable" in the Overview -- the same honest fallback used
 before any real Paraphase data existed.
+
+`sample_sex.json` labels all ten "F": their 5 repeat loci (including the chrX ones)
+were generated as diploid two-allele calls, which is only consistent with a female
+(XX) sample -- see `generate_carrier_panel_vcfs.py`.

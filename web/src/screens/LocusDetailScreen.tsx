@@ -28,12 +28,22 @@ export function LocusDetailScreen({
   mode: string; sample: string; locusId: string
 }) {
   const [locus, setLocus] = useState<LocusDetail | null>(null)
+  const [notFound, setNotFound] = useState(false)
 
   useEffect(() => {
     setLocus(null)
-    api.locus(locusId, mode, sample).then(setLocus)
+    setNotFound(false)
+    if (!locusId) return
+    api.locus(locusId, mode, sample).then(setLocus).catch(() => setNotFound(true))
   }, [locusId, mode, sample])
 
+  if (!locusId || notFound) {
+    return (
+      <div style={{ padding: 28, color: colors.textSecondary }}>
+        Select a locus from the Overview table to see its detail view.
+      </div>
+    )
+  }
   if (!locus) return <div style={{ padding: 28 }}>Loading…</div>
 
   return (

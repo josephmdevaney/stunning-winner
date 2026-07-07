@@ -21,7 +21,7 @@ const TITLES: Record<Screen, string> = {
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>('overview')
-  const [selectedLocusId, setSelectedLocusId] = useState<string>('HD_HTT')
+  const [selectedLocusId, setSelectedLocusId] = useState<string>('')
 
   const [modesInfo, setModesInfo] = useState<ModesResponse | null>(null)
   const [mode, setMode] = useState('')
@@ -40,6 +40,10 @@ export default function App() {
   useEffect(() => {
     if (!mode) return
     setSample('')
+    // A locus selected in one mode (e.g. Genome-wide's HD_HTT) may not exist in a
+    // narrower mode's panel (e.g. Carrier's 5 loci) -- clear it so Locus Detail
+    // doesn't request a locus id that 404s for the new mode.
+    setSelectedLocusId('')
     api.samples(mode).then((s) => {
       setSamples(s.samples)
       setSample(s.default)

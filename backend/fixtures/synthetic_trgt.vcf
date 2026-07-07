@@ -1,0 +1,27 @@
+##fileformat=VCFv4.3
+##source=synthetic-trgt-v5.1.0-fixture
+##INFO=<ID=TRID,Number=1,Type=String,Description="Identifier of the repeat region from the input catalog">
+##INFO=<ID=END,Number=1,Type=Integer,Description="Ending position of the repeat region">
+##INFO=<ID=MOTIFS,Number=.,Type=String,Description="Motif units observed at the locus">
+##INFO=<ID=STRUC,Number=1,Type=String,Description="Expected locus structure (deprecated)">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=AL,Number=.,Type=Integer,Description="Allele length in base pairs">
+##FORMAT=<ID=ALLR,Number=.,Type=String,Description="Length confidence interval per allele">
+##FORMAT=<ID=SD,Number=.,Type=Integer,Description="Number of spanning reads supporting each allele">
+##FORMAT=<ID=MC,Number=.,Type=String,Description="Motif copy count(s) per allele">
+##FORMAT=<ID=MS,Number=.,Type=String,Description="Run-length segmentation string per allele">
+##FORMAT=<ID=AP,Number=.,Type=Float,Description="Allele purity">
+##FORMAT=<ID=AM,Number=.,Type=Float,Description="Mean 5mCpG methylation level per allele">
+##FORMAT=<ID=PS,Number=1,Type=Integer,Description="Phase set">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	SYNTH-001
+chr1	44835	chr1_44835_44867	N	<STR1n36>	.	PASS	TRID=chr1_44835_44867;END=44867;MOTIFS=AAAT;STRUC=(AAAT)n	GT:AL:ALLR:SD:MC:MS:AP:AM:PS	0|1:32,36:31-33,35-37:15,14:8,9:.,.:0.970,0.970:.,.:1
+chr1	151101	chr1_151101_151105	N	.	.	PASS	TRID=chr1_151101_151105;END=151105;MOTIFS=CT;STRUC=(CT)n	GT:AL:ALLR:SD:MC:MS:AP:AM:PS	0|0:4,4:3-5,3-5:18,17:2,2:.,.:0.970,0.970:.,.:1
+chr1	832736	chr1_832736_832781	N	<STR1n55>	.	PASS	TRID=chr1_832736_832781;END=832781;MOTIFS=GTTTT;STRUC=(GTTTT)n	GT:AL:ALLR:SD:MC:MS:AP:AM:PS	0|1:45,55:44-46,54-56:13,12:9,11:.,.:0.970,0.970:.,.:1
+chr4	3074876	HD_HTT	N	<STR1n54>,<STR2n132>	.	PASS	TRID=HD_HTT;END=3074933;MOTIFS=CAG;STRUC=(CAG)n	GT:AL:ALLR:SD:MC:MS:AP:AM:PS	1|2:54,132:53-55,131-133:16,15:18,44:.,.:0.970,0.970:.,.:1
+chr6	16327633	SCA1_ATXN1	N	<STR1n87>,<STR2n111>	.	PASS	TRID=SCA1_ATXN1;END=16327724;MOTIFS=CTG;STRUC=(CTG)n	GT:AL:ALLR:SD:MC:MS:AP:AM:PS	1|2:87,111:86-88,110-112:18,17:29,37:.,.:0.970,0.970:.,.:1
+chr9	27573484	FTDALS1_C9orf72	N	<STR1n12>,<STR2n2472>	.	PASS	TRID=FTDALS1_C9orf72;END=27573546;MOTIFS=CCCCGG;STRUC=(CCCCGG)n	GT:AL:ALLR:SD:MC:MS:AP:AM:PS	1|2:12,2472:11-13,2471-2473:14,9:2,412:.,.:0.970,0.970:.,0.710:1
+chr9	69037286	FRDA_FXN	N	<STR1n1740>,<STR2n1836>	.	PASS	TRID=FRDA_FXN;END=69037304;MOTIFS=AAG;STRUC=(AAG)n	GT:AL:ALLR:SD:MC:MS:AP:AM:PS	1|2:1740,1836:1739-1741,1835-1837:12,11:580,612:.,.:0.970,0.970:.,.:1
+chr14	92071010	SCA3_ATXN3	N	<STR1n66>	.	PASS	TRID=SCA3_ATXN3;END=92071052;MOTIFS=CTG;STRUC=(CTG)n	GT:AL:ALLR:SD:MC:MS:AP:AM:PS	0|1:42,66:41-43,65-67:19,18:14,22:.,.:0.970,0.970:.,.:1
+chr19	13207858	SCA6_CACNA1A	N	<STR1n33>	.	PASS	TRID=SCA6_CACNA1A;END=13207898;MOTIFS=CTG;STRUC=(CTG)n	GT:AL:ALLR:SD:MC:MS:AP:AM:PS	1|0:39,33:38-40,32-34:19,20:13,11:.,.:0.970,0.970:.,.:1
+chr19	45770204	DM1_DMPK	N	<STR1n15>	.	PASS	TRID=DM1_DMPK;END=45770266;MOTIFS=CAG;STRUC=(CAG)n	GT:AL:ALLR:SD:MC:MS:AP:AM:PS	1|1:15,15:14-16,14-16:24,23:5,5:.,.:0.970,0.970:.,.:1
+chrX	147912049	FXS_FMR1	N	<STR1n87>	.	PASS	TRID=FXS_FMR1;END=147912111;MOTIFS=CGG;STRUC=(CGG)n	GT:AL:ALLR:SD:MC:MS:AP:AM:PS	1|1:87,87:86-88,86-88:22,20:29,29:.,.:0.970,0.970:0.040,0.050:1

@@ -1,0 +1,15 @@
+# Python
+backend/.venv/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/.pytest_cache/
+backend/repeatscope.egg-info/
+*.pyc
+
+# Node / frontend
+web/node_modules/
+web/dist/
+
+# OS
+.DS_Store
+backend/HG002_PacBio-HiFi-Revio_20231031_48x_GRCh38-GIABv3.bam.bai

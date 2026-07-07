@@ -1,0 +1,23 @@
+body {
+  margin: 0;
+  background: oklch(0.97 0.005 90);
+}
+
+* {
+  box-sizing: border-box;
+  font-family: 'IBM Plex Sans', Helvetica, sans-serif;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: oklch(0.85 0.01 90);
+  border-radius: 4px;
+}
+
+#root {
+  min-height: 100vh;
+}

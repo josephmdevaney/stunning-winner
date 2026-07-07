@@ -1,0 +1,74 @@
+[
+  {
+    "gene": "GBA",
+    "chrom": "chr1",
+    "start": 155213718,
+    "stop": 155241719,
+    "disease": "Gaucher disease",
+    "tool": "Paraphase",
+    "mechanism": "High homology with pseudogene GBAP1, copy number variation, gene-pseudogene fusion"
+  },
+  {
+    "gene": "HBB",
+    "chrom": "chr11",
+    "start": 5224586,
+    "stop": 5229858,
+    "disease": "Sickle cell anemia and beta thalassemia",
+    "tool": "Paraphase",
+    "mechanism": "Small variant calling in a ~5kb captured region"
+  },
+  {
+    "gene": "HBA1/2",
+    "chrom": "chr16",
+    "start": 112769,
+    "stop": 185285,
+    "disease": "Alpha thalassemia",
+    "tool": "sawfish",
+    "mechanism": "Large deletion across 3 nested capture regions; small deletion via Paraphase, large deletion via sawfish"
+  },
+  {
+    "gene": "SMN1/2",
+    "chrom": "chr5",
+    "start": 70063151,
+    "stop": 70952695,
+    "disease": "Spinal muscular atrophy",
+    "tool": "Paraphase",
+    "mechanism": "High homology between SMN1/SMN2 paralogs, copy number variation, gene conversion"
+  },
+  {
+    "gene": "CYP21A2",
+    "chrom": "chr6",
+    "start": 32005350,
+    "stop": 32045442,
+    "disease": "Congenital adrenal hyperplasia",
+    "tool": "Paraphase",
+    "mechanism": "High homology with pseudogene CYP21A2P, copy number variation, gene-pseudogene fusion"
+  },
+  {
+    "gene": "TNXB",
+    "chrom": "chr6",
+    "start": 32005350,
+    "stop": 32045442,
+    "disease": "Classical-like Ehlers-Danlos syndrome",
+    "tool": "Not yet implemented",
+    "mechanism": "Captured in the CYP21A2/P fragment (partial exon 1 + exons 2-13); PacBio's own carrier pipeline has no variant caller for this gene yet"
+  },
+  {
+    "gene": "RPGR",
+    "chrom": "chrX",
+    "start": 38283701,
+    "stop": 38288763,
+    "disease": "X-linked retinitis pigmentosa",
+    "tool": "Paraphase",
+    "mechanism": "Low short-read coverage in the ORF15 exon; small variant calling in a ~5kb captured region"
+  },
+  {
+    "gene": "F8",
+    "chrom": "chrX",
+    "start": 154878269,
+    "stop": 155464830,
+    "disease": "Hemophilia A",
+    "tool": "Paraphase",
+    "mechanism": "Structural inversion across 4 possible intron 1/22 breakpoints; mapping + read-clipping analysis"
+  }
+]

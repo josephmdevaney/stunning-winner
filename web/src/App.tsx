@@ -39,11 +39,6 @@ export default function App() {
   // Whenever the mode changes, load that mode's sample list and pick its default.
   useEffect(() => {
     if (!mode) return
-    setSample('')
-    // A locus selected in one mode (e.g. Genome-wide's HD_HTT) may not exist in a
-    // narrower mode's panel (e.g. Carrier's 5 loci) -- clear it so Locus Detail
-    // doesn't request a locus id that 404s for the new mode.
-    setSelectedLocusId('')
     api.samples(mode).then((s) => {
       setSamples(s.samples)
       setSample(s.default)
@@ -60,6 +55,17 @@ export default function App() {
     setScreen('locus')
   }
 
+  // Clearing `sample`/`selectedLocusId` here (rather than in the `[mode]` effect
+  // above) matters: React batches state updates from the same handler into one
+  // render, so the still-mounted screen below never sees a (new mode, stale
+  // sample) pair -- e.g. requesting Carrier's overview with Genome-wide's sample,
+  // which 404s until the effect above catches up a render later.
+  const selectMode = (newMode: string) => {
+    setSample('')
+    setSelectedLocusId('')
+    setMode(newMode)
+  }
+
   const activeModeLabel = modesInfo?.modes.find((m) => m.key === mode)?.label ?? ''
 
   return (
@@ -69,7 +75,7 @@ export default function App() {
         onNavigate={setScreen}
         modes={modesInfo?.modes ?? []}
         mode={mode}
-        onSelectMode={setMode}
+        onSelectMode={selectMode}
         sample={sample}
         samples={samples}
         onSelectSample={setSample}

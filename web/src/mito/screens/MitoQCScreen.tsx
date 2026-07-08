@@ -13,19 +13,22 @@ const cardStyle: React.CSSProperties = {
   padding: '20px 24px',
 }
 
-export function MitoQCScreen({
-  coverageYMax,
-  onChangeCoverageYMax,
-}: {
-  coverageYMax: number
-  onChangeCoverageYMax: (v: number) => void
-}) {
+export function MitoQCScreen({ sample }: { sample: string }) {
   const [data, setData] = useState<QCResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [coverageYMax, setCoverageYMax] = useState(6000)
 
   useEffect(() => {
-    mitoApi.qc().then(setData).catch((e) => setError(String(e)))
-  }, [])
+    setData(null)
+    setError(null)
+    mitoApi
+      .qc(sample)
+      .then((d) => {
+        setData(d)
+        setCoverageYMax(d.coverage_y_axis_max_default)
+      })
+      .catch((e) => setError(String(e)))
+  }, [sample])
 
   if (error) return <div style={{ padding: 28, color: colors.statusPathogenic }}>Failed to load: {error}</div>
   if (!data) return <div style={{ padding: 28, color: colors.textSecondary }}>Loading…</div>
@@ -49,23 +52,39 @@ export function MitoQCScreen({
         <div style={cardStyle}>
           <div style={{ fontSize: 14.5, fontWeight: 600, marginBottom: 2 }}>HiFi read length distribution</div>
           <div style={{ fontSize: 12, color: colors.textTertiary, marginBottom: 14 }}>Full-length mtDNA amplicon / enrichment reads</div>
-          <ReadLengthHistogram bins={data.read_length_histogram} />
+          {data.read_length_histogram.length > 0 ? (
+            <ReadLengthHistogram bins={data.read_length_histogram} />
+          ) : (
+            <div
+              style={{
+                border: `1px dashed ${colors.borderInput}`,
+                borderRadius: 8,
+                padding: '28px 16px',
+                textAlign: 'center',
+                fontSize: 12.5,
+                color: colors.textTertiary,
+                background: 'oklch(0.98 0.005 90)',
+              }}
+            >
+              Not available from a variant-call VCF — a read-length distribution requires the aligned BAM.
+            </div>
+          )}
         </div>
         <div style={cardStyle}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
             <div>
               <div style={{ fontSize: 14.5, fontWeight: 600, marginBottom: 2 }}>Coverage across the mtDNA genome</div>
-              <div style={{ fontSize: 12, color: colors.textTertiary, marginBottom: 14 }}>Linear depth track, position 1–{data.genome_length.toLocaleString()} (rCRS)</div>
+              <div style={{ fontSize: 12, color: colors.textTertiary, marginBottom: 14 }}>{data.coverage_note}</div>
             </div>
             <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: colors.textSecondary, whiteSpace: 'nowrap' }}>
               Y-axis max
               <input
                 type="number"
-                min={1000}
+                min={500}
                 max={10000}
                 step={250}
                 value={coverageYMax}
-                onChange={(e) => onChangeCoverageYMax(clamp(Number(e.target.value), 1000, 10000))}
+                onChange={(e) => setCoverageYMax(clamp(Number(e.target.value), 500, 10000))}
                 style={{
                   width: 72,
                   padding: '4px 6px',

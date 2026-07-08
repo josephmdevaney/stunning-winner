@@ -13,16 +13,19 @@ const cardStyle: React.CSSProperties = {
   padding: '20px 24px',
 }
 
-export function MitoVariantDetailScreen({ variantId }: { variantId: string }) {
+export function MitoVariantDetailScreen({ sample, variantId }: { sample: string; variantId: string }) {
   const [data, setData] = useState<VariantDetailResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    if (!variantId) return
     setData(null)
     setError(null)
-    mitoApi.variant(variantId).then(setData).catch((e) => setError(String(e)))
-  }, [variantId])
+    mitoApi.variant(variantId, sample).then(setData).catch((e) => setError(String(e)))
+  }, [sample, variantId])
 
+  if (!variantId)
+    return <div style={{ padding: 28, color: colors.textSecondary }}>Select a variant from the Overview table to see its detail.</div>
   if (error) return <div style={{ padding: 28, color: colors.statusPathogenic }}>Failed to load: {error}</div>
   if (!data) return <div style={{ padding: 28, color: colors.textSecondary }}>Loading…</div>
 

@@ -82,6 +82,71 @@ PATHOGENIC_PANEL: list[PathogenicVariant] = [
 ]
 
 
+# Full rCRS feature map (1-based, NC_012920.1) for precise locus + consequence
+# annotation of real variant calls: 2 rRNAs, 22 tRNAs, 13 protein genes, and the
+# control region. Coarser than would be needed for codon-level consequence, but
+# enough to name the locus and its functional class. tRNA/ND6 strand is ignored
+# here (position containment only). The control region wraps the origin.
+MT_FEATURES: list[GeneRegion] = [
+    {"name": "MT-TF", "start": 577, "stop": 647, "type": "tRNA"},
+    {"name": "MT-RNR1", "start": 648, "stop": 1601, "type": "rRNA"},
+    {"name": "MT-TV", "start": 1602, "stop": 1670, "type": "tRNA"},
+    {"name": "MT-RNR2", "start": 1671, "stop": 3229, "type": "rRNA"},
+    {"name": "MT-TL1", "start": 3230, "stop": 3304, "type": "tRNA"},
+    {"name": "MT-ND1", "start": 3307, "stop": 4262, "type": "protein"},
+    {"name": "MT-TI", "start": 4263, "stop": 4331, "type": "tRNA"},
+    {"name": "MT-TQ", "start": 4329, "stop": 4400, "type": "tRNA"},
+    {"name": "MT-TM", "start": 4402, "stop": 4469, "type": "tRNA"},
+    {"name": "MT-ND2", "start": 4470, "stop": 5511, "type": "protein"},
+    {"name": "MT-TW", "start": 5512, "stop": 5579, "type": "tRNA"},
+    {"name": "MT-TA", "start": 5587, "stop": 5655, "type": "tRNA"},
+    {"name": "MT-TN", "start": 5657, "stop": 5729, "type": "tRNA"},
+    {"name": "MT-TC", "start": 5761, "stop": 5826, "type": "tRNA"},
+    {"name": "MT-TY", "start": 5826, "stop": 5891, "type": "tRNA"},
+    {"name": "MT-CO1", "start": 5904, "stop": 7445, "type": "protein"},
+    {"name": "MT-TS1", "start": 7446, "stop": 7514, "type": "tRNA"},
+    {"name": "MT-TD", "start": 7518, "stop": 7585, "type": "tRNA"},
+    {"name": "MT-CO2", "start": 7586, "stop": 8269, "type": "protein"},
+    {"name": "MT-TK", "start": 8295, "stop": 8364, "type": "tRNA"},
+    {"name": "MT-ATP8", "start": 8366, "stop": 8572, "type": "protein"},
+    {"name": "MT-ATP6", "start": 8527, "stop": 9207, "type": "protein"},
+    {"name": "MT-CO3", "start": 9207, "stop": 9990, "type": "protein"},
+    {"name": "MT-TG", "start": 9991, "stop": 10058, "type": "tRNA"},
+    {"name": "MT-ND3", "start": 10059, "stop": 10404, "type": "protein"},
+    {"name": "MT-TR", "start": 10405, "stop": 10469, "type": "tRNA"},
+    {"name": "MT-ND4L", "start": 10470, "stop": 10766, "type": "protein"},
+    {"name": "MT-ND4", "start": 10760, "stop": 12137, "type": "protein"},
+    {"name": "MT-TH", "start": 12138, "stop": 12206, "type": "tRNA"},
+    {"name": "MT-TS2", "start": 12207, "stop": 12265, "type": "tRNA"},
+    {"name": "MT-TL2", "start": 12266, "stop": 12336, "type": "tRNA"},
+    {"name": "MT-ND5", "start": 12337, "stop": 14148, "type": "protein"},
+    {"name": "MT-ND6", "start": 14149, "stop": 14673, "type": "protein"},
+    {"name": "MT-TE", "start": 14674, "stop": 14742, "type": "tRNA"},
+    {"name": "MT-CYB", "start": 14747, "stop": 15887, "type": "protein"},
+    {"name": "MT-TT", "start": 15888, "stop": 15953, "type": "tRNA"},
+    {"name": "MT-TP", "start": 15956, "stop": 16023, "type": "tRNA"},
+]
+
+# Human-readable functional class per feature type, used as the fallback
+# "consequence" when codon-level annotation is not available from a VCF alone.
+CONSEQUENCE_BY_TYPE = {
+    "control": "Control region variant",
+    "rRNA": "rRNA variant",
+    "tRNA": "tRNA variant",
+    "protein": "Protein-coding variant",
+}
+
+
+def feature_for_pos(pos: int) -> Optional[GeneRegion]:
+    """Precise locus lookup against MT_FEATURES; control region wraps the origin."""
+    if pos >= 16024 or pos <= 576:
+        return {"name": "MT-CR", "start": 16024, "stop": 576, "type": "control"}
+    for f in MT_FEATURES:
+        if f["start"] <= pos <= f["stop"]:
+            return f
+    return None
+
+
 class Haplogroup(TypedDict):
     name: str
     confidence: float

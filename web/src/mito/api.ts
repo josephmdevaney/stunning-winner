@@ -22,7 +22,7 @@ export interface Variant {
   inheritance: string
   evidence: string
   isDeletion: boolean
-  qual: number
+  qual: number | null
   filter: string
   gnomadFreq: string
   origin: 'pathogenic' | 'novel'
@@ -30,14 +30,26 @@ export interface Variant {
   status: string
   statusColor: string
   note: string
-  depth: number
+  depth: number | null
+  ad_ref?: number | null
+  ad_alt?: number | null
 }
 
 export interface Haplogroup {
   name: string
-  confidence: number
+  confidence: number | null
   region: string
   markers: string[]
+}
+
+export interface SampleInfo {
+  key: string
+  label: string
+}
+
+export interface SamplesResponse {
+  samples: SampleInfo[]
+  default: string
 }
 
 export interface OverviewResponse extends MitoMeta {
@@ -80,6 +92,7 @@ export interface QCResponse extends MitoMeta {
   stats: { label: string; value: string; sub: string; dotColor: string }[]
   read_length_histogram: { kb: number; count: number }[]
   coverage_track: { pos: number; depth: number }[]
+  coverage_note: string
   genome_length: number
   regions: { region: string; depth: number; strandBalance: string; flag: string }[]
   min_required: number
@@ -94,9 +107,15 @@ async function getJSON<T>(path: string): Promise<T> {
   return res.json() as Promise<T>
 }
 
+function withSample(path: string, sample?: string): string {
+  return sample ? `${path}${path.includes('?') ? '&' : '?'}sample=${encodeURIComponent(sample)}` : path
+}
+
 export const mitoApi = {
-  meta: () => getJSON<MitoMeta>('/api/mito/meta'),
-  overview: () => getJSON<OverviewResponse>('/api/mito/overview'),
-  variant: (id: string) => getJSON<VariantDetailResponse>(`/api/mito/variant/${encodeURIComponent(id)}`),
-  qc: () => getJSON<QCResponse>('/api/mito/qc'),
+  samples: () => getJSON<SamplesResponse>('/api/mito/samples'),
+  meta: (sample?: string) => getJSON<MitoMeta>(withSample('/api/mito/meta', sample)),
+  overview: (sample?: string) => getJSON<OverviewResponse>(withSample('/api/mito/overview', sample)),
+  variant: (id: string, sample?: string) =>
+    getJSON<VariantDetailResponse>(withSample(`/api/mito/variant/${encodeURIComponent(id)}`, sample)),
+  qc: (sample?: string) => getJSON<QCResponse>(withSample('/api/mito/qc', sample)),
 }

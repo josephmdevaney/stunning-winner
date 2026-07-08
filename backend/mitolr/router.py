@@ -1,106 +1,52 @@
 """FastAPI routes for MitoLR, mounted on the shared app under /api/mito.
 
-Serves the seeded mtDNA call set, per-variant detail (with an IGV-style read
-pileup and circular-map inputs), and the sample QC dashboard. The variant data
-is generated once at import and cached; a production build would swap the
-``generate``/``qc`` modules for a mitochondrial variant caller's output joined
-against a pathogenic-variant knowledge base.
+Sample-aware: the ``sample`` query param selects between the real HG002 MitoRSaw
+calls (default) and the synthetic clinical demo. All data shaping lives in
+``samples``; this module is a thin dispatch + validation layer.
 """
 
 from __future__ import annotations
 
-from functools import lru_cache
-
 from fastapi import APIRouter, HTTPException
 
-from . import generate, qc
-from .reference import GENE_MAP, GENOME_LENGTH
+from . import samples
 
 router = APIRouter(prefix="/api/mito", tags=["mitolr"])
 
-SAMPLE_ID = "MT-0417-P2"
-INSTRUMENT_LINE = "PacBio HiFi · mtDNA amplicon"
-REFERENCE = "rCRS (NC_012920.1)"
-RUN_DATE = "2026-07-02"
-# Prototype placeholder caller name -- not a real tool to integrate against.
-CALLER_LABEL = "MitoCaller v1.4"
 
-# Heteroplasmy interpretation bands shown on the detail screen's reference card.
-REFERENCE_RANGES = [
-    {"label": "Not detected", "range": "<5%"},
-    {"label": "Low-level heteroplasmy", "range": "5–30%"},
-    {"label": "Clinically significant", "range": ">30%"},
-]
+def _resolve(sample: str | None) -> str:
+    try:
+        return samples.resolve(sample)
+    except KeyError:
+        raise HTTPException(status_code=404, detail=f"unknown sample {sample!r}")
 
 
-@lru_cache(maxsize=1)
-def _variants() -> list[dict]:
-    return generate.build_variants()
-
-
-@lru_cache(maxsize=1)
-def _variants_by_id() -> dict[str, dict]:
-    return {v["id"]: v for v in _variants()}
-
-
-def _meta() -> dict:
+@router.get("/samples")
+def get_samples():
     return {
-        "sample": SAMPLE_ID,
-        "instrument_line": INSTRUMENT_LINE,
-        "reference": REFERENCE,
-        "run_date": RUN_DATE,
-        "caller": CALLER_LABEL,
+        "samples": [{"key": k, "label": samples.SAMPLES[k]["label"]} for k in samples.sample_keys()],
+        "default": samples.DEFAULT_SAMPLE,
     }
 
 
 @router.get("/meta")
-def get_meta() -> dict:
-    return _meta()
+def get_meta(sample: str | None = None):
+    return samples.meta(_resolve(sample))
 
 
 @router.get("/overview")
-def get_overview() -> dict:
-    variants = _variants()
-    haplo = generate.haplogroup()
-    pathogenic = [v for v in variants if v["status"] == "Pathogenic"]
-    consequence_options = sorted({v["consequence"] for v in variants})
-
-    return {
-        **_meta(),
-        "stats": {
-            "variants_called": len(variants),
-            "pathogenic_findings": len(pathogenic),
-            "haplogroup": haplo["name"],
-            "qc_status": "Pass",
-        },
-        "variants": variants,
-        "haplogroup": haplo,
-        "consequence_options": consequence_options,
-    }
+def get_overview(sample: str | None = None):
+    return samples.overview(_resolve(sample))
 
 
 @router.get("/variant/{variant_id}")
-def get_variant(variant_id: str) -> dict:
-    variant = _variants_by_id().get(variant_id)
-    if variant is None:
+def get_variant(variant_id: str, sample: str | None = None):
+    detail = samples.variant_detail(_resolve(sample), variant_id)
+    if detail is None:
         raise HTTPException(status_code=404, detail=f"unknown variant id {variant_id!r}")
-
-    return {
-        **_meta(),
-        "variant": variant,
-        "alt_base": generate.alt_base(variant),
-        "pileup_reads": generate.simulate_pileup(variant),
-        "pileup_source": (
-            "Estimated: distributes the variant's read-depth across mutant vs wild-type "
-            "reads in proportion to the reported heteroplasmy. A true per-read view "
-            "requires the spanning-reads BAM."
-        ),
-        "gene_map": GENE_MAP,
-        "genome_length": GENOME_LENGTH,
-        "reference_ranges": REFERENCE_RANGES,
-    }
+    return detail
 
 
 @router.get("/qc")
-def get_qc() -> dict:
-    return {**_meta(), **qc.build_qc()}
+def get_qc(sample: str | None = None):
+    return samples.sample_qc(_resolve(sample))

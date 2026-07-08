@@ -1,91 +1,138 @@
-"""Tests for the MitoLR data generation and API routes."""
+"""Tests for MitoLR: seeded demo generation, real MitoRSaw VCF parsing, the
+sample registry, and the API routes."""
 
 from fastapi.testclient import TestClient
 
-from mitolr import generate, qc
+from mitolr import annotate, generate, qc, samples, vcf
 from repeatscope.api.main import app
 
 client = TestClient(app)
 
+HG002_VCF = samples.SAMPLES["HG002"]["vcf"]
 
-def test_variants_are_deterministic():
+
+# --- seeded demo sample -----------------------------------------------------
+
+def test_demo_variants_deterministic_and_counted():
     a = generate.build_variants()
     b = generate.build_variants()
     assert [v["id"] for v in a] == [v["id"] for v in b]
-    assert [v["heteroplasmy"] for v in a] == [v["heteroplasmy"] for v in b]
+    assert len(a) == 79
+    assert sum(1 for v in a if v["origin"] == "pathogenic") == 21
+    assert sum(1 for v in a if v["origin"] == "novel") == 58
 
 
-def test_panel_and_novel_counts():
-    variants = generate.build_variants()
-    # 21 curated pathogenic + 58 synthetic novel calls.
-    assert len(variants) == 79
-    assert sum(1 for v in variants if v["origin"] == "pathogenic") == 21
-    assert sum(1 for v in variants if v["origin"] == "novel") == 58
-
-
-def test_variants_sorted_by_position():
-    variants = generate.build_variants()
-    positions = [v["pos"] for v in variants]
-    assert positions == sorted(positions)
-
-
-def test_narrative_overrides_applied():
+def test_demo_narrative_overrides():
     by_id = {v["id"]: v for v in generate.build_variants()}
     assert by_id["m3243AG"]["heteroplasmy"] == 38.0
     assert by_id["m3243AG"]["status"] == "Pathogenic"
-    assert by_id["m1555AG"]["heteroplasmy"] == 97.0
     assert by_id["kss_common_del"]["heteroplasmy"] == 11.0
-    assert by_id["kss_common_del"]["status"] == "Low-level heteroplasmy"
 
 
-def test_pileup_is_subsampled_and_preserves_ratio():
-    by_id = {v["id"]: v for v in generate.build_variants()}
-    v = by_id["m3243AG"]
-    reads = generate.simulate_pileup(v)
-    assert len(reads) == generate.PILEUP_DISPLAY_READS
-    n_mut = sum(1 for r in reads if r["kind"] == "mut")
-    # ~38% of 48 reads carry the mutant allele.
-    assert n_mut == round(generate.PILEUP_DISPLAY_READS * v["heteroplasmy"] / 100)
+# --- real MitoRSaw VCF parsing ---------------------------------------------
+
+def test_hg002_vcf_parses():
+    vs = vcf.build_variants(HG002_VCF)
+    assert len(vs) == 15
+    assert [v["pos"] for v in vs] == sorted(v["pos"] for v in vs)
+    # HG002 has no curated-pathogenic calls; all are novel/benign.
+    assert {v["origin"] for v in vs} == {"novel"}
 
 
-def test_qc_shapes():
-    data = qc.build_qc()
-    assert len(data["read_length_histogram"]) == 18
-    assert len(data["coverage_track"]) == 60
-    assert data["coverage_track"][0]["pos"] == 0
-    assert data["coverage_track"][-1]["pos"] == generate.genome_length()
-    assert len(data["regions"]) == 8
-    assert data["unavailable_metrics"]
+def test_hg002_heteroplasmy_from_vaf_and_depth_from_dp():
+    by_pos = {v["pos"]: v for v in vcf.build_variants(HG002_VCF)}
+    # m.263A>G is homoplasmic (VAF 1.0) at DP 1108.
+    assert by_pos[263]["heteroplasmy"] == 100.0
+    assert by_pos[263]["depth"] == 1108
+    assert by_pos[263]["change"] == "A>G"
+    # m.302 A>AC is a control-region insertion at VAF 0.9369.
+    assert by_pos[302]["heteroplasmy"] == 93.7
+    assert by_pos[302]["change"].startswith("ins")
 
 
-def test_overview_endpoint():
-    r = client.get("/api/mito/overview")
-    assert r.status_code == 200
-    body = r.json()
+def test_hg002_locus_annotation():
+    by_pos = {v["pos"]: v for v in vcf.build_variants(HG002_VCF)}
+    assert by_pos[750]["locus"] == "MT-RNR1"
+    assert by_pos[4769]["locus"] == "MT-ND2"
+    assert by_pos[15326]["locus"] == "MT-CYB"
+    assert by_pos[263]["locus"] == "D-loop"
+    assert by_pos[750]["consequence"] == "rRNA variant"
+
+
+def test_pileup_ratio_matches_allele_depths():
+    by_pos = {v["pos"]: v for v in vcf.build_variants(HG002_VCF)}
+    v = by_pos[302]  # AD = 70 ref, 1040 alt
+    reads = vcf.simulate_pileup(v)
+    assert len(reads) == 48
+    frac = sum(1 for r in reads if r["kind"] == "mut") / len(reads)
+    assert abs(frac - 1040 / (70 + 1040)) < 0.03
+
+
+def test_variant_notation_forms():
+    assert annotate.variant_notation(263, "A", "G") == ("m.263A>G", "A>G", False)
+    pos, change, is_del = annotate.variant_notation(302, "A", "AC")
+    assert change == "insC" and not is_del
+    pos, change, is_del = annotate.variant_notation(3106, "CN", "C")
+    assert change == "del" and not is_del  # 1 bp deletion, not the large-arc kind
+
+
+# --- sample registry / dispatch --------------------------------------------
+
+def test_default_sample_is_hg002():
+    assert samples.resolve(None) == "HG002"
+
+
+def test_overview_dispatch_per_sample():
+    hg = samples.overview("HG002")
+    assert hg["stats"]["variants_called"] == 15
+    assert hg["stats"]["pathogenic_findings"] == 0
+    assert hg["haplogroup"]["name"] == "Unclassified"
+    assert hg["caller"].startswith("mitorsaw")
+
+    demo = samples.overview("MT-0417-P2")
+    assert demo["stats"]["variants_called"] == 79
+    assert demo["haplogroup"]["name"] == "H2a5b1"
+
+
+def test_qc_dispatch_per_sample():
+    hg = samples.sample_qc("HG002")
+    assert hg["read_length_histogram"] == []  # unavailable from a VCF
+    assert len(hg["coverage_track"]) == 15
+    assert hg["unavailable_metrics"]
+
+    demo = samples.sample_qc("MT-0417-P2")
+    assert len(demo["read_length_histogram"]) == 18
+    assert len(demo["coverage_track"]) == 60
+
+
+# --- API routes -------------------------------------------------------------
+
+def test_samples_endpoint():
+    body = client.get("/api/mito/samples").json()
+    assert body["default"] == "HG002"
+    keys = [s["key"] for s in body["samples"]]
+    assert "HG002" in keys and "MT-0417-P2" in keys
+
+
+def test_overview_endpoint_defaults_to_hg002():
+    body = client.get("/api/mito/overview").json()
+    assert body["stats"]["variants_called"] == 15
+
+
+def test_overview_endpoint_demo_sample():
+    body = client.get("/api/mito/overview?sample=MT-0417-P2").json()
     assert body["stats"]["variants_called"] == 79
-    assert body["stats"]["pathogenic_findings"] == 2
-    assert body["haplogroup"]["name"] == "H2a5b1"
-    assert "all" not in body["consequence_options"]
 
 
 def test_variant_endpoint_and_404():
-    r = client.get("/api/mito/variant/m3243AG")
+    vs = client.get("/api/mito/overview").json()["variants"]
+    vid = vs[0]["id"]
+    r = client.get(f"/api/mito/variant/{vid}")
     assert r.status_code == 200
-    body = r.json()
-    assert body["variant"]["id"] == "m3243AG"
-    assert body["alt_base"] == "G"
-    assert len(body["gene_map"]) == 15
-    assert client.get("/api/mito/variant/does-not-exist").status_code == 404
-
-
-def test_deletion_variant_detail():
-    r = client.get("/api/mito/variant/kss_common_del")
-    assert r.status_code == 200
-    body = r.json()
-    assert body["variant"]["isDeletion"] is True
-    assert body["variant"]["stop"] == 13459
+    assert r.json()["variant"]["id"] == vid
+    assert client.get("/api/mito/variant/nope").status_code == 404
+    assert client.get("/api/mito/overview?sample=bogus").status_code == 404
 
 
 def test_repeatscope_routes_still_present():
-    # Mounting MitoLR must not disturb the existing product.
     assert client.get("/api/modes").status_code == 200

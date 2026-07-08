@@ -3,7 +3,7 @@ import { MitoSidebar, type MitoScreen } from './MitoSidebar'
 import { MitoTopBar } from './MitoTopBar'
 import type { Product } from '../components/ProductSwitcher'
 import { colors } from './theme'
-import { mitoApi, type MitoMeta } from './api'
+import { mitoApi, type MitoMeta, type SampleInfo } from './api'
 import { MitoOverviewScreen } from './screens/MitoOverviewScreen'
 import { MitoVariantDetailScreen } from './screens/MitoVariantDetailScreen'
 import { MitoQCScreen } from './screens/MitoQCScreen'
@@ -22,14 +22,31 @@ export default function MitoApp({
   onSwitchProduct: (p: Product) => void
 }) {
   const [screen, setScreen] = useState<MitoScreen>('overview')
-  const [selectedVariantId, setSelectedVariantId] = useState('m3243AG')
-  // Configurable coverage-chart Y-axis max (QC dashboard). A per-report setting.
-  const [coverageYMax, setCoverageYMax] = useState(6000)
+  const [selectedVariantId, setSelectedVariantId] = useState('')
+
+  const [samples, setSamples] = useState<SampleInfo[]>([])
+  const [sample, setSample] = useState('')
   const [meta, setMeta] = useState<MitoMeta | null>(null)
 
   useEffect(() => {
-    mitoApi.meta().then(setMeta)
+    mitoApi.samples().then((s) => {
+      setSamples(s.samples)
+      setSample(s.default)
+    })
   }, [])
+
+  useEffect(() => {
+    if (!sample) return
+    mitoApi.meta(sample).then(setMeta)
+  }, [sample])
+
+  const onSelectSample = (s: string) => {
+    // Variant ids are sample-specific, so drop the selection and return to the
+    // overview when switching samples.
+    setSample(s)
+    setSelectedVariantId('')
+    setScreen('overview')
+  }
 
   const goToVariant = (id: string) => {
     setSelectedVariantId(id)
@@ -43,22 +60,25 @@ export default function MitoApp({
         onSwitchProduct={onSwitchProduct}
         screen={screen}
         onNavigate={setScreen}
-        sample={meta?.sample ?? 'MT-0417-P2'}
-        instrumentLine={meta?.instrument_line ?? 'PacBio HiFi · mtDNA amplicon'}
+        samples={samples}
+        sample={sample}
+        onSelectSample={onSelectSample}
+        caller={meta?.caller ?? ''}
+        instrumentLine={meta?.instrument_line ?? ''}
       />
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         <MitoTopBar
           title={TITLES[screen]}
-          sample={meta?.sample ?? 'MT-0417-P2'}
+          sample={meta?.sample ?? sample}
           runDate={meta?.run_date ?? '—'}
-          reference={meta?.reference ?? 'rCRS (NC_012920.1)'}
+          reference={meta?.reference ?? ''}
         />
 
         <div style={{ flex: 1, overflowY: 'auto' }}>
-          {screen === 'overview' && <MitoOverviewScreen onSelectVariant={goToVariant} />}
-          {screen === 'detail' && <MitoVariantDetailScreen variantId={selectedVariantId} />}
-          {screen === 'qc' && <MitoQCScreen coverageYMax={coverageYMax} onChangeCoverageYMax={setCoverageYMax} />}
+          {sample && screen === 'overview' && <MitoOverviewScreen sample={sample} onSelectVariant={goToVariant} />}
+          {sample && screen === 'detail' && <MitoVariantDetailScreen sample={sample} variantId={selectedVariantId} />}
+          {sample && screen === 'qc' && <MitoQCScreen sample={sample} />}
         </div>
       </div>
     </div>

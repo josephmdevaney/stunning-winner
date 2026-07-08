@@ -13,7 +13,7 @@ from __future__ import annotations
 import math
 
 from .generate import seeded_rand
-from .reference import GENOME_LENGTH
+from .reference import GENOME_LENGTH, feature_for_pos
 
 # Per-region coverage adequacy (matches the design's curated QC table).
 _QC_REGIONS = [
@@ -59,6 +59,95 @@ def _coverage_track(rng) -> list[dict]:
     return pts
 
 
+def build_vcf_qc(variants: list[dict]) -> dict:
+    """Sample QC honestly derived from a variant-call VCF.
+
+    A VCF carries per-call read depth (DP) but not read-length distributions,
+    genome-wide coverage, strand balance, or instrument QC -- those need the
+    aligned BAM (or MitoRSaw's --output-hap-stats JSON). So this reports the
+    depth-at-called-sites it *can* compute and lists the rest as unavailable,
+    rather than fabricating a coverage track."""
+    MIN_REQUIRED = 500
+    depths = [v["depth"] for v in variants if v.get("depth") is not None]
+    mean_depth = round(sum(depths) / len(depths)) if depths else None
+    low_sites = [v for v in variants if (v.get("depth") or 0) < MIN_REQUIRED]
+
+    # Depth at each called site, placed by real genomic position (a sparse depth
+    # profile, NOT interpolated genome-wide coverage).
+    coverage = [
+        {"pos": v["pos"], "depth": v["depth"]}
+        for v in sorted(variants, key=lambda x: x["pos"])
+        if v.get("depth") is not None
+    ]
+    cov_max = max((c["depth"] for c in coverage), default=1000)
+
+    # Per-region adequacy: aggregate called-site depth by rCRS feature.
+    by_region: dict[str, list[int]] = {}
+    for v in variants:
+        if v.get("depth") is None:
+            continue
+        feat = feature_for_pos(v["pos"])
+        name = "D-loop" if (feat and feat["name"] == "MT-CR") else (feat["name"] if feat else "Intergenic")
+        by_region.setdefault(name, []).append(v["depth"])
+    regions = []
+    for name, ds in sorted(by_region.items(), key=lambda kv: -max(kv[1])):
+        mean = round(sum(ds) / len(ds))
+        regions.append(
+            {
+                "region": f"{name} ({len(ds)} site{'s' if len(ds) != 1 else ''})",
+                "depth": mean,
+                "strandBalance": "—",  # not derivable from the VCF
+                "flag": "Pass" if mean >= MIN_REQUIRED else "Low depth",
+            }
+        )
+
+    return {
+        "overall_status": "Pass" if not low_sites else "Review",
+        "stats": [
+            {
+                "label": "Overall status",
+                "value": "Pass" if not low_sites else "Review",
+                "sub": f"{len(variants) - len(low_sites)}/{len(variants)} called sites ≥ {MIN_REQUIRED}x",
+                "dotColor": "oklch(0.55 0.14 150)" if not low_sites else "oklch(0.62 0.15 75)",
+            },
+            {"label": "Variants called", "value": str(len(variants)), "sub": "chrM, vs rCRS", "dotColor": "oklch(0.6 0.14 220)"},
+            {
+                "label": "Mean call depth",
+                "value": f"{mean_depth}x" if mean_depth is not None else "—",
+                "sub": f"across {len(depths)} called sites",
+                "dotColor": "oklch(0.6 0.14 220)",
+            },
+            {
+                "label": "Low-depth sites",
+                "value": str(len(low_sites)),
+                "sub": f"below {MIN_REQUIRED}x" if low_sites else "None",
+                "dotColor": "oklch(0.62 0.15 75)" if low_sites else "oklch(0.55 0.14 150)",
+            },
+        ],
+        # Read-length distribution is unavailable from a VCF -> empty; the UI
+        # renders an inline "unavailable" note in that card.
+        "read_length_histogram": [],
+        "coverage_track": coverage,
+        "coverage_note": "Read depth (DP) at called sites — a sparse profile, not interpolated genome-wide coverage",
+        "genome_length": GENOME_LENGTH,
+        "regions": regions,
+        "min_required": MIN_REQUIRED,
+        "instrument": [
+            {"label": "Caller", "value": "mitorsaw 0.2.3-cba3800"},
+            {"label": "Reference", "value": "GRCh38 chrM (rCRS)"},
+            {"label": "Contig length", "value": f"{GENOME_LENGTH:,} bp"},
+            {"label": "Mean call depth", "value": f"{mean_depth}x" if mean_depth is not None else "—"},
+        ],
+        "coverage_y_axis_max_default": int(math.ceil(cov_max * 1.15 / 250) * 250),
+        "unavailable_metrics": [
+            {"label": "HiFi read-length distribution", "reason": "Requires the aligned BAM; not present in a variant-call VCF."},
+            {"label": "Genome-wide per-base coverage", "reason": "The track above is depth at called sites only; a continuous coverage profile needs the BAM (e.g. mosdepth) or MitoRSaw's hap-stats JSON."},
+            {"label": "Per-strand balance", "reason": "Strand-specific read counts are not emitted in this VCF."},
+            {"label": "mtDNA copy number & instrument Q", "reason": "Require the aligned BAM / run-level metrics, not the mtDNA variant calls."},
+        ],
+    }
+
+
 def build_qc() -> dict:
     rng = seeded_rand(42)
     hist = _read_length_histogram(rng)
@@ -87,6 +176,7 @@ def build_qc() -> dict:
         ],
         "read_length_histogram": hist,
         "coverage_track": coverage,
+        "coverage_note": "Linear depth track, position 1–16,569 (rCRS)",
         "genome_length": GENOME_LENGTH,
         "regions": _QC_REGIONS,
         "min_required": 1000,

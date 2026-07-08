@@ -1,5 +1,6 @@
 import { colors, mono } from './theme'
 import { ProductSwitcher, type Product } from '../components/ProductSwitcher'
+import type { SampleInfo } from './api'
 
 export type MitoScreen = 'overview' | 'detail' | 'qc'
 
@@ -14,16 +15,23 @@ export function MitoSidebar({
   onSwitchProduct,
   screen,
   onNavigate,
+  samples,
   sample,
+  onSelectSample,
+  caller,
   instrumentLine,
 }: {
   product: Product
   onSwitchProduct: (p: Product) => void
   screen: MitoScreen
   onNavigate: (s: MitoScreen) => void
+  samples: SampleInfo[]
   sample: string
+  onSelectSample: (s: string) => void
+  caller: string
   instrumentLine: string
 }) {
+  const activeLabel = samples.find((s) => s.key === sample)?.label ?? sample
   return (
     <div
       style={{
@@ -69,8 +77,34 @@ export function MitoSidebar({
         <div style={{ color: colors.sidebarTextMuted, fontSize: 10.5, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
           Active sample
         </div>
-        <div style={{ color: 'white', fontSize: 13.5, fontWeight: 600, marginTop: 4 }}>{sample}</div>
-        <div style={{ color: colors.sidebarTextSub, fontSize: 11.5, fontFamily: mono, marginTop: 2 }}>{instrumentLine}</div>
+        {samples.length > 1 ? (
+          <select
+            value={sample}
+            onChange={(e) => onSelectSample(e.target.value)}
+            style={{
+              width: '100%',
+              marginTop: 4,
+              background: colors.sidebarBg,
+              color: 'white',
+              fontSize: 13.5,
+              fontWeight: 600,
+              border: `1px solid ${colors.sidebarHover}`,
+              borderRadius: 6,
+              padding: '4px 6px',
+              cursor: 'pointer',
+            }}
+          >
+            {samples.map((s) => (
+              <option key={s.key} value={s.key}>
+                {s.label}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <div style={{ color: 'white', fontSize: 13.5, fontWeight: 600, marginTop: 4 }}>{activeLabel}</div>
+        )}
+        <div style={{ color: colors.sidebarTextSub, fontSize: 11.5, fontFamily: mono, marginTop: 6 }}>{instrumentLine}</div>
+        {caller && <div style={{ color: colors.sidebarTextMuted, fontSize: 11, fontFamily: mono, marginTop: 2 }}>{caller}</div>}
       </div>
     </div>
   )

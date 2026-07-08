@@ -7,7 +7,7 @@ const GRID = '0.9fr 0.8fr 0.9fr 1.3fr 0.85fr 0.55fr 0.7fr 0.8fr 1.3fr'
 type Origin = 'all' | 'pathogenic' | 'novel'
 type HetBand = 'all' | 'homoplasmic' | 'het' | 'below'
 
-export function MitoOverviewScreen({ onSelectVariant }: { onSelectVariant: (id: string) => void }) {
+export function MitoOverviewScreen({ sample, onSelectVariant }: { sample: string; onSelectVariant: (id: string) => void }) {
   const [data, setData] = useState<OverviewResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [origin, setOrigin] = useState<Origin>('all')
@@ -15,8 +15,10 @@ export function MitoOverviewScreen({ onSelectVariant }: { onSelectVariant: (id: 
   const [hetBand, setHetBand] = useState<HetBand>('all')
 
   useEffect(() => {
-    mitoApi.overview().then(setData).catch((e) => setError(String(e)))
-  }, [])
+    setData(null)
+    setError(null)
+    mitoApi.overview(sample).then(setData).catch((e) => setError(String(e)))
+  }, [sample])
 
   const filtered = useMemo(() => {
     if (!data) return []
@@ -49,7 +51,12 @@ export function MitoOverviewScreen({ onSelectVariant }: { onSelectVariant: (id: 
           sub="Above heteroplasmy reporting threshold"
           valueColor={pathoCount ? colors.statusPathogenic : undefined}
         />
-        <MitoStat label="Haplogroup" value={data.haplogroup.name} sub={`${data.haplogroup.confidence}% confidence`} valueMono />
+        <MitoStat
+          label="Haplogroup"
+          value={data.haplogroup.name}
+          sub={data.haplogroup.confidence != null ? `${data.haplogroup.confidence}% confidence` : 'Requires classifier'}
+          valueMono
+        />
         <MitoStat label="Sample QC" value={data.stats.qc_status} sub="Genome-wide coverage sufficient" valueColor={colors.statusNormal} />
       </div>
 
@@ -163,7 +170,8 @@ export function MitoOverviewScreen({ onSelectVariant }: { onSelectVariant: (id: 
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginTop: 8 }}>
             <div style={{ fontSize: 24, fontWeight: 700, fontFamily: mono }}>{data.haplogroup.name}</div>
             <div style={{ fontSize: 13, color: colors.textSecondary }}>
-              {data.haplogroup.confidence}% confidence · {data.haplogroup.region}
+              {data.haplogroup.confidence != null ? `${data.haplogroup.confidence}% confidence · ` : ''}
+              {data.haplogroup.region}
             </div>
           </div>
         </div>
@@ -217,7 +225,7 @@ function VariantRow({ v, onClick }: { v: Variant; onClick: () => void }) {
       </div>
       <div style={{ color: colors.textLabel }}>{v.consequence}</div>
       <div style={{ fontFamily: mono, fontWeight: 700 }}>{hetLabel}</div>
-      <div style={{ fontFamily: mono, color: colors.textSecondary }}>{v.qual}</div>
+      <div style={{ fontFamily: mono, color: colors.textSecondary }}>{v.qual ?? '—'}</div>
       <div style={{ fontFamily: mono, color: filterColor(v.filter), fontWeight: 600 }}>{v.filter}</div>
       <div style={{ fontFamily: mono, color: colors.textSecondary }}>{v.gnomadFreq}</div>
       <div>

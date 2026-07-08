@@ -187,6 +187,26 @@ def _chrom_sort_key(c: str):
     return order.get(c, 99)
 
 
+def _run_qc_regions(mode: str, sample: str) -> list[dict]:
+    """Regions Run QC reports coverage over. For a targeted-panel mode (Carrier,
+    PureTarget V2, ...) the genome-wide 171k-region repeat catalog doesn't scope
+    to this assay's own loci at all (different ID space, and a targeted VCF has
+    no calls outside its own panel), so use the same STRchive-scoped panel Sample
+    QC / Overview already use instead of the full genome-wide catalog."""
+    locus_ids = _modes[mode]["locus_ids"]
+    if locus_ids is None:
+        return _get_catalog(mode, sample)
+    panel = _get_panel(mode, sample)
+    return [
+        {
+            "chrom": l.chrom, "start": l.start, "stop": l.stop, "length": l.stop - l.start,
+            "motifs": l.motif, "struc": "", "genotyped": l.genotyped,
+            "a1": l.a1, "a2": l.a2, "depth": l.depth,
+        }
+        for l in panel
+    ]
+
+
 def _get_catalog(mode: str, sample: str) -> list[dict]:
     key = (mode, sample)
     if key not in _catalog_caches:
@@ -406,7 +426,8 @@ def get_sample_qc(mode: Optional[str] = None, sample: Optional[str] = None):
 def get_run_qc(mode: Optional[str] = None, sample: Optional[str] = None):
     m = _resolve_mode(mode)
     s = _resolve_sample(m, sample)
-    catalog = _get_catalog(m, s)
+    scoped = _modes[m]["locus_ids"] is not None
+    catalog = _run_qc_regions(m, s)
     genotyped = [r for r in catalog if r["genotyped"]]
     depths = [r["depth"] for r in genotyped if r["depth"] is not None]
 
@@ -426,18 +447,28 @@ def get_run_qc(mode: Optional[str] = None, sample: Optional[str] = None):
             }
         )
 
+    note = (
+        (
+            "This mode is scoped to its own assay panel, so these figures cover just "
+            "that panel's repeat loci (the same set Overview/Sample QC use), not the "
+            "genome-wide repeat catalog."
+        )
+        if scoped
+        else (
+            "These figures are repeat-region depth derived from the TRGT VCF's SD field, "
+            "not whole-genome coverage -- a repeat-calling VCF only reports depth at "
+            "cataloged repeat regions, not genome-wide."
+        )
+    )
     return {
         "sample": s,
         "mode": m,
+        "scoped_to_panel": scoped,
         "repeat_regions_total": len(catalog),
         "repeat_regions_genotyped": len(genotyped),
         "repeat_region_mean_depth": round(sum(depths) / len(depths), 1) if depths else None,
         "mean_depth_by_chromosome": chrom_depth,
-        "note": (
-            "These figures are repeat-region depth derived from the TRGT VCF's SD field, "
-            "not whole-genome coverage -- a repeat-calling VCF only reports depth at "
-            "cataloged repeat regions, not genome-wide."
-        ),
+        "note": note,
         "unavailable_metrics": [
             {
                 "label": "Genome-wide per-base coverage distribution",

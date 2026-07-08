@@ -99,6 +99,7 @@ export interface SampleQCResponse {
 
 export interface RunQCResponse {
   sample: string
+  scoped_to_panel: boolean
   repeat_regions_total: number
   repeat_regions_genotyped: number
   repeat_region_mean_depth: number | null

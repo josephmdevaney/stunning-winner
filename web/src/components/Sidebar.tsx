@@ -1,5 +1,6 @@
 import { colors } from '../theme'
-import type { Screen } from '../App'
+import type { Screen } from '../RepeatScopeApp'
+import { ProductSwitcher, type Product } from './ProductSwitcher'
 
 const NAV_ITEMS: { screen: Screen; label: string }[] = [
   { screen: 'overview', label: 'Overview' },
@@ -16,6 +17,8 @@ export interface ModeInfo {
 }
 
 export function Sidebar({
+  product,
+  onSwitchProduct,
   screen,
   onNavigate,
   modes,
@@ -26,6 +29,8 @@ export function Sidebar({
   onSelectSample,
   caller,
 }: {
+  product: Product
+  onSwitchProduct: (p: Product) => void
   screen: Screen
   onNavigate: (s: Screen) => void
   modes: ModeInfo[]
@@ -48,6 +53,8 @@ export function Sidebar({
         gap: 4,
       }}
     >
+      <ProductSwitcher product={product} onChange={onSwitchProduct} />
+
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 8px 20px 8px' }}>
         <svg width={28} height={28} viewBox="0 0 32 32">
           <polygon points="16,2 28,9 28,23 16,30 4,23 4,9" fill="none" stroke={colors.accent} strokeWidth={2.5} />

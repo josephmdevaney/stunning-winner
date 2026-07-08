@@ -59,6 +59,12 @@ app.add_middleware(
     CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"]
 )
 
+# MitoLR is a sibling product served by the same app under /api/mito. Its data is
+# self-contained (no shared VCF/mode state with RepeatScope above).
+from mitolr.router import router as mito_router  # noqa: E402
+
+app.include_router(mito_router)
+
 # Per-mode state: {mode_key: {label, sample_paths: {sample: vcf_path}, locus_ids: set|None}}
 _modes: dict[str, dict] = {}
 _default_mode: str = ""

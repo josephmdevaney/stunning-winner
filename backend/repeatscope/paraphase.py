@@ -24,6 +24,13 @@ from typing import Optional
 
 from .strchive import STATUS_COLORS, STATUS_INTERMEDIATE, STATUS_NORMAL, STATUS_PATHOGENIC, STATUS_UNCERTAIN
 
+# "Full expansion" (STATUS_PATHOGENIC) is STR-specific terminology -- none of this
+# module's findings are repeat expansions (they're SNVs/indels, gene conversions,
+# CNVs, or a structural inversion), so pathogenic findings here use ClinVar's own
+# clinical-significance term instead. Same severity/color as STATUS_PATHOGENIC.
+STATUS_PATHOGENIC_VARIANT = "Pathogenic"
+_STATUS_COLORS = {**STATUS_COLORS, STATUS_PATHOGENIC_VARIANT: STATUS_COLORS[STATUS_PATHOGENIC]}
+
 # Expected total copy number for the genes whose Paraphase call is a plain total_cn
 # comparison, and whether that count spans a gene+pseudogene pair (GBA/GBAP1,
 # CYP21A2/CYP21A1P -- 4 total copies in a normal diploid sample) or just the gene
@@ -51,6 +58,7 @@ class ParaphaseFinding:
     status: str
     status_color: str
     note: str
+    zygosity: Optional[str] = None
 
 
 def load_paraphase_calls(json_path: str | Path) -> dict[str, dict]:
@@ -122,8 +130,24 @@ def load_f8_inversion_calls(vcf_path: str | Path) -> dict[str, dict]:
     return calls
 
 
-def _finding(status: str, note: str) -> ParaphaseFinding:
-    return ParaphaseFinding(status=status, status_color=STATUS_COLORS[status], note=note)
+def _finding(status: str, note: str, zygosity: Optional[str] = None) -> ParaphaseFinding:
+    return ParaphaseFinding(status=status, status_color=_STATUS_COLORS[status], note=note, zygosity=zygosity)
+
+
+def _gt_zygosity(gt: Optional[str]) -> Optional[str]:
+    """Zygosity directly off a VCF-style GT string -- hemizygous single-allele
+    (`1`), diploid homozygous (`1/1`), diploid heterozygous (`0/1`), phased
+    (`0|1`), or None if reference/missing/unparseable."""
+    if not gt:
+        return None
+    alleles = gt.replace("|", "/").split("/")
+    if any(a == "." for a in alleles):
+        return None
+    if not any(a != "0" for a in alleles):
+        return None
+    if len(alleles) == 1:
+        return "Hemizygous"
+    return "Homozygous" if len(set(alleles)) == 1 else "Heterozygous"
 
 
 def _classify_hba(
@@ -131,29 +155,32 @@ def _classify_hba(
     havanno_gene_annotations: Optional[dict[str, dict]] = None,
     sawfish_calls: Optional[list[dict]] = None,
 ) -> ParaphaseFinding:
-    havanno_finding = _classify_havanno_gene(havanno_gene_annotations or {})
+    havanno_finding = _classify_havanno_gene(havanno_gene_annotations or {}, call)
     if havanno_finding is not None:
         return havanno_finding
 
     genotype = call.get("genotype")
     if genotype == "aa/aa":
-        return _finding(STATUS_NORMAL, "Paraphase: genotype aa/aa (4 of 4 alpha-globin copies present, no deletion)")
+        return _finding(
+            STATUS_NORMAL, "Paraphase: genotype aa/aa (4 of 4 alpha-globin copies present, no deletion)",
+            zygosity="Homozygous",
+        )
     if genotype:
         return _finding(
             STATUS_UNCERTAIN,
             f"Paraphase reported genotype {genotype!r} (not the normal aa/aa) -- clinical review recommended",
         )
-    dels = [
-        c for c in (sawfish_calls or [])
-        if c.get("svtype") == "DEL" and c.get("gt") not in (None, "0/0", "0|0", "0")
-    ]
+    dels = [c for c in (sawfish_calls or []) if c.get("svtype") == "DEL" and _gt_zygosity(c.get("gt"))]
     if dels:
         parts = ", ".join(f"{c['chrom']}:{c['pos']}-{c['end']} ({c['svlen']} bp, GT={c['gt']})" for c in dels)
+        zygosities = {_gt_zygosity(c["gt"]) for c in dels}
+        zygosity = zygosities.pop() if len(zygosities) == 1 else None
         return _finding(
             STATUS_UNCERTAIN,
             "Paraphase did not report a resolved HBA1/HBA2 genotype, and sawfish found a deletion overlapping "
             f"the region ({parts}) that cannot be attributed to HBA1 vs. HBA2 from this data -- clinical review "
             "recommended",
+            zygosity=zygosity,
         )
     return _finding(STATUS_UNCERTAIN, "Paraphase did not report a resolved HBA1/HBA2 genotype")
 
@@ -164,7 +191,7 @@ def _classify_smn1(call: dict) -> ParaphaseFinding:
         return _finding(STATUS_UNCERTAIN, "Paraphase did not report an SMN1 copy number")
     if smn1_cn == 0:
         return _finding(
-            STATUS_PATHOGENIC,
+            STATUS_PATHOGENIC_VARIANT,
             "Paraphase: 0 SMN1 copies detected -- consistent with spinal muscular atrophy, refer for confirmation",
         )
     if smn1_cn == 1:
@@ -176,7 +203,7 @@ def _classify_generic(gene_key: str, call: dict) -> ParaphaseFinding:
     expected = _EXPECTED_TOTAL_CN[gene_key]
     fusions = call.get("fusions_called")
     if fusions:
-        return _finding(STATUS_PATHOGENIC, f"Paraphase flagged a fusion/gene-conversion event: {fusions}")
+        return _finding(STATUS_PATHOGENIC_VARIANT, f"Paraphase flagged a fusion/gene-conversion event: {fusions}")
 
     gene_cn = call.get("gene_cn")
     if gene_cn is not None:
@@ -202,7 +229,30 @@ def _classify_generic(gene_key: str, call: dict) -> ParaphaseFinding:
     )
 
 
-def _classify_havanno_gene(gene_annotations: dict[str, dict]) -> Optional[ParaphaseFinding]:
+def _havanno_zygosity(entries_with_variants: dict, call: Optional[dict]) -> Optional[str]:
+    """Approximate zygosity by weighing how many of the gene's total physical
+    copies (Paraphase's own `total_cn`, adjusted for `two_copy_haplotypes` --
+    see docs/vcf.md: "haplotypes present in two copies are reported as separate
+    columns... labelled with the '_cp2' suffix") carry the pathogenic variant
+    set. Paraphase couldn't phase this locus into 2 chromosomes for either real
+    sample this project has (`alleles_final`/`haplotype_links` come back empty),
+    so this is the most precise zygosity call available without guessing which
+    haplotype-phase calls pair onto which chromosome."""
+    if not call:
+        return None
+    total_copies = call.get("total_cn")
+    if not total_copies:
+        return None
+    two_copy_haplotypes = set(call.get("two_copy_haplotypes") or [])
+    pathogenic_copies = sum(2 if hap_id in two_copy_haplotypes else 1 for hap_id in entries_with_variants)
+    if pathogenic_copies == total_copies:
+        return "Homozygous"
+    if 0 < pathogenic_copies < total_copies:
+        return "Heterozygous"
+    return None
+
+
+def _classify_havanno_gene(gene_annotations: dict[str, dict], call: Optional[dict] = None) -> Optional[ParaphaseFinding]:
     """Build a Pathogenic finding from havanno's named-variant annotations, or
     None if no haplotype-phase call for this gene carries any named pathogenic
     variant (caller should then fall back to the total_cn-based classifier).
@@ -230,30 +280,26 @@ def _classify_havanno_gene(gene_annotations: dict[str, dict]) -> Optional[Paraph
         else f"{len(distinct_variant_sets)} distinct (overlapping) variant sets"
     )
     return _finding(
-        STATUS_PATHOGENIC,
+        STATUS_PATHOGENIC_VARIANT,
         f"Named pathogenic variant annotation flagged {len(union_variants)} variant(s) "
         f"({set_note}) on {n_calls} of {n_total} haplotype-phase calls: {', '.join(union_variants)}",
+        zygosity=_havanno_zygosity(entries_with_variants, call),
     )
 
 
-def _gt_has_alt_allele(gt: Optional[str]) -> bool:
-    """True if a VCF GT string (hemizygous `0`, diploid `0/0`, phased `0|1`, ...)
-    carries any non-reference, non-missing allele."""
-    if not gt:
-        return False
-    return any(allele not in ("0", ".") for allele in gt.replace("|", "/").split("/"))
-
-
 def _classify_f8(inv_calls: dict[str, dict]) -> ParaphaseFinding:
-    inverted_at = [
-        record_id for record_id, c in inv_calls.items()
-        if _gt_has_alt_allele(c.get("gt")) or (c.get("supp") or 0) > 0
-    ]
-    if inverted_at:
+    inverted = {
+        record_id: c for record_id, c in inv_calls.items()
+        if _gt_zygosity(c.get("gt")) or (c.get("supp") or 0) > 0
+    }
+    if inverted:
+        zygosities = {_gt_zygosity(c.get("gt")) for c in inverted.values()} - {None}
+        zygosity = zygosities.pop() if len(zygosities) == 1 else None
         return _finding(
-            STATUS_PATHOGENIC,
-            f"Intron 1/22 inversion breakpoint detected at {', '.join(sorted(inverted_at))} "
+            STATUS_PATHOGENIC_VARIANT,
+            f"Intron 1/22 inversion breakpoint detected at {', '.join(sorted(inverted))} "
             "(pathogenic structural rearrangement causing Hemophilia A)",
+            zygosity=zygosity,
         )
     if inv_calls:
         return _finding(
@@ -289,7 +335,7 @@ def classify_gene(
         return _classify_smn1(call)
 
     if havanno_annotations:
-        havanno_finding = _classify_havanno_gene(havanno_annotations.get(key, {}))
+        havanno_finding = _classify_havanno_gene(havanno_annotations.get(key, {}), call)
         if havanno_finding is not None:
             return havanno_finding
 

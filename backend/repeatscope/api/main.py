@@ -39,6 +39,7 @@ from ..annotate import (
     simulate_pileup_reads,
 )
 from ..paraphase import (
+    STATUS_PATHOGENIC_VARIANT,
     classify_gene,
     load_f8_inversion_calls,
     load_havanno_annotations,
@@ -262,7 +263,7 @@ def _non_repeat_summary(
         "disease": target["disease"],
         "region": f"{target['chrom']}:{target['start']}-{target['stop']}",
         "motif": "—",
-        "a1": None, "a2": None, "zygosity": None, "depth": None,
+        "a1": None, "a2": None, "zygosity": finding.zygosity if finding else None, "depth": None,
         "status": status,
         "status_color": status_color,
         "genotyped": finding is not None,
@@ -322,7 +323,7 @@ def get_overview(mode: Optional[str] = None, sample: Optional[str] = None):
     loci = [_locus_summary(l) for l in panel] + non_repeat_rows
 
     loci_genotyped = len(genotyped) + sum(1 for r in non_repeat_rows if r["genotyped"])
-    pathogenic_findings = len(pathogenic) + sum(1 for r in non_repeat_rows if r["status"] == "Full expansion")
+    pathogenic_findings = len(pathogenic) + sum(1 for r in non_repeat_rows if r["status"] == STATUS_PATHOGENIC_VARIANT)
 
     return {
         "sample": s,

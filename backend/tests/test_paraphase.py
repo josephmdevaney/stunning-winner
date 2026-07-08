@@ -47,6 +47,7 @@ def test_classify_hba_normal_genotype():
     finding = classify_gene("HBA1/2", calls, {})
     assert finding.status == "Normal"
     assert "aa/aa" in finding.note
+    assert finding.zygosity == "Homozygous"
 
 
 def test_classify_smn1_normal_copy_number():
@@ -82,8 +83,9 @@ def test_classify_f8_no_inversion_detected():
 
 def test_classify_f8_inversion_detected():
     finding = classify_gene("F8", {}, {"f8inv1": {"gt": "1", "supp": 42}})
-    assert finding.status == "Full expansion"
+    assert finding.status == "Pathogenic"
     assert "f8inv1" in finding.note
+    assert finding.zygosity == "Hemizygous"
 
 
 def test_classify_tnxb_returns_none_no_caller_mapped():
@@ -127,10 +129,15 @@ def test_classify_cyp21_bc2192_real_pathogenic_named_variants():
     the havanno annotation itself asserts, not re-derived here."""
     calls, f8_calls, havanno, sawfish_calls = _load_bc2192()
     finding = classify_gene("CYP21A2", calls, f8_calls, havanno, sawfish_calls)
-    assert finding.status == "Full expansion"
+    assert finding.status == "Pathogenic"
     assert "1 distinct variant set" in finding.note
     assert "9 variant(s)" in finding.note
     assert "CYP21A2_p.Gln319Ter_p.Gln319Ter_c.955C>T" in finding.note
+    # 3 of 8 total physical copies at this locus carry the variant set (Paraphase
+    # itself couldn't phase this complex locus into 2 chromosomes for this
+    # sample -- alleles_final/haplotype_links are empty -- so "Heterozygous" here
+    # means "some but not all copies", not a classic single-gene het/hom call).
+    assert finding.zygosity == "Heterozygous"
 
 
 def test_classify_gba_bc2192_real_pathogenic_named_variants():
@@ -138,9 +145,10 @@ def test_classify_gba_bc2192_real_pathogenic_named_variants():
     named Gaucher-associated pathogenic variants (13 or 14 variants each)."""
     calls, f8_calls, havanno, sawfish_calls = _load_bc2192()
     finding = classify_gene("GBA", calls, f8_calls, havanno, sawfish_calls)
-    assert finding.status == "Full expansion"
+    assert finding.status == "Pathogenic"
     assert "4 of 7 haplotype-phase calls" in finding.note
     assert "Gauchian_Exon9-11_1" in finding.note
+    assert finding.zygosity == "Heterozygous"
 
 
 def test_classify_hba_bc2192_uncertain_with_real_sawfish_deletion():
@@ -153,6 +161,7 @@ def test_classify_hba_bc2192_uncertain_with_real_sawfish_deletion():
     assert finding.status == "Uncertain significance"
     assert "chr16:163481-163802" in finding.note
     assert "321 bp" in finding.note
+    assert finding.zygosity == "Heterozygous"
 
 
 def test_classify_f8_bc2192_real_no_inversion():
@@ -182,5 +191,18 @@ def test_classify_hba_prefers_named_havanno_variant_over_genotype():
     calls = {"hba": {"genotype": "aa/aa"}}
     havanno = {"hba": {"hba_hba1hap1": {"num_pathogenic_variants": 1, "variants": {"pathogenic": ["HBA_fake_del"]}}}}
     finding = classify_gene("HBA1/2", calls, {}, havanno, [])
-    assert finding.status == "Full expansion"
+    assert finding.status == "Pathogenic"
     assert "HBA_fake_del" in finding.note
+
+
+def test_havanno_zygosity_homozygous_when_all_copies_affected():
+    calls = {"cyp21": {"total_cn": 2, "two_copy_haplotypes": []}}
+    havanno = {
+        "cyp21": {
+            "cyp21_hap1": {"num_pathogenic_variants": 1, "variants": {"pathogenic": ["V1"]}},
+            "cyp21_hap2": {"num_pathogenic_variants": 1, "variants": {"pathogenic": ["V1"]}},
+        }
+    }
+    finding = classify_gene("CYP21A2", calls, {}, havanno, [])
+    assert finding.status == "Pathogenic"
+    assert finding.zygosity == "Homozygous"

@@ -6,10 +6,12 @@ import { StatusBadge } from '../components/Badge'
 
 const PILLS = ['All loci', 'Pathogenic panel', 'Novel candidates']
 
+const NON_REPEAT_PREFIX = '__non_repeat__'
+
 export function OverviewScreen({
-  mode, sample, onSelectLocus,
+  mode, sample, onSelectLocus, onSelectGeneFinding,
 }: {
-  mode: string; sample: string; onSelectLocus: (id: string) => void
+  mode: string; sample: string; onSelectLocus: (id: string) => void; onSelectGeneFinding: (gene: string) => void
 }) {
   const [data, setData] = useState<OverviewResponse | null>(null)
 
@@ -102,7 +104,11 @@ export function OverviewScreen({
         {loci.map((l) => (
           <div
             key={l.id}
-            onClick={l.clickable ? () => onSelectLocus(l.id) : undefined}
+            onClick={
+              l.clickable
+                ? () => (l.id.startsWith(NON_REPEAT_PREFIX) ? onSelectGeneFinding(l.gene) : onSelectLocus(l.id))
+                : undefined
+            }
             style={{
               display: 'grid',
               gridTemplateColumns: '1fr 1.6fr 0.8fr 0.7fr 0.7fr 1fr 0.6fr 1.3fr',

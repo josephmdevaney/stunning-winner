@@ -6,15 +6,17 @@ import { colors } from './theme'
 import { api, type ModesResponse } from './api'
 import { OverviewScreen } from './screens/OverviewScreen'
 import { LocusDetailScreen } from './screens/LocusDetailScreen'
+import { GeneFindingScreen } from './screens/GeneFindingScreen'
 import { SampleQCScreen } from './screens/SampleQCScreen'
 import { RunQCScreen } from './screens/RunQCScreen'
 import { RepeatCatalogScreen } from './screens/RepeatCatalogScreen'
 
-export type Screen = 'overview' | 'locus' | 'qc' | 'runqc' | 'catalog'
+export type Screen = 'overview' | 'locus' | 'gene-finding' | 'qc' | 'runqc' | 'catalog'
 
 const TITLES: Record<Screen, string> = {
   overview: 'Overview',
   locus: 'Locus Detail',
+  'gene-finding': 'Gene Finding',
   qc: 'Sample QC Dashboard',
   runqc: 'Run QC Dashboard',
   catalog: 'Repeat Catalog',
@@ -29,12 +31,14 @@ export default function RepeatScopeApp({
 }) {
   const [screen, setScreen] = useState<Screen>('overview')
   const [selectedLocusId, setSelectedLocusId] = useState<string>('HD_HTT')
+  const [selectedGene, setSelectedGene] = useState<string>('')
 
   const [modesInfo, setModesInfo] = useState<ModesResponse | null>(null)
   const [mode, setMode] = useState('')
   const [samples, setSamples] = useState<string[]>([])
   const [sample, setSample] = useState('')
   const [caller, setCaller] = useState('')
+  const [sex, setSex] = useState<string | null>(null)
 
   useEffect(() => {
     api.modes().then((m) => {
@@ -46,7 +50,6 @@ export default function RepeatScopeApp({
   // Whenever the mode changes, load that mode's sample list and pick its default.
   useEffect(() => {
     if (!mode) return
-    setSample('')
     api.samples(mode).then((s) => {
       setSamples(s.samples)
       setSample(s.default)
@@ -55,12 +58,33 @@ export default function RepeatScopeApp({
 
   useEffect(() => {
     if (!mode || !sample) return
-    api.meta(mode, sample).then((m) => setCaller(m.caller))
+    api.meta(mode, sample).then((m) => {
+      setCaller(m.caller)
+      setSex(m.sex)
+    })
   }, [mode, sample])
 
   const goToLocus = (id: string) => {
     setSelectedLocusId(id)
     setScreen('locus')
+  }
+
+  const goToGeneFinding = (gene: string) => {
+    setSelectedGene(gene)
+    setScreen('gene-finding')
+  }
+
+  // Clearing `sample`/`selectedLocusId`/`selectedGene` here (rather than in the
+  // `[mode]` effect above) matters: React batches state updates from the same
+  // handler into one render, so the still-mounted screen below never sees a (new
+  // mode, stale sample) pair -- e.g. requesting Carrier's overview with
+  // Genome-wide's sample, which 404s until the effect above catches up a render
+  // later.
+  const selectMode = (newMode: string) => {
+    setSample('')
+    setSelectedLocusId('')
+    setSelectedGene('')
+    setMode(newMode)
   }
 
   const activeModeLabel = modesInfo?.modes.find((m) => m.key === mode)?.label ?? ''
@@ -74,7 +98,7 @@ export default function RepeatScopeApp({
         onNavigate={setScreen}
         modes={modesInfo?.modes ?? []}
         mode={mode}
-        onSelectMode={setMode}
+        onSelectMode={selectMode}
         sample={sample}
         samples={samples}
         onSelectSample={setSample}
@@ -82,7 +106,7 @@ export default function RepeatScopeApp({
       />
 
       <div className="app-main" style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        <TopBar title={TITLES[screen]} sample={sample} modeLabel={activeModeLabel} />
+        <TopBar title={TITLES[screen]} sample={sample} modeLabel={activeModeLabel} sex={sex} />
 
         <div className="app-screenbody" style={{ flex: 1, overflowY: 'auto' }}>
           {!sample && mode && (
@@ -90,8 +114,11 @@ export default function RepeatScopeApp({
               No samples available for {activeModeLabel} yet.
             </div>
           )}
-          {sample && screen === 'overview' && <OverviewScreen mode={mode} sample={sample} onSelectLocus={goToLocus} />}
+          {sample && screen === 'overview' && (
+            <OverviewScreen mode={mode} sample={sample} onSelectLocus={goToLocus} onSelectGeneFinding={goToGeneFinding} />
+          )}
           {sample && screen === 'locus' && <LocusDetailScreen mode={mode} sample={sample} locusId={selectedLocusId} />}
+          {sample && screen === 'gene-finding' && <GeneFindingScreen mode={mode} sample={sample} gene={selectedGene} />}
           {sample && screen === 'qc' && <SampleQCScreen mode={mode} sample={sample} />}
           {sample && screen === 'runqc' && <RunQCScreen mode={mode} sample={sample} />}
           {sample && screen === 'catalog' && <RepeatCatalogScreen mode={mode} sample={sample} />}

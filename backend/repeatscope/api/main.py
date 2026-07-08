@@ -38,6 +38,14 @@ from ..annotate import (
     resolve_panel_locus_ids,
     simulate_pileup_reads,
 )
+from ..paraphase import (
+    STATUS_PATHOGENIC_VARIANT,
+    classify_gene,
+    load_f8_inversion_calls,
+    load_havanno_annotations,
+    load_paraphase_calls,
+    load_sawfish_calls,
+)
 from ..trgt import sample_names
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -74,6 +82,7 @@ _default_mode: str = ""
 _panels: dict[tuple[str, str], list[AnnotatedLocus]] = {}
 _panel_by_id: dict[tuple[str, str], dict[str, AnnotatedLocus]] = {}
 _catalog_caches: dict[tuple[str, str], list[dict]] = {}
+_paraphase_caches: dict[tuple[str, str], tuple[dict, dict, dict, list]] = {}
 
 
 def _resolve_config_path(p: Optional[str]) -> Optional[str]:
@@ -122,11 +131,23 @@ def _load_modes() -> None:
             with open(nrt_path, encoding="utf-8") as f:
                 non_repeat_targets = json.load(f)
 
+        paraphase_dir = _resolve_config_path(cfg.get("paraphase_dir"))
+        if not (paraphase_dir and Path(paraphase_dir).is_dir()):
+            paraphase_dir = None
+
+        sample_sex: dict[str, str] = {}
+        sex_path = _resolve_config_path(cfg.get("sample_sex"))
+        if sex_path and Path(sex_path).exists():
+            with open(sex_path, encoding="utf-8") as f:
+                sample_sex = json.load(f)
+
         modes[key] = {
             "label": cfg.get("label", key),
             "sample_paths": sample_paths,
             "locus_ids": locus_ids,
             "non_repeat_targets": non_repeat_targets,
+            "paraphase_dir": paraphase_dir,
+            "sample_sex": sample_sex,
         }
     _modes = modes
     _default_mode = next(
@@ -172,6 +193,26 @@ def _chrom_sort_key(c: str):
     return order.get(c, 99)
 
 
+def _run_qc_regions(mode: str, sample: str) -> list[dict]:
+    """Regions Run QC reports coverage over. For a targeted-panel mode (Carrier,
+    PureTarget V2, ...) the genome-wide 171k-region repeat catalog doesn't scope
+    to this assay's own loci at all (different ID space, and a targeted VCF has
+    no calls outside its own panel), so use the same STRchive-scoped panel Sample
+    QC / Overview already use instead of the full genome-wide catalog."""
+    locus_ids = _modes[mode]["locus_ids"]
+    if locus_ids is None:
+        return _get_catalog(mode, sample)
+    panel = _get_panel(mode, sample)
+    return [
+        {
+            "chrom": l.chrom, "start": l.start, "stop": l.stop, "length": l.stop - l.start,
+            "motifs": l.motif, "struc": "", "genotyped": l.genotyped,
+            "a1": l.a1, "a2": l.a2, "depth": l.depth,
+        }
+        for l in panel
+    ]
+
+
 def _get_catalog(mode: str, sample: str) -> list[dict]:
     key = (mode, sample)
     if key not in _catalog_caches:
@@ -197,22 +238,71 @@ def _locus_summary(l: AnnotatedLocus) -> dict:
     }
 
 
-def _non_repeat_summary(target: dict) -> dict:
+def _get_paraphase(mode: str, sample: str) -> tuple[dict, dict, dict, list]:
+    """Load this sample's real Paraphase per-gene calls, F8 inversion caller output,
+    havanno named-variant annotations, and sawfish structural-variant calls, if the
+    mode's `paraphase_dir` has files for them -- most samples (all synthetic ones)
+    won't, and get an empty result, which is exactly what `classify_gene` treats as
+    "no real data for this gene"."""
+    key = (mode, sample)
+    if key not in _paraphase_caches:
+        paraphase_dir = _modes[mode]["paraphase_dir"]
+        calls: dict = {}
+        f8_calls: dict = {}
+        havanno: dict = {}
+        sawfish_calls: list = []
+        if paraphase_dir:
+            json_path = Path(paraphase_dir) / f"{sample}.paraphase.json"
+            if json_path.exists():
+                calls = load_paraphase_calls(json_path)
+            f8_path = Path(paraphase_dir) / f"{sample}.f8inversion.vcf"
+            if f8_path.exists():
+                f8_calls = load_f8_inversion_calls(f8_path)
+            havanno_path = Path(paraphase_dir) / f"{sample}.havanno.json"
+            if havanno_path.exists():
+                havanno = load_havanno_annotations(havanno_path)
+            sawfish_path = Path(paraphase_dir) / f"{sample}.sv.vcf"
+            if sawfish_path.exists():
+                sawfish_calls = load_sawfish_calls(sawfish_path)
+        _paraphase_caches[key] = (calls, f8_calls, havanno, sawfish_calls)
+    return _paraphase_caches[key]
+
+
+def _gene_finding(
+    target: dict, paraphase_calls: dict, f8_inv_calls: dict, havanno_annotations: dict, sawfish_calls: list
+):
+    """classify_gene's finding for one carrier-panel non-repeat target, scoping
+    sawfish calls to that target's own region first."""
+    target_sawfish_calls = [
+        c for c in sawfish_calls
+        if c["chrom"] == target["chrom"] and c["pos"] <= target["stop"] and c["end"] >= target["start"]
+    ]
+    return classify_gene(target["gene"], paraphase_calls, f8_inv_calls, havanno_annotations, target_sawfish_calls)
+
+
+def _non_repeat_summary(
+    target: dict, paraphase_calls: dict, f8_inv_calls: dict, havanno_annotations: dict, sawfish_calls: list
+) -> dict:
     """A carrier-panel target whose variant type (CNV, gene conversion, structural
-    inversion, ...) a repeat-genotyping VCF can't express or call -- shown honestly
-    as "Not applicable" rather than omitted or misrepresented as a repeat result."""
+    inversion, ...) a repeat-genotyping VCF can't express or call. Shown as a real
+    Paraphase-derived finding when this sample has one; otherwise honestly as "Not
+    applicable" rather than omitted or misrepresented as a repeat result."""
+    finding = _gene_finding(target, paraphase_calls, f8_inv_calls, havanno_annotations, sawfish_calls)
+    status = finding.status if finding else "Not applicable"
+    status_color = finding.status_color if finding else "oklch(0.6 0.02 260)"
+    note = finding.note if finding else f"Requires {target['tool']} -- {target['mechanism']} (not a tandem repeat)."
     return {
         "id": f"__non_repeat__{target['gene']}",
         "gene": target["gene"],
         "disease": target["disease"],
         "region": f"{target['chrom']}:{target['start']}-{target['stop']}",
         "motif": "—",
-        "a1": None, "a2": None, "zygosity": None, "depth": None,
-        "status": "Not applicable",
-        "status_color": "oklch(0.6 0.02 260)",
-        "genotyped": False,
-        "note": f"Requires {target['tool']} -- {target['mechanism']} (not a tandem repeat).",
-        "clickable": False,
+        "a1": None, "a2": None, "zygosity": finding.zygosity if finding else None, "depth": None,
+        "status": status,
+        "status_color": status_color,
+        "genotyped": finding is not None,
+        "note": note,
+        "clickable": finding is not None,
     }
 
 
@@ -238,7 +328,13 @@ def get_samples(mode: Optional[str] = None):
 def get_meta(mode: Optional[str] = None, sample: Optional[str] = None):
     m = _resolve_mode(mode)
     s = _resolve_sample(m, sample)
-    return {"sample": s, "mode": m, "source_vcf": _modes[m]["sample_paths"][s], "caller": CALLER_LABEL}
+    return {
+        "sample": s,
+        "mode": m,
+        "source_vcf": _modes[m]["sample_paths"][s],
+        "caller": CALLER_LABEL,
+        "sex": _modes[m]["sample_sex"].get(s),
+    }
 
 
 @app.get("/api/overview")
@@ -253,7 +349,15 @@ def get_overview(mode: Optional[str] = None, sample: Optional[str] = None):
     under_covered = [l for l in genotyped if (l.depth or 0) < 10]
 
     non_repeat_targets = _modes[m]["non_repeat_targets"]
-    loci = [_locus_summary(l) for l in panel] + [_non_repeat_summary(t) for t in non_repeat_targets]
+    paraphase_calls, f8_inv_calls, havanno_annotations, sawfish_calls = _get_paraphase(m, s)
+    non_repeat_rows = [
+        _non_repeat_summary(t, paraphase_calls, f8_inv_calls, havanno_annotations, sawfish_calls)
+        for t in non_repeat_targets
+    ]
+    loci = [_locus_summary(l) for l in panel] + non_repeat_rows
+
+    loci_genotyped = len(genotyped) + sum(1 for r in non_repeat_rows if r["genotyped"])
+    pathogenic_findings = len(pathogenic) + sum(1 for r in non_repeat_rows if r["status"] == STATUS_PATHOGENIC_VARIANT)
 
     return {
         "sample": s,
@@ -261,8 +365,8 @@ def get_overview(mode: Optional[str] = None, sample: Optional[str] = None):
         "caller": CALLER_LABEL,
         "stats": {
             "loci_analyzed": len(panel) + len(non_repeat_targets),
-            "loci_genotyped": len(genotyped),
-            "pathogenic_findings": len(pathogenic),
+            "loci_genotyped": loci_genotyped,
+            "pathogenic_findings": pathogenic_findings,
             "mean_read_depth": mean_depth,
             "qc_status": "Pass" if not under_covered else f"{len(under_covered)} loci below 10x",
         },
@@ -297,6 +401,37 @@ def get_locus(locus_id: str, mode: Optional[str] = None, sample: Optional[str] =
     )
     d["caller"] = CALLER_LABEL
     return d
+
+
+@app.get("/api/gene-finding")
+def get_gene_finding(gene: str, mode: Optional[str] = None, sample: Optional[str] = None):
+    """Detail view for a carrier-panel non-repeat target (GBA, CYP21A2, HBA1/2,
+    ...): the full named-variant list and other raw tool-asserted fields that the
+    Overview row's single-line note can't show in full."""
+    m = _resolve_mode(mode)
+    s = _resolve_sample(m, sample)
+    target = next((t for t in _modes[m]["non_repeat_targets"] if t["gene"] == gene), None)
+    if target is None:
+        raise HTTPException(status_code=404, detail=f"unknown non-repeat target gene {gene!r} for mode {m!r}")
+
+    paraphase_calls, f8_inv_calls, havanno_annotations, sawfish_calls = _get_paraphase(m, s)
+    finding = _gene_finding(target, paraphase_calls, f8_inv_calls, havanno_annotations, sawfish_calls)
+
+    return {
+        "gene": target["gene"],
+        "disease": target["disease"],
+        "region": f"{target['chrom']}:{target['start']}-{target['stop']}",
+        "tool": target["tool"],
+        "mechanism": target["mechanism"],
+        "status": finding.status if finding else "Not applicable",
+        "status_color": finding.status_color if finding else "oklch(0.6 0.02 260)",
+        "zygosity": finding.zygosity if finding else None,
+        "note": finding.note if finding else f"Requires {target['tool']} -- {target['mechanism']} (not a tandem repeat).",
+        "variants": list(finding.variants) if finding else [],
+        "raw_fields": finding.raw_fields if finding else {},
+        "genotyped": finding is not None,
+        "caller": CALLER_LABEL,
+    }
 
 
 @app.get("/api/qc/sample")
@@ -336,7 +471,8 @@ def get_sample_qc(mode: Optional[str] = None, sample: Optional[str] = None):
 def get_run_qc(mode: Optional[str] = None, sample: Optional[str] = None):
     m = _resolve_mode(mode)
     s = _resolve_sample(m, sample)
-    catalog = _get_catalog(m, s)
+    scoped = _modes[m]["locus_ids"] is not None
+    catalog = _run_qc_regions(m, s)
     genotyped = [r for r in catalog if r["genotyped"]]
     depths = [r["depth"] for r in genotyped if r["depth"] is not None]
 
@@ -356,18 +492,28 @@ def get_run_qc(mode: Optional[str] = None, sample: Optional[str] = None):
             }
         )
 
+    note = (
+        (
+            "This mode is scoped to its own assay panel, so these figures cover just "
+            "that panel's repeat loci (the same set Overview/Sample QC use), not the "
+            "genome-wide repeat catalog."
+        )
+        if scoped
+        else (
+            "These figures are repeat-region depth derived from the TRGT VCF's SD field, "
+            "not whole-genome coverage -- a repeat-calling VCF only reports depth at "
+            "cataloged repeat regions, not genome-wide."
+        )
+    )
     return {
         "sample": s,
         "mode": m,
+        "scoped_to_panel": scoped,
         "repeat_regions_total": len(catalog),
         "repeat_regions_genotyped": len(genotyped),
         "repeat_region_mean_depth": round(sum(depths) / len(depths), 1) if depths else None,
         "mean_depth_by_chromosome": chrom_depth,
-        "note": (
-            "These figures are repeat-region depth derived from the TRGT VCF's SD field, "
-            "not whole-genome coverage -- a repeat-calling VCF only reports depth at "
-            "cataloged repeat regions, not genome-wide."
-        ),
+        "note": note,
         "unavailable_metrics": [
             {
                 "label": "Genome-wide per-base coverage distribution",

@@ -13,3 +13,8 @@ web/dist/
 # OS
 .DS_Store
 backend/HG002_PacBio-HiFi-Revio_20231031_48x_GRCh38-GIABv3.bam.bai
+
+# Local override of backend/config/modes.json (e.g. pointing vcf_dir at data
+# outside the repo) -- see backend/config/modes.local.json.example. Never
+# committed since it typically contains machine-specific absolute paths.
+backend/config/modes.local.json

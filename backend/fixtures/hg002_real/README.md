@@ -31,6 +31,14 @@ PacBio HiFi reads at all 80 STRchive disease loci -- not simulated, not hand-bui
       --karyotype XX --threads 4
   ```
 
+  Note the `--karyotype XX`: HG002/NA24385 is real male donor, but this run was
+  genotyped with a simplifying diploid-XX assumption on chrX rather than proper
+  hemizygous calling (unlike the real male-hemizygous carrier-panel run in
+  `fixtures/carrier_panel`, which uses `trgt`'s actual chrX/chrY hemizygous calling
+  -- see that fixture's own README). `sample_sex.json`'s "M" for HG002 is the real
+  donor's sex, sourced from GIAB's own sample metadata, independent of how this
+  particular VCF happened to be genotyped.
+
 ## Why this matters
 
 This is real HG002 HiFi data run through the real PacBio genotyper -- the actual

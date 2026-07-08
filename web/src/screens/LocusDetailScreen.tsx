@@ -28,12 +28,22 @@ export function LocusDetailScreen({
   mode: string; sample: string; locusId: string
 }) {
   const [locus, setLocus] = useState<LocusDetail | null>(null)
+  const [notFound, setNotFound] = useState(false)
 
   useEffect(() => {
     setLocus(null)
-    api.locus(locusId, mode, sample).then(setLocus)
+    setNotFound(false)
+    if (!locusId) return
+    api.locus(locusId, mode, sample).then(setLocus).catch(() => setNotFound(true))
   }, [locusId, mode, sample])
 
+  if (!locusId || notFound) {
+    return (
+      <div style={{ padding: 28, color: colors.textSecondary }}>
+        Select a locus from the Overview table to see its detail view.
+      </div>
+    )
+  }
   if (!locus) return <div style={{ padding: 28 }}>Loading…</div>
 
   return (
@@ -82,7 +92,7 @@ export function LocusDetailScreen({
           <SectionLabel text="Interpretation" />
           <div style={{ marginTop: 12, padding: '12px 14px', borderRadius: 8, background: interpBg(locus.status) }}>
             <div style={{ fontSize: 14.5, fontWeight: 700, color: interpColor(locus.status) }}>{locus.status}</div>
-            <div style={{ fontSize: 13, color: colors.textBody, marginTop: 4, lineHeight: 1.5 }}>{locus.note}</div>
+            <div style={{ fontSize: 13, color: colors.textBody, marginTop: 4, lineHeight: 1.5, wordBreak: 'break-word' }}>{locus.note}</div>
           </div>
           <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 10, fontSize: 13 }}>
             <Row label="Classification" value={locus.status} />

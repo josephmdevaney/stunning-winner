@@ -143,15 +143,50 @@ def _is_contraction_locus(locus: StrchiveLocus) -> bool:
     themselves: if the pathogenic range's floor is below the benign range's ceiling,
     pathogenic values must be the *lower* ones.
 
-    Note HMNR7_VWA1's own thresholds (benign 2, pathogenic 1-3) overlap the benign
-    value itself -- a genuine ambiguity in the source data ("any deviation from 2
-    repeats is pathogenic" doesn't fit a min/max range cleanly) that no direction rule
-    can fully resolve.
+    HMNR7_VWA1 is a special case handled separately by `_is_deviation_locus` --
+    see there.
     """
     return (
         locus.pathogenic_min is not None
         and locus.benign_max is not None
         and locus.pathogenic_min < locus.benign_max
+    )
+
+
+def _is_deviation_locus(locus: StrchiveLocus) -> bool:
+    """True for the one STRchive locus (HMNR7_VWA1) whose pathogenic range *contains*
+    its single benign value, rather than sitting cleanly above or below it: benign is
+    exactly 2 repeats, pathogenic is 1-3 -- i.e. GeneReviews' own description is "any
+    deviation from 2 motifs is thought to be pathogenic", not a length threshold in
+    either direction. Treating this with `_classify_length_only`'s min/max comparison
+    is actively wrong: contraction-direction logic (call pathogenic when the smaller
+    allele is <= pathogenic_max=3) flags the completely normal 2/2 genotype as
+    pathogenic, since 2 <= 3.
+    """
+    return (
+        locus.benign_min is not None
+        and locus.benign_min == locus.benign_max
+        and locus.pathogenic_min is not None
+        and locus.pathogenic_max is not None
+        and locus.pathogenic_min <= locus.benign_min <= locus.pathogenic_max
+    )
+
+
+def _classify_deviation_locus(locus: StrchiveLocus, a1: int | None, a2: int | None) -> Classification:
+    benign = locus.benign_min  # benign_min == benign_max, enforced by _is_deviation_locus
+    values = [v for v in (a1, a2) if v is not None]
+    deviant = [v for v in values if v != benign]
+    if deviant:
+        worst = max(deviant, key=lambda v: abs(v - benign))
+        return Classification(
+            status=STATUS_PATHOGENIC,
+            status_color=STATUS_COLORS[STATUS_PATHOGENIC],
+            note=f"{worst} repeats deviates from the benign value ({benign}); any deviation is pathogenic",
+        )
+    return Classification(
+        status=STATUS_NORMAL,
+        status_color=STATUS_COLORS[STATUS_NORMAL],
+        note=f"Both alleles at the benign value ({benign} repeats)",
     )
 
 
@@ -263,6 +298,8 @@ def classify(
     each allele's actual motif (`a1_motif`/`a2_motif`, from `TrgtCall.dominant_motifs()`)
     is checked against STRchive's own benign/pathogenic motif lists, with an allele
     matching neither reported as uncertain significance rather than silently guessed.
+    HMNR7_VWA1 is a one-off third case (`_is_deviation_locus`): its pathogenic range
+    isn't a length threshold at all, it's "any deviation from exactly 2 repeats."
     """
     values = [v for v in (a1, a2) if v is not None]
     if not values:
@@ -271,6 +308,8 @@ def classify(
             note="No genotype call at this locus",
         )
 
+    if _is_deviation_locus(locus):
+        return _classify_deviation_locus(locus, a1, a2)
     if locus.is_motif_dependent:
         return _classify_motif_aware(locus, a1, a2, a1_motif, a2_motif)
     return _classify_length_only(locus, a1, a2)

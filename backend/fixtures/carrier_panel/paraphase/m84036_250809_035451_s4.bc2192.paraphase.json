@@ -1,0 +1,116 @@
+{
+  "cyp21": {
+    "total_cn": 8,
+    "gene_cn": null,
+    "highest_total_cn": 8,
+    "two_copy_haplotypes": [],
+    "fusions_called": null,
+    "sv_called": null,
+    "region_depth": {
+      "median": 1147.0,
+      "percentile80": 1148.0
+    },
+    "sample_sex": null
+  },
+  "f8inv1": {
+    "total_cn": 4,
+    "gene_cn": null,
+    "highest_total_cn": 3,
+    "two_copy_haplotypes": [
+      "f8inv1_hap3"
+    ],
+    "fusions_called": null,
+    "sv_called": null,
+    "region_depth": {
+      "median": 978.0,
+      "percentile80": 978.0
+    },
+    "sample_sex": null
+  },
+  "f8inv22": {
+    "total_cn": 5,
+    "gene_cn": null,
+    "highest_total_cn": 4,
+    "two_copy_haplotypes": [
+      "f8inv22_hap3"
+    ],
+    "fusions_called": null,
+    "sv_called": null,
+    "region_depth": {
+      "median": 220.0,
+      "percentile80": 221.0
+    },
+    "sample_sex": null
+  },
+  "gba": {
+    "total_cn": 7,
+    "gene_cn": null,
+    "highest_total_cn": 6,
+    "two_copy_haplotypes": [
+      "gba_hap1"
+    ],
+    "fusions_called": null,
+    "sv_called": null,
+    "region_depth": {
+      "median": 786.0,
+      "percentile80": 789.0
+    },
+    "sample_sex": null
+  },
+  "hba": {
+    "total_cn": 5,
+    "gene_cn": null,
+    "highest_total_cn": 6,
+    "two_copy_haplotypes": [],
+    "fusions_called": null,
+    "sv_called": {},
+    "region_depth": {
+      "median": 395.0,
+      "percentile80": 395.0
+    },
+    "sample_sex": null,
+    "genotype": null,
+    "surrounding_region_depth": 152.0
+  },
+  "hbb": {
+    "total_cn": 4,
+    "gene_cn": null,
+    "highest_total_cn": 4,
+    "two_copy_haplotypes": [],
+    "fusions_called": null,
+    "sv_called": null,
+    "region_depth": {
+      "median": 693.0,
+      "percentile80": 694.0
+    },
+    "sample_sex": null
+  },
+  "rpgr": {
+    "total_cn": 2,
+    "gene_cn": null,
+    "highest_total_cn": 0,
+    "two_copy_haplotypes": [],
+    "fusions_called": null,
+    "sv_called": null,
+    "region_depth": {
+      "median": 292.0,
+      "percentile80": 293.0
+    },
+    "sample_sex": null
+  },
+  "smn1": {
+    "smn1_cn": 4,
+    "smn2_cn": 1,
+    "smn_del78_cn": 0,
+    "smn1_read_number": 95,
+    "smn2_read_number": 29,
+    "smn_del78_read_number": 0,
+    "highest_total_cn": 5,
+    "fusions_called": null,
+    "region_depth": {
+      "median": 126.0,
+      "percentile80": 129.0
+    },
+    "sample_sex": null
+  }
+}

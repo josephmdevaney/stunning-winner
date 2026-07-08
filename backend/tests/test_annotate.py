@@ -13,6 +13,9 @@ STRCHIVE_JSON = REPO_ROOT / "project" / "uploads" / "STRchive-loci.json"
 CATALOG_BED = REPO_ROOT / "project" / "uploads" / "repeat_catalog.hg38.bed"
 GV01_VCF = REPO_ROOT / "backend" / "fixtures" / "gv_puretarget_panel" / "GV-01.trgt.vcf"
 PURETARGET_V2_BED = REPO_ROOT / "backend" / "fixtures" / "panels" / "puretarget_v2.repeat_definitions.hg38.bed"
+BC2113_VCF = REPO_ROOT / "backend" / "fixtures" / "carrier_panel" / "bc2113.trgt.vcf"
+CARRIER_BED = REPO_ROOT / "backend" / "fixtures" / "panels" / "carrier_screen.repeat_definitions.hg38.bed"
+HG002_VCF = REPO_ROOT / "backend" / "fixtures" / "hg002_real" / "HG002.strchive_loci.trgt.vcf.gz"
 
 
 def _panel():
@@ -40,6 +43,17 @@ def test_genotyped_loci_classified_correctly():
 
     atxn1 = panel["SCA1_ATXN1"]
     assert atxn1.status == "Intermediate"
+
+
+def test_hg002_real_vwa1_normal_not_pathogenic():
+    """End-to-end regression test: HG002's real HMNR7_VWA1 call is 2/2 -- the exact
+    benign value. See test_strchive.py's test_classify_vwa1_deviation_not_contraction_direction
+    for why a naive contraction-direction check misclassified this as pathogenic."""
+    panel = {l.id: l for l in annotate_strchive_panel(HG002_VCF, STRCHIVE_JSON, sample="HG002")}
+    vwa1 = panel["HMNR7_VWA1"]
+    assert vwa1.genotyped
+    assert (vwa1.a1, vwa1.a2) == (2, 2)
+    assert vwa1.status == "Normal"
 
 
 def test_ungenotyped_loci_marked_no_call_not_fabricated():
@@ -110,3 +124,32 @@ def test_annotate_strchive_panel_scoped_to_puretarget_v2():
     panel = annotate_strchive_panel(GV01_VCF, STRCHIVE_JSON, sample="GV-01", locus_ids=locus_ids)
     assert len(panel) == 38
     assert all(l.genotyped for l in panel)
+
+
+def test_hemizygous_male_chrx_call_real_bc2113():
+    """Regression test: bc2113 is a real PacBio carrier-panel run on a male sample,
+    genotyped with trgt's proper hemizygous chrX calling (GT="1", a single allele
+    index -- not the "0/0"-style diploid padding the hg002_real fixture's
+    `--karyotype XX` run used). FXS_FMR1 here is a genuine full-mutation expansion
+    (731 CGG repeats, hemizygous), which a diploid-only GT parser would silently
+    drop as an unparseable/ungenotyped call."""
+    locus_ids = resolve_panel_locus_ids(CARRIER_BED, STRCHIVE_JSON)
+    panel = {
+        l.id: l
+        for l in annotate_strchive_panel(
+            BC2113_VCF, STRCHIVE_JSON, sample="m84036_250714_174336_s1.bc2113", locus_ids=locus_ids
+        )
+    }
+
+    fmr1 = panel["FXS_FMR1"]
+    assert fmr1.genotyped
+    assert fmr1.zygosity == "Hemizygous"
+    assert fmr1.a1 == 731
+    assert fmr1.a2 is None
+    assert fmr1.status == "Full expansion"
+
+    prts = panel["PRTS_ARX"]
+    assert prts.genotyped and prts.zygosity == "Hemizygous" and prts.a1 == 12 and prts.status == "Normal"
+
+    fxn = panel["FRDA_FXN"]
+    assert fxn.zygosity == "Heterozygous" and (fxn.a1, fxn.a2) == (9, 18)

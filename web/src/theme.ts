@@ -60,8 +60,11 @@ export const colors = {
 
 export const mono = "'IBM Plex Mono', monospace"
 
+// "Full expansion" is an STR full-mutation finding; "Pathogenic" is a
+// Paraphase-derived non-repeat finding (SNV/indel, gene conversion, CNV, or
+// structural inversion) -- same severity/color, different, more accurate label.
 export function statusColor(status: string): string {
-  if (status === 'Full expansion') return colors.statusPathogenic
+  if (status === 'Full expansion' || status === 'Pathogenic') return colors.statusPathogenic
   if (status === 'Uncertain significance') return colors.statusUncertain
   if (status === 'Intermediate') return colors.statusIntermediate
   if (status === 'Normal') return colors.statusNormal
@@ -69,14 +72,14 @@ export function statusColor(status: string): string {
 }
 
 export function interpBg(status: string): string {
-  if (status === 'Full expansion') return colors.interpBg.pathogenic
+  if (status === 'Full expansion' || status === 'Pathogenic') return colors.interpBg.pathogenic
   if (status === 'Uncertain significance') return colors.interpBg.uncertain
   if (status === 'Intermediate') return colors.interpBg.intermediate
   return colors.interpBg.normal
 }
 
 export function interpColor(status: string): string {
-  if (status === 'Full expansion') return colors.interpColor.pathogenic
+  if (status === 'Full expansion' || status === 'Pathogenic') return colors.interpColor.pathogenic
   if (status === 'Uncertain significance') return colors.interpColor.uncertain
   if (status === 'Intermediate') return colors.interpColor.intermediate
   return colors.interpColor.normal

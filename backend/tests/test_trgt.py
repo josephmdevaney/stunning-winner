@@ -62,7 +62,7 @@ def test_repeat_units_compound_motif_selects_target_not_sum():
     call = TrgtCall(
         chrom="chr4", pos=3074876, end=3074966, trid="HD_HTT",
         motifs=["CAG", "CCG"], struc="(CAG)nCAACAG(CCG)n", ref="N", alt=["<a>", "<b>"],
-        hap1_idx=1, hap2_idx=2, phased=False,
+        hap1_idx=1, hap2_idx=2, phased=False, hemizygous=False,
         allele_length=[84, 105], allele_length_range=[(84, 88), (105, 110)],
         allele_support=[15, 13], motif_count=[[18, 8], [25, 8]],
         allele_purity=[0.97619, 0.980952], allele_methylation=[None, None],
@@ -88,7 +88,7 @@ def test_repeat_units_cyclic_rotation_matching():
     call = TrgtCall(
         chrom="chr9", pos=69037261, end=69037304, trid="FRDA_FXN",
         motifs=["A", "GAA"], struc="(A)n(GAA)n", ref="N", alt=["<a>", "<b>"],
-        hap1_idx=2, hap2_idx=1, phased=True,
+        hap1_idx=2, hap2_idx=1, phased=True, hemizygous=False,
         allele_length=[52, 55], allele_length_range=[(50, 54), (54, 56)],
         allele_support=[12, 15], motif_count=[[23, 9], [26, 9]],
         allele_purity=[0.961538, 0.963636], allele_methylation=[None, None],
@@ -106,6 +106,26 @@ def test_methylation_present_and_absent():
     # one haplotype (the massive expansion) has methylation reported, the short allele does not
     assert (m1 is None) != (m2 is None)
     assert m1 == 0.71 or m2 == 0.71
+
+
+def test_hemizygous_gt_single_allele_not_diploid_padded():
+    """trgt's hemizygous calling mode (male chrX/chrY) emits GT="1", not "1/1" or
+    "1/.": a real single-allele call, not a diploid call with a missing haplotype.
+    FORMAT arrays for a hemizygous record have exactly one slot, not two."""
+    call = TrgtCall(
+        chrom="chrX", pos=147912049, end=147912111, trid="FXS_FMR1",
+        motifs=["CGG", "AGG"], struc="<TR>", ref="N", alt=["<a>"],
+        hap1_idx=1, hap2_idx=None, phased=False, hemizygous=True,
+        allele_length=[2203], allele_length_range=[(95, 2535)],
+        allele_support=[160], motif_count=[[731, 1]],
+        allele_purity=[0.997732], allele_methylation=[0.67],
+    )
+    assert call.genotyped
+    assert call.allele_lengths_bp == (2203, None)
+    assert call.allele_depths == (160, None)
+    assert call.allele_methylation_pct == (0.67, None)
+    units1, units2 = call.repeat_units("CGG")
+    assert (units1, units2) == (731, None)
 
 
 def test_index_lookup_by_trid_and_overlap():
@@ -128,7 +148,7 @@ def test_dominant_motifs_real_rfc1_call():
         chrom="chr4", pos=39348424, end=39348483, trid="CANVAS_RFC1",
         motifs=["AAGGG", "ACAGG", "AGGGC", "AAGGC", "AGAGG", "AAAAG", "AAAGG", "AAGAG", "AAAGGG"],
         struc="<TR>", ref="N", alt=["<a>"],
-        hap1_idx=0, hap2_idx=1, phased=False,
+        hap1_idx=0, hap2_idx=1, phased=False, hemizygous=False,
         allele_length=[59, 454], allele_length_range=[(55, 67), (430, 508)],
         allele_support=[180, 169],
         motif_count=[[0, 0, 0, 0, 0, 11, 0, 0, 0], [0, 0, 0, 0, 0, 90, 0, 0, 0]],

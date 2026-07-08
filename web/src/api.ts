@@ -4,6 +4,7 @@ export interface Meta {
   sample: string
   source_vcf: string
   caller: string
+  sex: string | null
 }
 
 export interface LocusSummary {
@@ -81,6 +82,22 @@ export interface LocusDetail {
   caller: string
 }
 
+export interface GeneFindingDetail {
+  gene: string
+  disease: string
+  region: string
+  tool: string
+  mechanism: string
+  status: string
+  status_color: string
+  zygosity: string | null
+  note: string
+  variants: string[]
+  raw_fields: Record<string, string>
+  genotyped: boolean
+  caller: string
+}
+
 export interface UnavailableMetric {
   label: string
   reason: string
@@ -98,6 +115,7 @@ export interface SampleQCResponse {
 
 export interface RunQCResponse {
   sample: string
+  scoped_to_panel: boolean
   repeat_regions_total: number
   repeat_regions_genotyped: number
   repeat_region_mean_depth: number | null
@@ -172,6 +190,11 @@ export const api = {
     getJSON<OverviewResponse>(withModeSample('/api/overview', { mode, sample })),
   locus: (id: string, mode?: string, sample?: string) =>
     getJSON<LocusDetail>(withModeSample(`/api/locus/${encodeURIComponent(id)}`, { mode, sample })),
+  geneFinding: (gene: string, mode?: string, sample?: string) => {
+    const q = new URLSearchParams()
+    q.set('gene', gene)
+    return getJSON<GeneFindingDetail>(withModeSample('/api/gene-finding', { mode, sample }, q))
+  },
   sampleQC: (mode?: string, sample?: string) =>
     getJSON<SampleQCResponse>(withModeSample('/api/qc/sample', { mode, sample })),
   runQC: (mode?: string, sample?: string) =>

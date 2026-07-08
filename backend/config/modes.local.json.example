@@ -1,0 +1,21 @@
+{
+  "genome_wide": {
+    "label": "Genome-wide",
+    "vcf_dir": "fixtures/hg002_real",
+    "panel_bed": null,
+    "sample_sex": "fixtures/hg002_real/sample_sex.json"
+  },
+  "puretarget_v2": {
+    "label": "PureTarget V2",
+    "vcf_dir": "/absolute/path/to/your/puretarget_v2/vcfs",
+    "panel_bed": "fixtures/panels/puretarget_v2.repeat_definitions.hg38.bed"
+  },
+  "carrier": {
+    "label": "Carrier",
+    "vcf_dir": "fixtures/carrier_panel",
+    "panel_bed": "fixtures/panels/carrier_screen.repeat_definitions.hg38.bed",
+    "non_repeat_targets": "fixtures/panels/carrier_screen.non_repeat_targets.json",
+    "paraphase_dir": "fixtures/carrier_panel/paraphase",
+    "sample_sex": "fixtures/carrier_panel/sample_sex.json"
+  }
+}

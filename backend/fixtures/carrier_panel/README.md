@@ -128,6 +128,35 @@ own HBA genotype/`sv_called` already resolved a finding here, unlike bc2192).
 `sample_sex.json`'s "F" is real, from this sample's own F8 inversion caller
 `--sex F` command-line invocation, same as bc2192.
 
+## `m84036_250809_035451_s4.bc2100` and `m84036_250809_035451_s4.bc2103` -- real data
+
+Two more real samples from the same 96-sample Nanobind run (`Carrier_Nanobind_96plex_RevioSRPQ`,
+`ptcp_v3.1.0`), pulled directly from the run's own output storage (with the user's access) rather
+than sent as individual attachments. Selected after screening several samples' `havanno.json`
+files for distinct patterns; several nearby samples in this batch (bc2101, bc2109, bc2110) turned
+out to be zero-coverage Paraphase failures rather than genuine negatives (`region_depth.median:
+0.0` across every gene) -- worth noting since an empty `havanno.json` doesn't by itself mean
+"clean", only "no named pathogenic variant was flagged".
+
+Both samples show the same real CYP21A2 + GBA carrier pattern as bc2108, but with normal
+(non-elevated) copy numbers throughout and a different haplotype-phasing shape -- a useful
+contrast to bc2108's symmetric 2-of-4/2-of-4 pattern:
+
+- **bc2100**: CYP21A2 pathogenic on 1 of 4 haplotype-phase calls (`total_cn: 4`, the 9-variant CAH
+  set), GBA pathogenic on 2 of 4 (`total_cn: 4`, the 14-variant Gaucher set) -- both resolve to
+  Heterozygous. HBA1/HBA2 genotype is a clean `aa/aa` here (unlike bc2108's real `-a/aa`), giving
+  this panel a genuine alpha-thalassemia-negative real sample alongside bc2108's positive one.
+- **bc2103**: same shape as bc2100 (CYP21A2 on 1 of 4 haplotype-phase calls, GBA on 2 of 4, both
+  Heterozygous, HBA1/HBA2 `aa/aa`), on a different haplotype-phase assignment
+  (`cyp21_hap2`/`gba_hap3`+`hap4` rather than bc2100's `cyp21_hap1`/`gba_hap1`+`hap2`) and
+  different real read depths.
+
+Same fixture set as bc2108 per sample (`{sample}.trgt.vcf`, `paraphase/{sample}.f8inversion.vcf`,
+`paraphase/{sample}.havanno.json`, a trimmed `paraphase/{sample}.paraphase.json`); no sawfish VCF
+needed for either, since HBA resolved cleanly via Paraphase's own `genotype` field for both.
+`sample_sex.json`'s "F" for both is real, from each sample's own F8 inversion caller `--sex F`
+command-line invocation.
+
 ## `CR-01` .. `CR-10` -- synthetic
 
 Hand-built, spec-accurate synthetic `trgt` v5.1.0 VCFs (same approach as

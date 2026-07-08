@@ -13,6 +13,8 @@ PARAPHASE_DIR = REPO_ROOT / "backend" / "fixtures" / "carrier_panel" / "paraphas
 SAMPLE = "m84036_250714_174336_s1.bc2113"
 SAMPLE_2 = "m84036_250809_035451_s4.bc2192"
 SAMPLE_3 = "m84036_250809_035451_s4.bc2108"
+SAMPLE_4 = "m84036_250809_035451_s4.bc2100"
+SAMPLE_5 = "m84036_250809_035451_s4.bc2103"
 
 
 def _load():
@@ -33,6 +35,13 @@ def _load_bc2108():
     calls = load_paraphase_calls(PARAPHASE_DIR / f"{SAMPLE_3}.paraphase.json")
     f8_calls = load_f8_inversion_calls(PARAPHASE_DIR / f"{SAMPLE_3}.f8inversion.vcf")
     havanno = load_havanno_annotations(PARAPHASE_DIR / f"{SAMPLE_3}.havanno.json")
+    return calls, f8_calls, havanno
+
+
+def _load_sample(sample: str):
+    calls = load_paraphase_calls(PARAPHASE_DIR / f"{sample}.paraphase.json")
+    f8_calls = load_f8_inversion_calls(PARAPHASE_DIR / f"{sample}.f8inversion.vcf")
+    havanno = load_havanno_annotations(PARAPHASE_DIR / f"{sample}.havanno.json")
     return calls, f8_calls, havanno
 
 
@@ -261,3 +270,51 @@ def test_classify_smn1_bc2108_real_normal():
     calls, f8_calls, havanno = _load_bc2108()
     finding = classify_gene("SMN1/2", calls, f8_calls, havanno)
     assert finding.status == "Normal"
+
+
+def test_classify_cyp21_bc2100_real_single_haplotype_carrier():
+    """Real bc2100 data: unlike bc2108's 2-of-4 pattern, only 1 of 4 haplotype-phase
+    calls carries the 9-variant CAH set here -- still resolves to Heterozygous
+    since normal total_cn=4 means "not all copies affected" either way."""
+    calls, f8_calls, havanno = _load_sample(SAMPLE_4)
+    finding = classify_gene("CYP21A2", calls, f8_calls, havanno)
+    assert finding.status == "Pathogenic"
+    assert finding.zygosity == "Heterozygous"
+    assert "1 of 4 haplotype-phase calls" in finding.note
+
+
+def test_classify_gba_bc2100_real_heterozygous_carrier():
+    calls, f8_calls, havanno = _load_sample(SAMPLE_4)
+    finding = classify_gene("GBA", calls, f8_calls, havanno)
+    assert finding.status == "Pathogenic"
+    assert finding.zygosity == "Heterozygous"
+
+
+def test_classify_hba_bc2100_real_normal_aa_aa():
+    """Real bc2100 data: unlike bc2108's real '-a/aa' alpha-thalassemia finding,
+    this sample's HBA1/HBA2 genotype resolved cleanly to aa/aa."""
+    calls, f8_calls, havanno = _load_sample(SAMPLE_4)
+    finding = classify_gene("HBA1/2", calls, f8_calls, havanno)
+    assert finding.status == "Normal"
+    assert finding.zygosity == "Homozygous"
+
+
+def test_classify_cyp21_bc2103_real_single_haplotype_carrier():
+    calls, f8_calls, havanno = _load_sample(SAMPLE_5)
+    finding = classify_gene("CYP21A2", calls, f8_calls, havanno)
+    assert finding.status == "Pathogenic"
+    assert finding.zygosity == "Heterozygous"
+
+
+def test_classify_gba_bc2103_real_heterozygous_carrier():
+    calls, f8_calls, havanno = _load_sample(SAMPLE_5)
+    finding = classify_gene("GBA", calls, f8_calls, havanno)
+    assert finding.status == "Pathogenic"
+    assert finding.zygosity == "Heterozygous"
+
+
+def test_classify_hba_bc2103_real_normal_aa_aa():
+    calls, f8_calls, havanno = _load_sample(SAMPLE_5)
+    finding = classify_gene("HBA1/2", calls, f8_calls, havanno)
+    assert finding.status == "Normal"
+    assert finding.zygosity == "Homozygous"

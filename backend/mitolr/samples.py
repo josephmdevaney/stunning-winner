@@ -12,6 +12,7 @@ thin dispatch layer over ``sample`` selection.
 
 from __future__ import annotations
 
+import json
 from functools import lru_cache
 from pathlib import Path
 
@@ -32,6 +33,10 @@ SAMPLES: dict[str, dict] = {
         "label": "HG002 (MitoRSaw)",
         "source": "vcf",
         "vcf": str(BACKEND_ROOT / "fixtures" / "HG002.GRCh38.mitorsaw.vcf.gz"),
+        # Real chrM QC + per-read pileups precomputed from the haplotagged BAM
+        # (scripts/real_data/build_mito_bam_qc.py). Optional: falls back to
+        # VCF-derived QC if absent.
+        "bam_qc": str(BACKEND_ROOT / "fixtures" / "HG002.chrM.bam_qc.json"),
         "caller": "mitorsaw 0.2.3-cba3800",
         "instrument_line": "PacBio HiFi · GRCh38 chrM",
         "reference": "GRCh38 chrM (rCRS · NC_012920.1)",
@@ -81,6 +86,16 @@ def variants(sample: str) -> list[dict]:
     return generate.build_variants()
 
 
+@lru_cache(maxsize=None)
+def _bam_qc(sample: str) -> dict | None:
+    """Precomputed aligned-BAM chrM stats for this sample, if available."""
+    path = SAMPLES[sample].get("bam_qc")
+    if path and Path(path).exists():
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    return None
+
+
 def variant_by_id(sample: str, variant_id: str) -> dict | None:
     return next((v for v in variants(sample) if v["id"] == variant_id), None)
 
@@ -126,12 +141,27 @@ def variant_detail(sample: str, variant_id: str) -> dict | None:
     v = variant_by_id(sample, variant_id)
     if v is None:
         return None
-    if SAMPLES[sample]["source"] == "vcf":
+
+    bam = _bam_qc(sample)
+    is_snv = len(v["change"]) == 3 and ">" in v["change"]  # e.g. "A>G"
+    bam_var = bam["variants"].get(v["id"]) if bam else None
+
+    if bam_var and is_snv:
+        # Real per-read alleles from the aligned BAM. Used only for SNVs: naive
+        # pileup at an anchor base can't quantify homopolymer indels (MitoRSaw's
+        # haplotype-aware VAF is authoritative for those).
+        pileup = bam_var["pileup"]
+        pileup_source = (
+            f"Real per-read alleles at chrM:{v['pos']} from the aligned HiFi BAM "
+            f"({bam_var['alt_reads']} alt / {bam_var['ref_reads']} ref reads) — independently "
+            f"consistent with MitoRSaw's reported heteroplasmy."
+        )
+    elif SAMPLES[sample]["source"] == "vcf":
         pileup = vcf.simulate_pileup(v)
         pileup_source = (
-            "Real per-allele read support from MitoRSaw's AD field (ref vs alt read "
-            "counts), subsampled to a legible number of rows; a full per-read view "
-            "requires the aligned BAM."
+            "Per-allele read support from MitoRSaw's AD field (ref vs alt read counts), "
+            "subsampled to a legible number of rows. For homopolymer indels the caller's "
+            "haplotype-aware VAF is used rather than a raw pileup, which cannot resolve them."
         )
     else:
         pileup = generate.simulate_pileup(v)
@@ -152,6 +182,9 @@ def variant_detail(sample: str, variant_id: str) -> dict | None:
 
 
 def sample_qc(sample: str) -> dict:
+    bam = _bam_qc(sample)
+    if bam is not None:
+        return {**meta(sample), **qc.build_bam_qc(bam)}
     if SAMPLES[sample]["source"] == "vcf":
         return {**meta(sample), **qc.build_vcf_qc(variants(sample))}
     return {**meta(sample), **qc.build_qc()}

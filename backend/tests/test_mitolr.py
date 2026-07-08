@@ -94,15 +94,45 @@ def test_overview_dispatch_per_sample():
     assert demo["haplogroup"]["name"] == "H2a5b1"
 
 
-def test_qc_dispatch_per_sample():
+def test_qc_uses_bam_when_available():
+    # HG002 has a precomputed BAM-stats fixture -> rich, real QC.
     hg = samples.sample_qc("HG002")
-    assert hg["read_length_histogram"] == []  # unavailable from a VCF
-    assert len(hg["coverage_track"]) == 15
-    assert hg["unavailable_metrics"]
+    assert len(hg["read_length_histogram"]) == 18  # real, not empty
+    assert len(hg["coverage_track"]) > 100  # continuous per-base track
+    labels = [s["label"] for s in hg["stats"]]
+    assert "Mean coverage" in labels and "chrM reads mapped" in labels
+    assert hg["coverage_note"].startswith("Per-base read depth")
 
     demo = samples.sample_qc("MT-0417-P2")
     assert len(demo["read_length_histogram"]) == 18
     assert len(demo["coverage_track"]) == 60
+
+
+def test_bam_qc_suppresses_trna_strand_balance():
+    hg = samples.sample_qc("HG002")
+    by_region = {r["region"]: r for r in hg["regions"]}
+    # tiny tRNA locus -> strand balance shown as "—" (midpoint approximation).
+    assert by_region["MT-TF"]["strandBalance"] == "—"
+    # large rRNA/protein locus keeps its computed value.
+    assert by_region["MT-RNR2"]["strandBalance"] != "—"
+
+
+def test_vcf_qc_fallback_without_bam(monkeypatch):
+    # If the BAM fixture is absent, HG002 falls back to VCF-derived QC.
+    monkeypatch.setitem(samples.SAMPLES["HG002"], "bam_qc", "/nonexistent.json")
+    samples._bam_qc.cache_clear()
+    hg = samples.sample_qc("HG002")
+    assert hg["read_length_histogram"] == []
+    samples._bam_qc.cache_clear()
+
+
+def test_snv_pileup_uses_bam_indel_uses_caller():
+    snv = samples.variant_detail("HG002", "chrM_263_A_G")
+    assert "aligned HiFi BAM" in snv["pileup_source"]
+    assert all(r["kind"] == "mut" for r in snv["pileup_reads"])  # homoplasmic G
+
+    indel = samples.variant_detail("HG002", "chrM_302_A_AC")
+    assert "haplotype-aware" in indel["pileup_source"]
 
 
 # --- API routes -------------------------------------------------------------

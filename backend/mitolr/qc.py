@@ -13,7 +13,80 @@ from __future__ import annotations
 import math
 
 from .generate import seeded_rand
-from .reference import GENOME_LENGTH, feature_for_pos
+from .reference import GENOME_LENGTH, MT_FEATURES, feature_for_pos
+
+# Region lengths (bp) for gating the strand-balance metric: it is approximated
+# from read midpoints, which is unreliable for loci too small to catch enough
+# read centers (the tRNAs), so those are shown as "—".
+_REGION_LEN = {f["name"]: f["stop"] - f["start"] + 1 for f in MT_FEATURES}
+_REGION_LEN["D-loop"] = (GENOME_LENGTH - 16024 + 1) + 576
+_STRAND_MIN_LEN = 200
+
+
+def build_bam_qc(bam: dict) -> dict:
+    """Rich Sample QC from an aligned-BAM stats JSON (see scripts/real_data/
+    build_mito_bam_qc.py). Read-length distribution, per-base coverage, mapQ,
+    read quality, and per-region depth are all real; only a few run-level
+    metrics remain out of reach from an mtDNA-only BAM slice."""
+    n_pass = sum(1 for r in bam["regions"] if r["flag"] == "Pass")
+    n_reg = len(bam["regions"])
+    cov_max = bam.get("coverage_max") or 1000
+    mean_len_kb = (bam["mean_read_length_bp"] / 1000) if bam.get("mean_read_length_bp") else None
+
+    regions = []
+    for r in bam["regions"]:
+        length = _REGION_LEN.get(r["region"], 999)
+        # Suppress the midpoint-approximated strand balance for tiny tRNA loci.
+        strand = r["strandBalance"] if length >= _STRAND_MIN_LEN else "—"
+        regions.append({**r, "strandBalance": strand})
+
+    return {
+        "overall_status": "Pass" if n_pass == n_reg else "Review",
+        "stats": [
+            {
+                "label": "Overall status",
+                "value": "Pass" if n_pass == n_reg else "Review",
+                "sub": f"{n_pass}/{n_reg} regions ≥ {bam['min_required']}x",
+                "dotColor": "oklch(0.55 0.14 150)" if n_pass == n_reg else "oklch(0.62 0.15 75)",
+            },
+            {
+                "label": "Mean coverage",
+                "value": f"{bam['coverage_mean']:,}x",
+                "sub": f"min {bam['coverage_min']:,}x · max {bam['coverage_max']:,}x",
+                "dotColor": "oklch(0.6 0.14 220)",
+            },
+            {
+                "label": "chrM reads mapped",
+                "value": f"{bam['total_reads']:,}",
+                "sub": f"mean length {mean_len_kb:.1f}kb" if mean_len_kb else "—",
+                "dotColor": "oklch(0.6 0.14 220)",
+            },
+            {
+                "label": "Read quality",
+                "value": bam.get("mean_read_q") or "—",
+                "sub": f"mapQ {round(bam['mean_mapq'])}" if bam.get("mean_mapq") is not None else "—",
+                "dotColor": "oklch(0.6 0.14 220)",
+            },
+        ],
+        "read_length_histogram": bam["read_length_histogram"],
+        "coverage_track": bam["coverage_track"],
+        "coverage_note": "Per-base read depth across chrM, from the aligned HiFi BAM",
+        "genome_length": bam["length"],
+        "regions": regions,
+        "min_required": bam["min_required"],
+        "instrument": [
+            {"label": "Caller", "value": "mitorsaw 0.2.3-cba3800"},
+            {"label": "Reference", "value": "GRCh38 chrM (rCRS)"},
+            {"label": "Mean HiFi read length", "value": f"{bam['mean_read_length_bp']:,} bp" if bam.get("mean_read_length_bp") else "—"},
+            {"label": "Mean HiFi read Q", "value": bam.get("mean_read_q") or "—"},
+        ],
+        "coverage_y_axis_max_default": int(math.ceil(cov_max * 1.15 / 250) * 250),
+        "unavailable_metrics": [
+            {"label": "mtDNA copy number (copies/cell)", "reason": "Requires nuclear-normalized depth (autosomal coverage); the chrM slice alone can't yield copy number."},
+            {"label": "Per-region strand balance for tRNA loci", "reason": "Approximated from read midpoints; loci under 200 bp catch too few read centers to be reliable, so they are shown as —."},
+            {"label": "NUMT-derived read fraction", "reason": "MitoRSaw filters NUMT reads during calling; a per-read NUMT flag is not carried in this BAM slice."},
+        ],
+    }
 
 # Per-region coverage adequacy (matches the design's curated QC table).
 _QC_REGIONS = [

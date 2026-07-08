@@ -99,6 +99,9 @@ export function MitoVariantDetailScreen({ sample, variantId }: { sample: string;
             <KeyVal k="Evidence level" v={v.evidence} />
             <KeyVal k="Inheritance" v={v.inheritance} />
             <KeyVal k="Caller" v={data.caller} />
+            {v.ad_alt != null && v.ad_ref != null && (
+              <KeyVal k="Read support" v={`${v.ad_alt} alt / ${v.ad_ref} ref`} />
+            )}
           </div>
         </div>
 

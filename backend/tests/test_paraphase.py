@@ -12,6 +12,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 PARAPHASE_DIR = REPO_ROOT / "backend" / "fixtures" / "carrier_panel" / "paraphase"
 SAMPLE = "m84036_250714_174336_s1.bc2113"
 SAMPLE_2 = "m84036_250809_035451_s4.bc2192"
+SAMPLE_3 = "m84036_250809_035451_s4.bc2108"
 
 
 def _load():
@@ -26,6 +27,13 @@ def _load_bc2192():
     havanno = load_havanno_annotations(PARAPHASE_DIR / f"{SAMPLE_2}.havanno.json")
     sawfish_calls = load_sawfish_calls(PARAPHASE_DIR / f"{SAMPLE_2}.sv.vcf")
     return calls, f8_calls, havanno, sawfish_calls
+
+
+def _load_bc2108():
+    calls = load_paraphase_calls(PARAPHASE_DIR / f"{SAMPLE_3}.paraphase.json")
+    f8_calls = load_f8_inversion_calls(PARAPHASE_DIR / f"{SAMPLE_3}.f8inversion.vcf")
+    havanno = load_havanno_annotations(PARAPHASE_DIR / f"{SAMPLE_3}.havanno.json")
+    return calls, f8_calls, havanno
 
 
 def test_load_paraphase_calls_has_all_genes():
@@ -206,3 +214,50 @@ def test_havanno_zygosity_homozygous_when_all_copies_affected():
     finding = classify_gene("CYP21A2", calls, {}, havanno, [])
     assert finding.status == "Pathogenic"
     assert finding.zygosity == "Homozygous"
+
+
+def test_classify_cyp21_bc2108_real_heterozygous_carrier_normal_copy_number():
+    """Real bc2108 data: unlike bc2192's atypical elevated total_cn=8, this sample
+    has a completely normal total_cn=4 at this locus, with 2 of 4 haplotype-phase
+    calls carrying the same 9 named CAH-associated pathogenic variants -- a clean
+    textbook heterozygous carrier finding."""
+    calls, f8_calls, havanno = _load_bc2108()
+    finding = classify_gene("CYP21A2", calls, f8_calls, havanno)
+    assert finding.status == "Pathogenic"
+    assert finding.zygosity == "Heterozygous"
+    assert "2 of 4 haplotype-phase calls" in finding.note
+
+
+def test_classify_gba_bc2108_real_heterozygous_carrier_normal_copy_number():
+    """Real bc2108 data: total_cn=4 (normal), 2 of 4 haplotype-phase calls carry
+    the same 14 named Gaucher-associated pathogenic variants."""
+    calls, f8_calls, havanno = _load_bc2108()
+    finding = classify_gene("GBA", calls, f8_calls, havanno)
+    assert finding.status == "Pathogenic"
+    assert finding.zygosity == "Heterozygous"
+    assert "2 of 4 haplotype-phase calls" in finding.note
+
+
+def test_classify_hba_bc2108_real_alpha_thalassemia_genotype_not_overclaimed():
+    """Real bc2108 data: Paraphase itself resolved a genotype of '-a/aa' (one
+    single-alpha-globin-gene deletion, the classic silent-carrier alpha
+    thalassemia allele) and its own sv_called field names a 3.7kb deletion
+    (3p7del) at chr16:172240-176044. The honest answer is Uncertain -- the
+    genotype and structural evidence are surfaced verbatim, but a specific
+    clinical-significance call isn't fabricated for a non-aa/aa genotype."""
+    calls, f8_calls, havanno = _load_bc2108()
+    finding = classify_gene("HBA1/2", calls, f8_calls, havanno)
+    assert finding.status == "Uncertain significance"
+    assert "-a/aa" in finding.note
+
+
+def test_classify_f8_bc2108_real_no_inversion():
+    calls, f8_calls, havanno = _load_bc2108()
+    finding = classify_gene("F8", calls, f8_calls, havanno)
+    assert finding.status == "Normal"
+
+
+def test_classify_smn1_bc2108_real_normal():
+    calls, f8_calls, havanno = _load_bc2108()
+    finding = classify_gene("SMN1/2", calls, f8_calls, havanno)
+    assert finding.status == "Normal"

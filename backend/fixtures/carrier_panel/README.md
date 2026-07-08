@@ -94,6 +94,40 @@ per-gene data than `bc2113` had. Also not simulated, not hand-built.
 `sample_sex.json`'s "F" for this sample is real, from the F8 inversion caller's
 own `--sex F` command-line invocation recorded in its VCF header.
 
+## `m84036_250809_035451_s4.bc2108` -- real data
+
+A third real sample from the same Coriell Nanobind 96-plex Revio run
+(`Carrier_Nanobind_96plex_RevioSRPQ`), pulled from the run's full output set (all
+96 samples' TRGT/Paraphase/havanno/F8-inversion output, made available in bulk).
+Selected specifically because its `havanno.json` shows two clean, textbook
+heterozygous-carrier findings -- unlike bc2192's atypically elevated CYP21A2 copy
+number, this sample's copy numbers are entirely normal, so the pathogenic finding
+is unambiguous rather than confounded by a structural complication:
+
+- **CYP21A2**: `total_cn: 4` (normal), 2 of the locus's 4 haplotype-phase calls
+  (`cyp21_hap1`/`hap2`) carry the identical 9-variant CAH-associated set also seen
+  in bc2192 -- `_havanno_zygosity` resolves this to "Heterozygous" (2 of 4 total
+  copies, not all of them).
+- **GBA**: `total_cn: 4` (normal), 2 of 4 haplotype-phase calls
+  (`gba_hap1`/`hap2`) carry the identical 14-variant Gaucher-associated set --
+  also resolves to "Heterozygous".
+- **HBA1/2**: unlike bc2113 (`aa/aa`, normal) and bc2192 (genotype unresolved),
+  Paraphase itself resolved a genotype here: `-a/aa` -- one copy carrying the
+  classic single-alpha-globin-gene deletion (silent-carrier alpha thalassemia),
+  the other normal. Its own `sv_called` field independently names the deletion:
+  `"hba_3p7delhap1": "3p7del,chr16:172240-176044"` (the well-known "-alpha-3.7"
+  deletion allele). `_classify_hba`'s existing non-`aa/aa`-genotype branch reports
+  this as "Uncertain significance", surfacing the real genotype and deletion
+  verbatim rather than asserting a specific clinical read on a single-gene
+  deletion this project has no dedicated classifier for.
+
+Only this sample's `trgt.vcf`, `f8inversion.vcf`, `havanno.json`, and a trimmed
+`paraphase.json` were pulled in (no sawfish VCF -- not needed since Paraphase's
+own HBA genotype/`sv_called` already resolved a finding here, unlike bc2192).
+
+`sample_sex.json`'s "F" is real, from this sample's own F8 inversion caller
+`--sex F` command-line invocation, same as bc2192.
+
 ## `CR-01` .. `CR-10` -- synthetic
 
 Hand-built, spec-accurate synthetic `trgt` v5.1.0 VCFs (same approach as

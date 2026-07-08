@@ -15,6 +15,7 @@ from __future__ import annotations
 import json
 from functools import lru_cache
 from pathlib import Path
+from typing import Optional
 
 from . import generate, qc, vcf
 from .reference import GENE_MAP, GENOME_LENGTH, HAPLOGROUP
@@ -59,7 +60,7 @@ def sample_keys() -> list[str]:
     return list(SAMPLES)
 
 
-def resolve(sample: str | None) -> str:
+def resolve(sample: Optional[str]) -> str:
     if sample is None:
         return DEFAULT_SAMPLE
     if sample not in SAMPLES:
@@ -87,7 +88,7 @@ def variants(sample: str) -> list[dict]:
 
 
 @lru_cache(maxsize=None)
-def _bam_qc(sample: str) -> dict | None:
+def _bam_qc(sample: str) -> Optional[dict]:
     """Precomputed aligned-BAM chrM stats for this sample, if available."""
     path = SAMPLES[sample].get("bam_qc")
     if path and Path(path).exists():
@@ -96,7 +97,7 @@ def _bam_qc(sample: str) -> dict | None:
     return None
 
 
-def variant_by_id(sample: str, variant_id: str) -> dict | None:
+def variant_by_id(sample: str, variant_id: str) -> Optional[dict]:
     return next((v for v in variants(sample) if v["id"] == variant_id), None)
 
 
@@ -137,7 +138,7 @@ def overview(sample: str) -> dict:
     }
 
 
-def variant_detail(sample: str, variant_id: str) -> dict | None:
+def variant_detail(sample: str, variant_id: str) -> Optional[dict]:
     v = variant_by_id(sample, variant_id)
     if v is None:
         return None

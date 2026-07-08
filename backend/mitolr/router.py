@@ -7,6 +7,8 @@ calls (default) and the synthetic clinical demo. All data shaping lives in
 
 from __future__ import annotations
 
+from typing import Optional
+
 from fastapi import APIRouter, HTTPException
 
 from . import samples
@@ -14,7 +16,7 @@ from . import samples
 router = APIRouter(prefix="/api/mito", tags=["mitolr"])
 
 
-def _resolve(sample: str | None) -> str:
+def _resolve(sample: Optional[str]) -> str:
     try:
         return samples.resolve(sample)
     except KeyError:
@@ -29,18 +31,21 @@ def get_samples():
     }
 
 
+# FastAPI evaluates these endpoint annotations at runtime, so they must use
+# typing.Optional (PEP 604 `str | None` only evaluates on Python >=3.10; the repo
+# supports 3.9).
 @router.get("/meta")
-def get_meta(sample: str | None = None):
+def get_meta(sample: Optional[str] = None):
     return samples.meta(_resolve(sample))
 
 
 @router.get("/overview")
-def get_overview(sample: str | None = None):
+def get_overview(sample: Optional[str] = None):
     return samples.overview(_resolve(sample))
 
 
 @router.get("/variant/{variant_id}")
-def get_variant(variant_id: str, sample: str | None = None):
+def get_variant(variant_id: str, sample: Optional[str] = None):
     detail = samples.variant_detail(_resolve(sample), variant_id)
     if detail is None:
         raise HTTPException(status_code=404, detail=f"unknown variant id {variant_id!r}")
@@ -48,5 +53,5 @@ def get_variant(variant_id: str, sample: str | None = None):
 
 
 @router.get("/qc")
-def get_qc(sample: str | None = None):
+def get_qc(sample: Optional[str] = None):
     return samples.sample_qc(_resolve(sample))

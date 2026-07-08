@@ -18,7 +18,7 @@ unresolved/atypical finding rather than guessed as benign or pathogenic.
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
@@ -59,6 +59,13 @@ class ParaphaseFinding:
     status_color: str
     note: str
     zygosity: Optional[str] = None
+    # Named variants this finding is built from (only populated for havanno-derived
+    # findings -- CYP21A2/GBA's named pathogenic variant lists). Empty otherwise.
+    variants: tuple[str, ...] = ()
+    # Other raw fields the underlying tool asserted, kept verbatim for a "what did
+    # the tool actually say" detail view (e.g. HBA's `genotype`/`sv_called`,
+    # total_cn, GT/SUPP) -- never a re-derived or summarized value.
+    raw_fields: dict[str, str] = field(default_factory=dict)
 
 
 def load_paraphase_calls(json_path: str | Path) -> dict[str, dict]:
@@ -130,8 +137,17 @@ def load_f8_inversion_calls(vcf_path: str | Path) -> dict[str, dict]:
     return calls
 
 
-def _finding(status: str, note: str, zygosity: Optional[str] = None) -> ParaphaseFinding:
-    return ParaphaseFinding(status=status, status_color=_STATUS_COLORS[status], note=note, zygosity=zygosity)
+def _finding(
+    status: str,
+    note: str,
+    zygosity: Optional[str] = None,
+    variants: tuple[str, ...] = (),
+    raw_fields: Optional[dict[str, str]] = None,
+) -> ParaphaseFinding:
+    return ParaphaseFinding(
+        status=status, status_color=_STATUS_COLORS[status], note=note, zygosity=zygosity,
+        variants=variants, raw_fields=raw_fields or {},
+    )
 
 
 def _gt_zygosity(gt: Optional[str]) -> Optional[str]:
@@ -160,15 +176,21 @@ def _classify_hba(
         return havanno_finding
 
     genotype = call.get("genotype")
+    sv_called = call.get("sv_called") or {}
+    raw_fields = {"genotype": genotype} if genotype else {}
+    if sv_called:
+        raw_fields["sv_called"] = ", ".join(f"{k}: {v}" for k, v in sv_called.items())
+
     if genotype == "aa/aa":
         return _finding(
             STATUS_NORMAL, "Paraphase: genotype aa/aa (4 of 4 alpha-globin copies present, no deletion)",
-            zygosity="Homozygous",
+            zygosity="Homozygous", raw_fields=raw_fields,
         )
     if genotype:
         return _finding(
             STATUS_UNCERTAIN,
             f"Paraphase reported genotype {genotype!r} (not the normal aa/aa) -- clinical review recommended",
+            raw_fields=raw_fields,
         )
     dels = [c for c in (sawfish_calls or []) if c.get("svtype") == "DEL" and _gt_zygosity(c.get("gt"))]
     if dels:
@@ -181,42 +203,58 @@ def _classify_hba(
             f"the region ({parts}) that cannot be attributed to HBA1 vs. HBA2 from this data -- clinical review "
             "recommended",
             zygosity=zygosity,
+            raw_fields={**raw_fields, "sawfish_deletions": parts},
         )
-    return _finding(STATUS_UNCERTAIN, "Paraphase did not report a resolved HBA1/HBA2 genotype")
+    return _finding(STATUS_UNCERTAIN, "Paraphase did not report a resolved HBA1/HBA2 genotype", raw_fields=raw_fields)
 
 
 def _classify_smn1(call: dict) -> ParaphaseFinding:
+    raw_fields = {
+        k: str(call[k]) for k in ("smn1_cn", "smn2_cn", "smn_del78_cn") if call.get(k) is not None
+    }
     smn1_cn = call.get("smn1_cn")
     if smn1_cn is None:
-        return _finding(STATUS_UNCERTAIN, "Paraphase did not report an SMN1 copy number")
+        return _finding(STATUS_UNCERTAIN, "Paraphase did not report an SMN1 copy number", raw_fields=raw_fields)
     if smn1_cn == 0:
         return _finding(
             STATUS_PATHOGENIC_VARIANT,
             "Paraphase: 0 SMN1 copies detected -- consistent with spinal muscular atrophy, refer for confirmation",
+            raw_fields=raw_fields,
         )
     if smn1_cn == 1:
-        return _finding(STATUS_INTERMEDIATE, "Paraphase: 1 SMN1 copy detected -- heterozygous SMA carrier")
-    return _finding(STATUS_NORMAL, f"Paraphase: {smn1_cn} SMN1 copies detected (normal)")
+        return _finding(
+            STATUS_INTERMEDIATE, "Paraphase: 1 SMN1 copy detected -- heterozygous SMA carrier",
+            raw_fields=raw_fields,
+        )
+    return _finding(STATUS_NORMAL, f"Paraphase: {smn1_cn} SMN1 copies detected (normal)", raw_fields=raw_fields)
 
 
 def _classify_generic(gene_key: str, call: dict) -> ParaphaseFinding:
     expected = _EXPECTED_TOTAL_CN[gene_key]
     fusions = call.get("fusions_called")
     if fusions:
-        return _finding(STATUS_PATHOGENIC_VARIANT, f"Paraphase flagged a fusion/gene-conversion event: {fusions}")
+        return _finding(
+            STATUS_PATHOGENIC_VARIANT, f"Paraphase flagged a fusion/gene-conversion event: {fusions}",
+            raw_fields={"fusions_called": str(fusions)},
+        )
 
     gene_cn = call.get("gene_cn")
     if gene_cn is not None:
+        raw_fields = {"gene_cn": str(gene_cn)}
         if gene_cn == expected:
-            return _finding(STATUS_NORMAL, f"Paraphase: {gene_cn} gene copies detected (normal)")
-        return _finding(STATUS_UNCERTAIN, f"Paraphase: {gene_cn} gene copies detected (expected {expected})")
+            return _finding(STATUS_NORMAL, f"Paraphase: {gene_cn} gene copies detected (normal)", raw_fields=raw_fields)
+        return _finding(
+            STATUS_UNCERTAIN, f"Paraphase: {gene_cn} gene copies detected (expected {expected})",
+            raw_fields=raw_fields,
+        )
 
     total_cn = call.get("total_cn")
     if total_cn is None:
         return _finding(STATUS_UNCERTAIN, "Paraphase did not report a copy number for this region")
+    raw_fields = {"total_cn": str(total_cn)}
     unit = "gene+pseudogene copies" if _HAS_PSEUDOGENE_PAIR[gene_key] else "gene copies"
     if total_cn == expected:
-        return _finding(STATUS_NORMAL, f"Paraphase: {total_cn} total {unit} detected (normal)")
+        return _finding(STATUS_NORMAL, f"Paraphase: {total_cn} total {unit} detected (normal)", raw_fields=raw_fields)
     attribution = (
         "could not attribute the difference to a specific gene vs. pseudogene copy"
         if _HAS_PSEUDOGENE_PAIR[gene_key]
@@ -226,6 +264,7 @@ def _classify_generic(gene_key: str, call: dict) -> ParaphaseFinding:
         STATUS_UNCERTAIN,
         f"Paraphase: {total_cn} total {unit} detected (expected {expected}) but {attribution} "
         "-- clinical review recommended",
+        raw_fields=raw_fields,
     )
 
 
@@ -284,10 +323,15 @@ def _classify_havanno_gene(gene_annotations: dict[str, dict], call: Optional[dic
         f"Named pathogenic variant annotation flagged {len(union_variants)} variant(s) "
         f"({set_note}) on {n_calls} of {n_total} haplotype-phase calls: {', '.join(union_variants)}",
         zygosity=_havanno_zygosity(entries_with_variants, call),
+        variants=tuple(union_variants),
+        raw_fields={"haplotype_phase_calls": f"{n_calls} of {n_total}"},
     )
 
 
 def _classify_f8(inv_calls: dict[str, dict]) -> ParaphaseFinding:
+    raw_fields = {
+        record_id: f"GT={c.get('gt')}, SUPP={c.get('supp')}" for record_id, c in sorted(inv_calls.items())
+    }
     inverted = {
         record_id: c for record_id, c in inv_calls.items()
         if _gt_zygosity(c.get("gt")) or (c.get("supp") or 0) > 0
@@ -300,11 +344,13 @@ def _classify_f8(inv_calls: dict[str, dict]) -> ParaphaseFinding:
             f"Intron 1/22 inversion breakpoint detected at {', '.join(sorted(inverted))} "
             "(pathogenic structural rearrangement causing Hemophilia A)",
             zygosity=zygosity,
+            raw_fields=raw_fields,
         )
     if inv_calls:
         return _finding(
             STATUS_NORMAL,
             "No intron 1/22 inversion breakpoint detected (dedicated F8 inversion caller, both probes reference)",
+            raw_fields=raw_fields,
         )
     return _finding(STATUS_UNCERTAIN, "No F8 inversion caller output available for this sample")
 

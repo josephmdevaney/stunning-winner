@@ -262,6 +262,18 @@ def _get_paraphase(mode: str, sample: str) -> tuple[dict, dict, dict, list]:
     return _paraphase_caches[key]
 
 
+def _gene_finding(
+    target: dict, paraphase_calls: dict, f8_inv_calls: dict, havanno_annotations: dict, sawfish_calls: list
+):
+    """classify_gene's finding for one carrier-panel non-repeat target, scoping
+    sawfish calls to that target's own region first."""
+    target_sawfish_calls = [
+        c for c in sawfish_calls
+        if c["chrom"] == target["chrom"] and c["pos"] <= target["stop"] and c["end"] >= target["start"]
+    ]
+    return classify_gene(target["gene"], paraphase_calls, f8_inv_calls, havanno_annotations, target_sawfish_calls)
+
+
 def _non_repeat_summary(
     target: dict, paraphase_calls: dict, f8_inv_calls: dict, havanno_annotations: dict, sawfish_calls: list
 ) -> dict:
@@ -269,11 +281,7 @@ def _non_repeat_summary(
     inversion, ...) a repeat-genotyping VCF can't express or call. Shown as a real
     Paraphase-derived finding when this sample has one; otherwise honestly as "Not
     applicable" rather than omitted or misrepresented as a repeat result."""
-    target_sawfish_calls = [
-        c for c in sawfish_calls
-        if c["chrom"] == target["chrom"] and c["pos"] <= target["stop"] and c["end"] >= target["start"]
-    ]
-    finding = classify_gene(target["gene"], paraphase_calls, f8_inv_calls, havanno_annotations, target_sawfish_calls)
+    finding = _gene_finding(target, paraphase_calls, f8_inv_calls, havanno_annotations, sawfish_calls)
     status = finding.status if finding else "Not applicable"
     status_color = finding.status_color if finding else "oklch(0.6 0.02 260)"
     note = finding.note if finding else f"Requires {target['tool']} -- {target['mechanism']} (not a tandem repeat)."
@@ -288,7 +296,7 @@ def _non_repeat_summary(
         "status_color": status_color,
         "genotyped": finding is not None,
         "note": note,
-        "clickable": False,
+        "clickable": finding is not None,
     }
 
 
@@ -387,6 +395,37 @@ def get_locus(locus_id: str, mode: Optional[str] = None, sample: Optional[str] =
     )
     d["caller"] = CALLER_LABEL
     return d
+
+
+@app.get("/api/gene-finding")
+def get_gene_finding(gene: str, mode: Optional[str] = None, sample: Optional[str] = None):
+    """Detail view for a carrier-panel non-repeat target (GBA, CYP21A2, HBA1/2,
+    ...): the full named-variant list and other raw tool-asserted fields that the
+    Overview row's single-line note can't show in full."""
+    m = _resolve_mode(mode)
+    s = _resolve_sample(m, sample)
+    target = next((t for t in _modes[m]["non_repeat_targets"] if t["gene"] == gene), None)
+    if target is None:
+        raise HTTPException(status_code=404, detail=f"unknown non-repeat target gene {gene!r} for mode {m!r}")
+
+    paraphase_calls, f8_inv_calls, havanno_annotations, sawfish_calls = _get_paraphase(m, s)
+    finding = _gene_finding(target, paraphase_calls, f8_inv_calls, havanno_annotations, sawfish_calls)
+
+    return {
+        "gene": target["gene"],
+        "disease": target["disease"],
+        "region": f"{target['chrom']}:{target['start']}-{target['stop']}",
+        "tool": target["tool"],
+        "mechanism": target["mechanism"],
+        "status": finding.status if finding else "Not applicable",
+        "status_color": finding.status_color if finding else "oklch(0.6 0.02 260)",
+        "zygosity": finding.zygosity if finding else None,
+        "note": finding.note if finding else f"Requires {target['tool']} -- {target['mechanism']} (not a tandem repeat).",
+        "variants": list(finding.variants) if finding else [],
+        "raw_fields": finding.raw_fields if finding else {},
+        "genotyped": finding is not None,
+        "caller": CALLER_LABEL,
+    }
 
 
 @app.get("/api/qc/sample")

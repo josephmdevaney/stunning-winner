@@ -38,7 +38,13 @@ from ..annotate import (
     resolve_panel_locus_ids,
     simulate_pileup_reads,
 )
-from ..paraphase import classify_gene, load_f8_inversion_calls, load_paraphase_calls
+from ..paraphase import (
+    classify_gene,
+    load_f8_inversion_calls,
+    load_havanno_annotations,
+    load_paraphase_calls,
+    load_sawfish_calls,
+)
 from ..trgt import sample_names
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -69,7 +75,7 @@ _default_mode: str = ""
 _panels: dict[tuple[str, str], list[AnnotatedLocus]] = {}
 _panel_by_id: dict[tuple[str, str], dict[str, AnnotatedLocus]] = {}
 _catalog_caches: dict[tuple[str, str], list[dict]] = {}
-_paraphase_caches: dict[tuple[str, str], tuple[dict, dict]] = {}
+_paraphase_caches: dict[tuple[str, str], tuple[dict, dict, dict, list]] = {}
 
 
 def _resolve_config_path(p: Optional[str]) -> Optional[str]:
@@ -205,16 +211,19 @@ def _locus_summary(l: AnnotatedLocus) -> dict:
     }
 
 
-def _get_paraphase(mode: str, sample: str) -> tuple[dict, dict]:
-    """Load this sample's real Paraphase per-gene calls + F8 inversion caller output,
-    if the mode's `paraphase_dir` has files for it -- most samples (all synthetic
-    ones) won't, and get an empty result, which is exactly what `classify_gene`
-    treats as "no real data for this gene"."""
+def _get_paraphase(mode: str, sample: str) -> tuple[dict, dict, dict, list]:
+    """Load this sample's real Paraphase per-gene calls, F8 inversion caller output,
+    havanno named-variant annotations, and sawfish structural-variant calls, if the
+    mode's `paraphase_dir` has files for them -- most samples (all synthetic ones)
+    won't, and get an empty result, which is exactly what `classify_gene` treats as
+    "no real data for this gene"."""
     key = (mode, sample)
     if key not in _paraphase_caches:
         paraphase_dir = _modes[mode]["paraphase_dir"]
         calls: dict = {}
         f8_calls: dict = {}
+        havanno: dict = {}
+        sawfish_calls: list = []
         if paraphase_dir:
             json_path = Path(paraphase_dir) / f"{sample}.paraphase.json"
             if json_path.exists():
@@ -222,16 +231,28 @@ def _get_paraphase(mode: str, sample: str) -> tuple[dict, dict]:
             f8_path = Path(paraphase_dir) / f"{sample}.f8inversion.vcf"
             if f8_path.exists():
                 f8_calls = load_f8_inversion_calls(f8_path)
-        _paraphase_caches[key] = (calls, f8_calls)
+            havanno_path = Path(paraphase_dir) / f"{sample}.havanno.json"
+            if havanno_path.exists():
+                havanno = load_havanno_annotations(havanno_path)
+            sawfish_path = Path(paraphase_dir) / f"{sample}.sv.vcf"
+            if sawfish_path.exists():
+                sawfish_calls = load_sawfish_calls(sawfish_path)
+        _paraphase_caches[key] = (calls, f8_calls, havanno, sawfish_calls)
     return _paraphase_caches[key]
 
 
-def _non_repeat_summary(target: dict, paraphase_calls: dict, f8_inv_calls: dict) -> dict:
+def _non_repeat_summary(
+    target: dict, paraphase_calls: dict, f8_inv_calls: dict, havanno_annotations: dict, sawfish_calls: list
+) -> dict:
     """A carrier-panel target whose variant type (CNV, gene conversion, structural
     inversion, ...) a repeat-genotyping VCF can't express or call. Shown as a real
     Paraphase-derived finding when this sample has one; otherwise honestly as "Not
     applicable" rather than omitted or misrepresented as a repeat result."""
-    finding = classify_gene(target["gene"], paraphase_calls, f8_inv_calls)
+    target_sawfish_calls = [
+        c for c in sawfish_calls
+        if c["chrom"] == target["chrom"] and c["pos"] <= target["stop"] and c["end"] >= target["start"]
+    ]
+    finding = classify_gene(target["gene"], paraphase_calls, f8_inv_calls, havanno_annotations, target_sawfish_calls)
     status = finding.status if finding else "Not applicable"
     status_color = finding.status_color if finding else "oklch(0.6 0.02 260)"
     note = finding.note if finding else f"Requires {target['tool']} -- {target['mechanism']} (not a tandem repeat)."
@@ -293,8 +314,11 @@ def get_overview(mode: Optional[str] = None, sample: Optional[str] = None):
     under_covered = [l for l in genotyped if (l.depth or 0) < 10]
 
     non_repeat_targets = _modes[m]["non_repeat_targets"]
-    paraphase_calls, f8_inv_calls = _get_paraphase(m, s)
-    non_repeat_rows = [_non_repeat_summary(t, paraphase_calls, f8_inv_calls) for t in non_repeat_targets]
+    paraphase_calls, f8_inv_calls, havanno_annotations, sawfish_calls = _get_paraphase(m, s)
+    non_repeat_rows = [
+        _non_repeat_summary(t, paraphase_calls, f8_inv_calls, havanno_annotations, sawfish_calls)
+        for t in non_repeat_targets
+    ]
     loci = [_locus_summary(l) for l in panel] + non_repeat_rows
 
     loci_genotyped = len(genotyped) + sum(1 for r in non_repeat_rows if r["genotyped"])

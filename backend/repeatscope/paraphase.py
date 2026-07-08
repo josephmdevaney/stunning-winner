@@ -4,12 +4,15 @@ express (see `carrier_screen.non_repeat_targets.json`'s own `mechanism` field fo
 why each one needs a different tool).
 
 Every finding here is read directly off a field Paraphase (or, for F8, PacBio's
-dedicated intron-1/22 inversion caller) itself already asserts -- `total_cn`,
-`gene_cn`, `genotype`, `fusions_called`, `sv_called`, or the inversion caller's own
-GT/SUPP -- nothing here re-derives a pathogenic call from raw haplotype sequences.
-Where the tool itself couldn't attribute a copy-number change to a specific gene
-(`gene_cn` is null, as with this panel's real CYP21A2/TNXB region), that's reported
-as an unresolved/atypical finding rather than guessed as benign or pathogenic.
+dedicated intron-1/22 inversion caller; or, for HBA1/2's large deletions, the
+`sawfish` structural-variant caller; or, for named pathogenic variants, the
+"havanno" per-haplotype variant annotation) itself already asserts -- `total_cn`,
+`gene_cn`, `genotype`, `fusions_called`, `sv_called`, the inversion caller's own
+GT/SUPP, sawfish's own GT/SVTYPE, or havanno's own `variants.pathogenic` list --
+nothing here re-derives a pathogenic call from raw haplotype sequences. Where the
+tool itself couldn't attribute a copy-number change to a specific gene (`gene_cn`
+is null, as with this panel's real CYP21A2/TNXB region), that's reported as an
+unresolved/atypical finding rather than guessed as benign or pathogenic.
 """
 
 from __future__ import annotations
@@ -55,6 +58,44 @@ def load_paraphase_calls(json_path: str | Path) -> dict[str, dict]:
         return json.load(f)
 
 
+def load_havanno_annotations(json_path: str | Path) -> dict[str, dict]:
+    """Parse PacBio's "havanno" per-haplotype variant annotation JSON: for each
+    Paraphase gene key, a dict of haplotype-phase-call-id -> named pathogenic (and
+    pseudogene) variants asserted on that call (e.g. Gauchian GBA1 calls, the
+    curated CYP21A2 variant list). Returns the `annotations` section keyed by
+    Paraphase gene key (`cyp21`, `gba`, ...), or `{}` if unavailable."""
+    with open(json_path, encoding="utf-8") as f:
+        data = json.load(f)
+    return data.get("annotations", {})
+
+
+def load_sawfish_calls(vcf_path: str | Path) -> list[dict]:
+    """Parse sawfish structural-variant VCF records. Used as a fallback for
+    HBA1/HBA2's large deletions, which Paraphase's own copy-number caller can
+    fail to resolve to a genotype (see `carrier_screen.non_repeat_targets.json`'s
+    HBA1/2 entry: "small deletion via Paraphase, large deletion via sawfish")."""
+    calls: list[dict] = []
+    with open(vcf_path, encoding="utf-8") as f:
+        for line in f:
+            if line.startswith("#"):
+                continue
+            fields = line.rstrip("\n").split("\t")
+            chrom, pos, _id, _ref, _alt, _qual, filter_, info, fmt, sample_field = fields[:10]
+            if filter_ != "PASS":
+                continue
+            info_d = dict(kv.split("=", 1) for kv in info.split(";") if "=" in kv)
+            fmt_d = dict(zip(fmt.split(":"), sample_field.split(":")))
+            calls.append({
+                "chrom": chrom,
+                "pos": int(pos),
+                "end": int(info_d["END"]) if "END" in info_d else int(pos),
+                "svtype": info_d.get("SVTYPE"),
+                "svlen": int(info_d["SVLEN"]) if "SVLEN" in info_d else None,
+                "gt": fmt_d.get("GT"),
+            })
+    return calls
+
+
 def load_f8_inversion_calls(vcf_path: str | Path) -> dict[str, dict]:
     """Parse PacBio's dedicated F8 intron-1/22 inversion caller VCF.
 
@@ -85,7 +126,15 @@ def _finding(status: str, note: str) -> ParaphaseFinding:
     return ParaphaseFinding(status=status, status_color=STATUS_COLORS[status], note=note)
 
 
-def _classify_hba(call: dict) -> ParaphaseFinding:
+def _classify_hba(
+    call: dict,
+    havanno_gene_annotations: Optional[dict[str, dict]] = None,
+    sawfish_calls: Optional[list[dict]] = None,
+) -> ParaphaseFinding:
+    havanno_finding = _classify_havanno_gene(havanno_gene_annotations or {})
+    if havanno_finding is not None:
+        return havanno_finding
+
     genotype = call.get("genotype")
     if genotype == "aa/aa":
         return _finding(STATUS_NORMAL, "Paraphase: genotype aa/aa (4 of 4 alpha-globin copies present, no deletion)")
@@ -93,6 +142,18 @@ def _classify_hba(call: dict) -> ParaphaseFinding:
         return _finding(
             STATUS_UNCERTAIN,
             f"Paraphase reported genotype {genotype!r} (not the normal aa/aa) -- clinical review recommended",
+        )
+    dels = [
+        c for c in (sawfish_calls or [])
+        if c.get("svtype") == "DEL" and c.get("gt") not in (None, "0/0", "0|0", "0")
+    ]
+    if dels:
+        parts = ", ".join(f"{c['chrom']}:{c['pos']}-{c['end']} ({c['svlen']} bp, GT={c['gt']})" for c in dels)
+        return _finding(
+            STATUS_UNCERTAIN,
+            "Paraphase did not report a resolved HBA1/HBA2 genotype, and sawfish found a deletion overlapping "
+            f"the region ({parts}) that cannot be attributed to HBA1 vs. HBA2 from this data -- clinical review "
+            "recommended",
         )
     return _finding(STATUS_UNCERTAIN, "Paraphase did not report a resolved HBA1/HBA2 genotype")
 
@@ -141,9 +202,52 @@ def _classify_generic(gene_key: str, call: dict) -> ParaphaseFinding:
     )
 
 
+def _classify_havanno_gene(gene_annotations: dict[str, dict]) -> Optional[ParaphaseFinding]:
+    """Build a Pathogenic finding from havanno's named-variant annotations, or
+    None if no haplotype-phase call for this gene carries any named pathogenic
+    variant (caller should then fall back to the total_cn-based classifier).
+
+    A single physical haplotype is often represented by several redundant
+    haplotype-phase calls (e.g. `cyp21_hap2`/`hap5`/`hap7` all carrying the same
+    variant list); those are collapsed by reporting the distinct variant sets
+    actually seen, not the raw call count.
+    """
+    entries_with_variants = {
+        hap_id: tuple(sorted(set(entry.get("variants", {}).get("pathogenic", []))))
+        for hap_id, entry in gene_annotations.items()
+        if entry.get("num_pathogenic_variants", 0) > 0
+    }
+    if not entries_with_variants:
+        return None
+
+    distinct_variant_sets = sorted(set(entries_with_variants.values()), key=lambda s: (-len(s), s))
+    union_variants = sorted({v for variants in entries_with_variants.values() for v in variants})
+    n_calls = len(entries_with_variants)
+    n_total = len(gene_annotations)
+    set_note = (
+        "1 distinct variant set"
+        if len(distinct_variant_sets) == 1
+        else f"{len(distinct_variant_sets)} distinct (overlapping) variant sets"
+    )
+    return _finding(
+        STATUS_PATHOGENIC,
+        f"Named pathogenic variant annotation flagged {len(union_variants)} variant(s) "
+        f"({set_note}) on {n_calls} of {n_total} haplotype-phase calls: {', '.join(union_variants)}",
+    )
+
+
+def _gt_has_alt_allele(gt: Optional[str]) -> bool:
+    """True if a VCF GT string (hemizygous `0`, diploid `0/0`, phased `0|1`, ...)
+    carries any non-reference, non-missing allele."""
+    if not gt:
+        return False
+    return any(allele not in ("0", ".") for allele in gt.replace("|", "/").split("/"))
+
+
 def _classify_f8(inv_calls: dict[str, dict]) -> ParaphaseFinding:
     inverted_at = [
-        record_id for record_id, c in inv_calls.items() if c.get("gt") not in (None, "0") or (c.get("supp") or 0) > 0
+        record_id for record_id, c in inv_calls.items()
+        if _gt_has_alt_allele(c.get("gt")) or (c.get("supp") or 0) > 0
     ]
     if inverted_at:
         return _finding(
@@ -160,7 +264,11 @@ def _classify_f8(inv_calls: dict[str, dict]) -> ParaphaseFinding:
 
 
 def classify_gene(
-    gene: str, paraphase_calls: dict[str, dict], f8_inv_calls: Optional[dict[str, dict]]
+    gene: str,
+    paraphase_calls: dict[str, dict],
+    f8_inv_calls: Optional[dict[str, dict]],
+    havanno_annotations: Optional[dict[str, dict]] = None,
+    sawfish_calls: Optional[list[dict]] = None,
 ) -> Optional[ParaphaseFinding]:
     """Build a finding for one carrier-panel non-repeat gene, or None if no real
     data is available for it (caller should keep the generic "Not applicable"
@@ -176,7 +284,13 @@ def classify_gene(
     if call is None:
         return None
     if key == "hba":
-        return _classify_hba(call)
+        return _classify_hba(call, (havanno_annotations or {}).get("hba"), sawfish_calls)
     if key == "smn1":
         return _classify_smn1(call)
+
+    if havanno_annotations:
+        havanno_finding = _classify_havanno_gene(havanno_annotations.get(key, {}))
+        if havanno_finding is not None:
+            return havanno_finding
+
     return _classify_generic(key, call)

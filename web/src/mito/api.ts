@@ -51,6 +51,12 @@ export interface VariantConstraint {
   regional: RegionalConstraintRow | null
 }
 
+export interface AcmgEvidence {
+  code: string
+  strength: string
+  note: string
+}
+
 export interface Variant {
   id: string
   position: string
@@ -72,6 +78,9 @@ export interface Variant {
   // are simply absent (undefined) on its variants.
   gnomad?: GnomadHit | null
   constraint?: VariantConstraint | null
+  // Present (possibly empty) only for real calls not already an exact curated-
+  // pathogenic match -- see backend/mitolr/vcf.py for why.
+  acmg_evidence?: AcmgEvidence[]
   origin: 'pathogenic' | 'novel'
   heteroplasmy: number
   status: string

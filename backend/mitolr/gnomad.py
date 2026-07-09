@@ -74,3 +74,60 @@ def frequency_for(pos: int, ref: str, alt: str) -> Optional[GnomadHit]:
     """The gnomAD v3.1 record for this exact (pos, ref, alt), or None if the
     variant was never observed in the callset."""
     return _table().get((pos, ref, alt))
+
+
+# ACMG/AMP frequency-based evidence thresholds, per McCormick et al. 2020 ("Specifications
+# of the ACMG/AMP standards and guidelines for mitochondrial DNA variant interpretation",
+# Hum Mutat 41(12):2028-2057) -- the ClinGen mtDNA Expert Panel's own specification of
+# BA1/BS1/PM2 for mtDNA, derived from their analysis of real MITOMAP pathogenic-variant
+# frequency distributions. The thresholds are deliberately non-contiguous: the 0.0099-0.01
+# and 0.00002-0.005 gaps are real findings from that analysis, not omissions here.
+ACMG_BA1_THRESHOLD = 0.01
+ACMG_BS1_RANGE = (0.005, 0.0099)
+ACMG_PM2_SUPPORTING_THRESHOLD = 0.00002
+
+
+def acmg_frequency_evidence(hit: Optional[GnomadHit]) -> list[dict]:
+    """BA1 (stand-alone benign) / BS1 (strong benign) / PM2_supporting (supporting
+    pathogenic) against gnomAD's real mtDNA callset. Total population frequency is
+    AF_hom + AF_het -- the variant's real occurrence at any heteroplasmy level
+    >=10%, not just the homoplasmic slice -- since McCormick et al. specify a plain
+    "allele frequency" without splitting by heteroplasmy band.
+
+    Only one code (or none, in the gaps between thresholds) is ever returned, since
+    the three ranges are mutually exclusive by construction."""
+    if hit is None:
+        return [
+            {
+                "code": "PM2_supporting",
+                "strength": "Supporting (pathogenic)",
+                "note": f"Absent from {SOURCE_LABEL} (n={COHORT_SIZE:,}); frequency below the 0.002% threshold.",
+            }
+        ]
+    af = hit["af_hom"] + hit["af_het"]
+    if af > ACMG_BA1_THRESHOLD:
+        return [
+            {
+                "code": "BA1",
+                "strength": "Stand-alone (benign)",
+                "note": f"Frequency {af:.2%} in {SOURCE_LABEL} exceeds the 1% stand-alone benign threshold.",
+            }
+        ]
+    lo, hi = ACMG_BS1_RANGE
+    if lo <= af <= hi:
+        return [
+            {
+                "code": "BS1",
+                "strength": "Strong (benign)",
+                "note": f"Frequency {af:.2%} in {SOURCE_LABEL} falls in the 0.5-0.99% strong-benign range.",
+            }
+        ]
+    if af < ACMG_PM2_SUPPORTING_THRESHOLD:
+        return [
+            {
+                "code": "PM2_supporting",
+                "strength": "Supporting (pathogenic)",
+                "note": f"Frequency {af:.4%} in {SOURCE_LABEL} is below the 0.002% supporting-pathogenic threshold.",
+            }
+        ]
+    return []

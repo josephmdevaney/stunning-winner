@@ -205,6 +205,37 @@ function PopulationConstraint({ v }: { v: Variant }) {
         )}
       </div>
 
+      {v.acmg_evidence && v.acmg_evidence.length > 0 && (
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 6 }}>
+            ACMG/AMP evidence (mtDNA specification)
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {v.acmg_evidence.map((e) => (
+              <div key={e.code}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                  <span
+                    style={{
+                      fontFamily: mono,
+                      fontSize: 11.5,
+                      fontWeight: 700,
+                      padding: '2px 7px',
+                      borderRadius: 4,
+                      background: mito.markerBg,
+                      color: mito.markerText,
+                    }}
+                  >
+                    {e.code}
+                  </span>
+                  <span style={{ fontSize: 12, color: colors.textSecondary }}>{e.strength}</span>
+                </div>
+                <div style={{ fontSize: 12, color: colors.textTertiary, marginTop: 3 }}>{e.note}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div>
         <div style={{ fontSize: 11, fontWeight: 600, color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 6 }}>
           gnomAD v4.1 gene constraint

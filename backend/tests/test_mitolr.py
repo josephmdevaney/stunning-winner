@@ -254,3 +254,70 @@ def test_classify_backward_compatible_without_gnomad_args():
     result = annotate.classify(99999, "A", "G", 100.0)
     assert result["status"] == "Common variant"
     assert "not evaluated" in result["note"]
+
+
+# --- ACMG/AMP evidence tags (McCormick et al. 2020) ------------------------
+
+def _fake_hit(af_hom, af_het=0.0, pass_qc=True):
+    return {
+        "af_hom": af_hom, "af_het": af_het, "ac_hom": 1, "ac_het": 0, "an": 1,
+        "filters": ["PASS"] if pass_qc else ["artifact_prone_site"],
+        "pass_qc": pass_qc, "max_observed_heteroplasmy": 1.0,
+    }
+
+
+def test_acmg_ba1_stand_alone_benign_above_1pct():
+    result = gnomad.acmg_frequency_evidence(_fake_hit(0.02))
+    assert [e["code"] for e in result] == ["BA1"]
+
+
+def test_acmg_bs1_strong_benign_range():
+    result = gnomad.acmg_frequency_evidence(_fake_hit(0.007))
+    assert [e["code"] for e in result] == ["BS1"]
+
+
+def test_acmg_pm2_supporting_below_threshold_or_absent():
+    assert [e["code"] for e in gnomad.acmg_frequency_evidence(None)] == ["PM2_supporting"]
+    assert [e["code"] for e in gnomad.acmg_frequency_evidence(_fake_hit(0.00001))] == ["PM2_supporting"]
+
+
+def test_acmg_gap_between_thresholds_yields_no_evidence():
+    # 0.1% falls between PM2_supporting's 0.002% ceiling and BS1's 0.5% floor --
+    # a real gap in McCormick et al.'s thresholds, not a bug.
+    assert gnomad.acmg_frequency_evidence(_fake_hit(0.001)) == []
+    # 0.995% falls just above BS1's 0.99% ceiling and below BA1's 1% floor.
+    assert gnomad.acmg_frequency_evidence(_fake_hit(0.00995)) == []
+
+
+def test_acmg_pm5_supporting_different_allele_same_trna_position():
+    # m.3243A>G (MELAS, MT-TL1) is in the curated panel. A different allele at the
+    # same position raises suspicion (PM5_supporting); the exact same allele is
+    # already covered by match_pathogenic, a stronger line of evidence, not this one.
+    hit = annotate.pm5_supporting_candidate(3243, "C")
+    assert hit is not None and hit["id"] == "m3243AG"
+    assert annotate.pm5_supporting_candidate(3243, "G") is None  # exact match, excluded
+
+
+def test_acmg_pm5_supporting_scoped_to_trna_rrna_not_missense():
+    # m.8993T>G (NARP/Leigh, MT-ATP6) is a protein-coding Missense entry -- PM5_supporting
+    # only applies to tRNA/rRNA panel entries (no codon-level consequence annotation
+    # exists to support the protein-coding form of this criterion).
+    assert annotate.pm5_supporting_candidate(8993, "C") is None
+
+
+def test_hg002_acmg_evidence_end_to_end():
+    by_pos = {v["pos"]: v for v in vcf.build_variants(HG002_VCF)}
+
+    # m.263A>G: common (99.07% hom) -> BA1.
+    assert [e["code"] for e in by_pos[263]["acmg_evidence"]] == ["BA1"]
+    # m.8557G>A: real frequency ~0.86% -> BS1.
+    assert [e["code"] for e in by_pos[8557]["acmg_evidence"]] == ["BS1"]
+    # The 3106 CN>C deletion is absent from gnomAD entirely -> PM2_supporting.
+    assert [e["code"] for e in by_pos[3106]["acmg_evidence"]] == ["PM2_supporting"]
+    # m.6800A>G: real frequency ~0.03%, in the gap between thresholds -> no evidence.
+    assert by_pos[6800]["acmg_evidence"] == []
+
+
+def test_demo_sample_never_gets_acmg_evidence_key():
+    for v in generate.build_variants():
+        assert "acmg_evidence" not in v

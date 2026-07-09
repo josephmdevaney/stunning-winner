@@ -94,6 +94,26 @@ def build_variants(path: str) -> list[dict]:
         gnomad_hit = gnomad.frequency_for(pos, ref, alt)
         cls = annotate.classify(pos, ref, alt, het, gnomad_hit=gnomad_hit, gnomad_checked=True)
         gene_constraint = constraint.constraint_for_variant(pos, locus)
+
+        # ACMG/AMP evidence tags (McCormick et al. 2020) only for calls that aren't
+        # already an exact curated-pathogenic match -- BA1/BS1 benign evidence would
+        # contradict an established-pathogenic classification, and PM2/PM5_supporting
+        # exist to raise or lower suspicion for variants that aren't already resolved.
+        acmg_evidence: list[dict] = []
+        if cls["origin"] == "novel":
+            acmg_evidence = gnomad.acmg_frequency_evidence(gnomad_hit)
+            pm5 = annotate.pm5_supporting_candidate(pos, alt)
+            if pm5 is not None:
+                acmg_evidence.append(
+                    {
+                        "code": "PM5_supporting",
+                        "strength": "Supporting (pathogenic)",
+                        "note": (
+                            f"Same position as the curated pathogenic variant {pm5['position']} "
+                            f"({pm5['disease']}), different allele."
+                        ),
+                    }
+                )
         # AD gives real per-allele read support for the pileup.
         ad_ref = r["ad"][0] if len(r["ad"]) >= 1 else None
         ad_alt = r["ad"][1] if len(r["ad"]) >= 2 else None
@@ -114,6 +134,7 @@ def build_variants(path: str) -> list[dict]:
                 "gnomadFreq": _format_gnomad_freq(gnomad_hit),
                 "gnomad": gnomad_hit,
                 "constraint": gene_constraint,
+                "acmg_evidence": acmg_evidence,
                 "heteroplasmy": het,
                 "depth": r["dp"],
                 "ad_ref": ad_ref,

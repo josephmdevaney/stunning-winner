@@ -10,6 +10,7 @@ leaves the rest marked as not evaluated rather than fabricating it.
 
 from __future__ import annotations
 
+import re
 from typing import Optional
 
 from . import gnomad as gnomad_mod
@@ -26,15 +27,39 @@ for _v in PATHOGENIC_PANEL:
     _m = None
     _pos_str = _v["position"]
     # Parse "m.<pos><ref>><alt>" for SNVs; deletions are matched by pos only.
-    import re as _re
-
-    _snv = _re.match(r"m\.(\d+)([ACGT])>([ACGT])", _pos_str)
+    _snv = re.match(r"m\.(\d+)([ACGT])>([ACGT])", _pos_str)
     if _snv:
         _PATHO_BY_KEY[(int(_snv.group(1)), _snv.group(2), _snv.group(3))] = _v
 
 
 def match_pathogenic(pos: int, ref: str, alt: str) -> Optional[dict]:
     return _PATHO_BY_KEY.get((pos, ref, alt))
+
+
+# Position -> panel entries, restricted to tRNA/rRNA variants, for PM5_supporting.
+_PATHO_BY_POS_RNA: dict[int, list[dict]] = {}
+for _v in PATHOGENIC_PANEL:
+    if _v["type"] in ("tRNA point mutation", "rRNA variant"):
+        _PATHO_BY_POS_RNA.setdefault(_v["pos"], []).append(_v)
+
+
+def pm5_supporting_candidate(pos: int, alt: str) -> Optional[dict]:
+    """PM5_supporting (McCormick et al. 2020): a *different* nucleotide change at
+    the same position as a curated tRNA/rRNA pathogenic variant raises suspicion
+    for pathogenicity, even without a protein-coding amino-acid match -- tRNA/rRNA
+    genes aren't translated, so position identity substitutes for the amino-acid
+    comparison the original (protein-coding) PM5 rule uses. Scoped to tRNA/rRNA
+    panel entries only: the mRNA form of this criterion needs codon-level
+    consequence annotation this pipeline doesn't perform.
+
+    Returns the panel entry it matched (for its disease/evidence context), or None.
+    Deliberately excludes an exact allele match -- that's already `match_pathogenic`,
+    a much stronger line of evidence, not this supporting one."""
+    for entry in _PATHO_BY_POS_RNA.get(pos, ()):
+        m = re.match(r"m\.(\d+)([ACGT])>([ACGT])", entry["position"])
+        if m and m.group(3) != alt:
+            return entry
+    return None
 
 
 def locus_and_consequence(pos: int) -> tuple[str, str]:

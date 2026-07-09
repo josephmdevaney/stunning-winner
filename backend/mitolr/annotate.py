@@ -12,6 +12,7 @@ from __future__ import annotations
 
 from typing import Optional
 
+from . import gnomad as gnomad_mod
 from .reference import (
     CONSEQUENCE_BY_TYPE,
     PATHOGENIC_PANEL,
@@ -66,12 +67,25 @@ def variant_notation(pos: int, ref: str, alt: str) -> tuple[str, str, bool]:
     return (f"m.{pos}{ref}>{alt}", f"{ref}>{alt}", False)
 
 
-def classify(pos: int, ref: str, alt: str, het: float) -> dict:
+def classify(
+    pos: int,
+    ref: str,
+    alt: str,
+    het: float,
+    gnomad_hit: Optional[gnomad_mod.GnomadHit] = None,
+    gnomad_checked: bool = False,
+) -> dict:
     """Classify a called variant into the display status taxonomy.
 
-    Known-pathogenic calls use the heteroplasmy bands; everything else is
-    reported honestly by heteroplasmy state, without asserting rarity (no
-    population-frequency database is consulted here)."""
+    Known-pathogenic calls use the heteroplasmy bands, unaffected by
+    population frequency. Novel (non-pathogenic-panel) calls are reported by
+    heteroplasmy state; when ``gnomad_checked`` is True (real VCF-derived
+    calls only -- see vcf.py), a homoplasmic novel call is further split into
+    Common vs Rare using its real gnomAD v3.1 AF_hom, rather than assuming
+    "homoplasmic implies common." ``gnomad_hit`` is None either because the
+    variant was checked and not found in the callset (gnomad_checked=True) or
+    because gnomAD wasn't consulted at all (gnomad_checked=False, e.g. the
+    synthetic demo sample) -- the note text distinguishes the two."""
     patho = match_pathogenic(pos, ref, alt)
     if patho is not None:
         if het >= 30:
@@ -107,9 +121,47 @@ def classify(pos: int, ref: str, alt: str, het: float) -> dict:
         note = f"Sub-threshold call ({het}%); below the 5% reporting threshold."
     elif het < 95:
         status = "VUS"
+        if gnomad_hit is not None:
+            note = (
+                f"Heteroplasmic call ({het}%) with no known disease association — variant of "
+                f"uncertain significance. Also observed heteroplasmic in {gnomad_mod.SOURCE_LABEL} "
+                f"(AF_het={gnomad_hit['af_het']:.2%}, n={gnomad_hit['an']:,}); population frequency "
+                f"alone doesn't resolve significance for a heteroplasmic call."
+            )
+        elif gnomad_checked:
+            note = (
+                f"Heteroplasmic call ({het}%) with no known disease association — variant of "
+                f"uncertain significance. Not found in {gnomad_mod.SOURCE_LABEL} "
+                f"(n={gnomad_mod.COHORT_SIZE:,})."
+            )
+        else:
+            note = (
+                f"Heteroplasmic call ({het}%) with no known disease association — variant of "
+                f"uncertain significance. Population frequency not evaluated."
+            )
+    elif gnomad_hit is not None:
+        af = gnomad_hit["af_hom"]
+        if af >= 0.01:
+            status = "Common variant"
+            note = (
+                f"Homoplasmic call vs rCRS ({het}%); no known disease association. Common in "
+                f"{gnomad_mod.SOURCE_LABEL} (AF_hom={af:.2%}, n={gnomad_hit['an']:,}) — likely "
+                f"haplogroup-defining or benign."
+            )
+        else:
+            status = "Rare variant"
+            note = (
+                f"Homoplasmic call vs rCRS ({het}%); no known disease association. Rare in "
+                f"{gnomad_mod.SOURCE_LABEL} (AF_hom={af:.2%}, n={gnomad_hit['an']:,})."
+            )
+        if not gnomad_hit["pass_qc"]:
+            note += f" gnomAD flags this site: {', '.join(gnomad_hit['filters'])}."
+    elif gnomad_checked:
+        status = "Rare variant"
         note = (
-            f"Heteroplasmic call ({het}%) with no known disease association — variant of "
-            f"uncertain significance. Population frequency not evaluated."
+            f"Homoplasmic call vs rCRS ({het}%); no known disease association. Not found in "
+            f"{gnomad_mod.SOURCE_LABEL} (n={gnomad_mod.COHORT_SIZE:,}) — genuinely rare or "
+            f"private, not merely uncommon."
         )
     else:
         status = "Common variant"

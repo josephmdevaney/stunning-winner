@@ -3,7 +3,7 @@ sample registry, and the API routes."""
 
 from fastapi.testclient import TestClient
 
-from mitolr import annotate, generate, qc, samples, vcf
+from mitolr import annotate, constraint, generate, gnomad, qc, samples, vcf
 from repeatscope.api.main import app
 
 client = TestClient(app)
@@ -166,3 +166,91 @@ def test_variant_endpoint_and_404():
 
 def test_repeatscope_routes_still_present():
     assert client.get("/api/modes").status_code == 200
+
+
+# --- gnomAD v3.1 mtDNA population frequency ---------------------------------
+
+def test_gnomad_lookup_known_common_variant():
+    hit = gnomad.frequency_for(263, "A", "G")
+    assert hit is not None
+    assert hit["pass_qc"] is True
+    assert hit["af_hom"] > 0.9  # near-fixed in the population
+
+
+def test_gnomad_lookup_miss_returns_none():
+    # rCRS position 3107 is an 'N' padding base; MitoRSaw's anchored deletion
+    # call here (CN>C at pos 3106) has no real counterpart in gnomAD's callset.
+    assert gnomad.frequency_for(3106, "CN", "C") is None
+
+
+def test_gnomad_flags_artifact_prone_homopolymer_site():
+    hit = gnomad.frequency_for(302, "A", "AC")
+    assert hit is not None
+    assert hit["pass_qc"] is False
+    assert "artifact_prone_site" in hit["filters"]
+
+
+# --- gnomAD v4.1 mtDNA constraint --------------------------------------------
+
+def test_gene_constraint_covers_rna_and_protein_genes():
+    rows = constraint.gene_constraint_for("MT-RNR1")
+    assert len(rows) == 1 and rows[0]["consequence"] == "RNA_variant"
+
+    nd1_rows = constraint.gene_constraint_for("MT-ND1")
+    assert {r["consequence"] for r in nd1_rows} == {"synonymous", "missense", "stop_gain"}
+
+
+def test_gene_constraint_empty_for_dloop():
+    # The control region isn't a gene and has no row in the constraint table.
+    assert constraint.gene_constraint_for("D-loop") == []
+
+
+def test_regional_constraint_matches_known_hotspot():
+    # MT-CYB 14804-14857 is a flagged low-constraint sub-region.
+    hit = constraint.regional_constraint_for(14820, "MT-CYB")
+    assert hit is not None
+    assert hit["start"] == 14804 and hit["end"] == 14857
+
+    # Same gene, a position outside any flagged hotspot.
+    assert constraint.regional_constraint_for(15000, "MT-CYB") is None
+
+
+# --- real HG002 calls carry gnomAD + constraint annotation ------------------
+
+def test_hg002_variants_carry_real_gnomad_and_constraint():
+    by_pos = {v["pos"]: v for v in vcf.build_variants(HG002_VCF)}
+
+    # m.750A>G: homoplasmic, MT-RNR1, common in gnomAD -> Common variant + constraint present.
+    v750 = by_pos[750]
+    assert v750["status"] == "Common variant"
+    assert v750["gnomad"]["af_hom"] > 0.9
+    assert v750["constraint"]["gene_rows"][0]["symbol"] == "MT-RNR1"
+
+    # m.6800A>G: homoplasmic but real AF_hom << 1% -> Rare, not Common.
+    v6800 = by_pos[6800]
+    assert v6800["status"] == "Rare variant"
+    assert v6800["gnomad"]["af_hom"] < 0.01
+
+    # The 3106 CN>C deletion has no gnomAD counterpart at all.
+    v3106 = by_pos[3106]
+    assert v3106["gnomad"] is None
+    assert v3106["status"] == "Rare variant"
+    assert "Not found" in v3106["note"]
+
+    # D-loop positions (263, 16304) aren't covered by the gene constraint table.
+    assert by_pos[263]["constraint"] is None
+
+
+def test_demo_sample_never_queries_real_population_data():
+    # The synthetic sample's positions are generated, not observed -- a
+    # coincidental match against gnomAD would misrepresent a fake call as real.
+    for v in generate.build_variants():
+        assert "gnomad" not in v
+        assert "constraint" not in v
+
+
+def test_classify_backward_compatible_without_gnomad_args():
+    # Old call signature (no gnomad_hit/gnomad_checked) keeps old semantics.
+    result = annotate.classify(99999, "A", "G", 100.0)
+    assert result["status"] == "Common variant"
+    assert "not evaluated" in result["note"]

@@ -19,7 +19,7 @@ from __future__ import annotations
 import gzip
 from pathlib import Path
 
-from . import annotate
+from . import annotate, constraint, gnomad
 
 
 def _open(path: str):
@@ -73,6 +73,16 @@ def parse_records(path: str) -> list[dict]:
     return records
 
 
+def _format_gnomad_freq(hit: dict | None) -> str:
+    """Compact display string for the Overview table's gnomAD column."""
+    if hit is None:
+        return "Not in gnomAD"
+    af_hom, af_het = hit["af_hom"], hit["af_het"]
+    if af_hom >= af_het:
+        return f"{af_hom:.2%} (hom)"
+    return f"{af_het:.2%} (het)"
+
+
 def build_variants(path: str) -> list[dict]:
     """Parse + annotate a MitoRSaw VCF into sorted MitoLR variant dicts."""
     out: list[dict] = []
@@ -81,7 +91,9 @@ def build_variants(path: str) -> list[dict]:
         het = _fmt_pct(r["vaf"]) if r["vaf"] is not None else 0.0
         position, change, is_del = annotate.variant_notation(pos, ref, alt)
         locus, consequence = annotate.locus_and_consequence(pos)
-        cls = annotate.classify(pos, ref, alt, het)
+        gnomad_hit = gnomad.frequency_for(pos, ref, alt)
+        cls = annotate.classify(pos, ref, alt, het, gnomad_hit=gnomad_hit, gnomad_checked=True)
+        gene_constraint = constraint.constraint_for_variant(pos, locus)
         # AD gives real per-allele read support for the pileup.
         ad_ref = r["ad"][0] if len(r["ad"]) >= 1 else None
         ad_alt = r["ad"][1] if len(r["ad"]) >= 2 else None
@@ -99,7 +111,9 @@ def build_variants(path: str) -> list[dict]:
                 "isDeletion": is_del,
                 "qual": r["qual"],
                 "filter": r["filter"],
-                "gnomadFreq": "—",  # no population-frequency database consulted
+                "gnomadFreq": _format_gnomad_freq(gnomad_hit),
+                "gnomad": gnomad_hit,
+                "constraint": gene_constraint,
                 "heteroplasmy": het,
                 "depth": r["dp"],
                 "ad_ref": ad_ref,

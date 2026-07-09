@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { colors, mono, mito, interpBg, interpColor } from '../theme'
-import { mitoApi, type VariantDetailResponse } from '../api'
+import { mitoApi, type VariantDetailResponse, type Variant } from '../api'
 import { HeteroplasmyBar } from '../charts/HeteroplasmyBar'
 import { CircularMap } from '../charts/CircularMap'
 import { Pileup } from '../charts/Pileup'
@@ -106,6 +106,11 @@ export function MitoVariantDetailScreen({ sample, variantId }: { sample: string;
         </div>
 
         <div style={{ ...cardStyle, padding: 20 }}>
+          <RailHeading>Population &amp; constraint</RailHeading>
+          <PopulationConstraint v={v} />
+        </div>
+
+        <div style={{ ...cardStyle, padding: 20 }}>
           <RailHeading>Reference ranges</RailHeading>
           <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8, fontSize: 13 }}>
             {data.reference_ranges.map((r) => (
@@ -161,6 +166,73 @@ function Legend({ swatch, line, label }: { swatch?: string; line?: boolean; labe
 function RailHeading({ children }: { children: React.ReactNode }) {
   return (
     <div style={{ fontSize: 13, fontWeight: 600, color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{children}</div>
+  )
+}
+
+function PopulationConstraint({ v }: { v: Variant }) {
+  const gnomadChecked = 'gnomad' in v
+  const constraintChecked = 'constraint' in v
+
+  if (!gnomadChecked && !constraintChecked) {
+    return (
+      <div style={{ marginTop: 12, fontSize: 12.5, color: colors.textTertiary }}>
+        Synthetic demo variant — not checked against real population data.
+      </div>
+    )
+  }
+
+  return (
+    <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 14, fontSize: 13 }}>
+      <div>
+        <div style={{ fontSize: 11, fontWeight: 600, color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 6 }}>
+          gnomAD v3.1 frequency
+        </div>
+        {v.gnomad ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <KeyVal k="AF (homoplasmic)" v={`${(v.gnomad.af_hom * 100).toFixed(4)}%`} />
+            <KeyVal k="AF (heteroplasmic)" v={`${(v.gnomad.af_het * 100).toFixed(4)}%`} />
+            <KeyVal k="Allele number" v={v.gnomad.an.toLocaleString()} />
+            {!v.gnomad.pass_qc && (
+              <div style={{ fontSize: 12, color: colors.statusIntermediate, marginTop: 2 }}>
+                Site flagged by gnomAD: {v.gnomad.filters.join(', ')}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div style={{ fontSize: 12.5, color: colors.textTertiary }}>
+            Not observed in gnomAD's mtDNA callset (n=56,434 genomes).
+          </div>
+        )}
+      </div>
+
+      <div>
+        <div style={{ fontSize: 11, fontWeight: 600, color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 6 }}>
+          gnomAD v4.1 gene constraint
+        </div>
+        {v.constraint ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {v.constraint.gene_rows.map((r) => (
+              <div key={r.consequence} style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                <span style={{ color: colors.textSecondary }}>{r.consequence}</span>
+                <span style={{ fontFamily: mono }}>
+                  {r.obs_exp.toFixed(3)} obs:exp
+                </span>
+              </div>
+            ))}
+            {v.constraint.regional && (
+              <div style={{ fontSize: 12, color: colors.statusUncertain, marginTop: 4 }}>
+                Falls within a flagged regional constraint hotspot ({v.constraint.regional.start}–{v.constraint.regional.end}, obs:exp{' '}
+                {v.constraint.regional.obs_exp.toFixed(3)}).
+              </div>
+            )}
+          </div>
+        ) : (
+          <div style={{ fontSize: 12.5, color: colors.textTertiary }}>
+            Not covered — outside the 37 annotated mtDNA genes (e.g. the D-loop).
+          </div>
+        )}
+      </div>
+    </div>
   )
 }
 

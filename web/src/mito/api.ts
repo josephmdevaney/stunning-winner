@@ -9,6 +9,48 @@ export interface MitoMeta {
   caller: string
 }
 
+export interface GnomadHit {
+  af_hom: number
+  af_het: number
+  ac_hom: number
+  ac_het: number
+  an: number
+  filters: string[]
+  pass_qc: boolean
+  max_observed_heteroplasmy: number
+}
+
+export interface GeneConstraintRow {
+  symbol: string
+  start: number
+  end: number
+  consequence: string
+  observed: number
+  expected: number
+  obs_exp: number
+  lower_ci: number
+  upper_ci: number
+}
+
+export interface RegionalConstraintRow {
+  symbol: string
+  start: number
+  end: number
+  protein_residue_start: number | null
+  protein_residue_end: number | null
+  observed: number
+  expected: number
+  obs_exp: number
+  lower_ci: number
+  upper_ci: number
+}
+
+export interface VariantConstraint {
+  source: string
+  gene_rows: GeneConstraintRow[]
+  regional: RegionalConstraintRow | null
+}
+
 export interface Variant {
   id: string
   position: string
@@ -25,6 +67,11 @@ export interface Variant {
   qual: number | null
   filter: string
   gnomadFreq: string
+  // Present (possibly null) only for real MitoRSaw-derived calls -- the
+  // synthetic demo sample never queries real population data, so these keys
+  // are simply absent (undefined) on its variants.
+  gnomad?: GnomadHit | null
+  constraint?: VariantConstraint | null
   origin: 'pathogenic' | 'novel'
   heteroplasmy: number
   status: string

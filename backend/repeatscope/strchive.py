@@ -190,44 +190,102 @@ def _classify_deviation_locus(locus: StrchiveLocus, a1: int | None, a2: int | No
     )
 
 
-def _classify_length_only(locus: StrchiveLocus, a1: int | None, a2: int | None) -> Classification:
+def _band_for_value(
+    value: int,
+    patho_threshold: int | None,
+    inter_threshold: int | None,
+    cmp_patho,
+    cmp_inter,
+) -> str:
+    if patho_threshold is not None and cmp_patho(value, patho_threshold):
+        return STATUS_PATHOGENIC
+    if inter_threshold is not None and cmp_inter(value, inter_threshold):
+        return STATUS_INTERMEDIATE
+    return STATUS_NORMAL
+
+
+def _ci_straddle_caveat(
+    status: str,
+    range_bp: tuple[int, int] | None,
+    motif_len: int | None,
+    patho_threshold: int | None,
+    inter_threshold: int | None,
+    cmp_patho,
+    cmp_inter,
+) -> str | None:
+    """ACMG's NGS repeat-expansion points-to-consider statement (2026): when a call's
+    point estimate lands in one band but its reported confidence interval reaches into
+    another, that should be surfaced with a follow-up-confirmation recommendation, not
+    silently resolved to the point estimate alone.
+
+    TRGT's ALLR field is a bp-length confidence interval, not a repeat-unit one, so it's
+    converted via the locus's motif length -- exact for single-motif loci, an
+    approximation for compound loci (e.g. HTT) where ALLR covers the whole allele's
+    length variability rather than just the specific STRUC segment being classified.
+    """
+    if range_bp is None or not motif_len:
+        return None
+    lo_bp, hi_bp = range_bp
+    if lo_bp == hi_bp:
+        return None
+    lo_units = round(lo_bp / motif_len)
+    hi_units = round(hi_bp / motif_len)
+    band_lo = _band_for_value(lo_units, patho_threshold, inter_threshold, cmp_patho, cmp_inter)
+    band_hi = _band_for_value(hi_units, patho_threshold, inter_threshold, cmp_patho, cmp_inter)
+    if band_lo == band_hi:
+        return None
+    other = band_hi if band_hi != status else band_lo
+    return (
+        f" TRGT's reported confidence interval ({lo_bp}-{hi_bp} bp ≈ {lo_units}-{hi_units} "
+        f"repeats) overlaps the {other} range; confirm with an alternative method "
+        f"(e.g. repeat-primed PCR or Southern blot)."
+    )
+
+
+def _classify_length_only(
+    locus: StrchiveLocus,
+    a1: int | None, a2: int | None,
+    a1_range_bp: tuple[int, int] | None = None,
+    a2_range_bp: tuple[int, int] | None = None,
+) -> Classification:
     """Classify by repeat count alone: the larger of the two alleles compared against
     pathogenic, then intermediate, then benign thresholds (smaller allele instead, for
     the rare contraction-direction loci)."""
-    values = [v for v in (a1, a2) if v is not None]
+    pairs = [(v, r) for v, r in ((a1, a1_range_bp), (a2, a2_range_bp)) if v is not None]
     contraction = _is_contraction_locus(locus)
-    called = min(values) if contraction else max(values)
+    called, called_range_bp = (min if contraction else max)(pairs, key=lambda p: p[0])
     cmp_patho = (lambda v, t: v <= t) if contraction else (lambda v, t: v >= t)
     cmp_inter = (lambda v, t: v <= t) if contraction else (lambda v, t: v >= t)
     patho_threshold = locus.pathogenic_max if contraction else locus.pathogenic_min
     inter_threshold = locus.intermediate_max if contraction else locus.intermediate_min
+    motif_len = len(locus.motif) if locus.motif else None
 
     if patho_threshold is not None and cmp_patho(called, patho_threshold):
         direction = "≤" if contraction else "≥"
-        return Classification(
-            status=STATUS_PATHOGENIC,
-            status_color=STATUS_COLORS[STATUS_PATHOGENIC],
-            note=f"{'Below' if contraction else 'Above'} pathogenic threshold ({direction}{patho_threshold} repeats)",
-        )
-    if inter_threshold is not None and cmp_inter(called, inter_threshold):
+        note = f"{'Below' if contraction else 'Above'} pathogenic threshold ({direction}{patho_threshold} repeats)"
+        status = STATUS_PATHOGENIC
+    elif inter_threshold is not None and cmp_inter(called, inter_threshold):
         lo, hi = locus.intermediate_min, locus.intermediate_max
         lo = lo if lo is not None else "?"
         hi = hi if hi is not None else "?"
-        return Classification(
-            status=STATUS_INTERMEDIATE,
-            status_color=STATUS_COLORS[STATUS_INTERMEDIATE],
-            note=f"Intermediate allele ({lo}–{hi}); consider follow-up",
-        )
-    benign_max = locus.benign_max if locus.benign_max is not None else "?"
-    return Classification(
-        status=STATUS_NORMAL,
-        status_color=STATUS_COLORS[STATUS_NORMAL],
-        note=f"Within benign range (≤{benign_max})",
+        note = f"Intermediate allele ({lo}–{hi}); consider follow-up"
+        status = STATUS_INTERMEDIATE
+    else:
+        benign_max = locus.benign_max if locus.benign_max is not None else "?"
+        note = f"Within benign range (≤{benign_max})"
+        status = STATUS_NORMAL
+
+    caveat = _ci_straddle_caveat(
+        status, called_range_bp, motif_len, patho_threshold, inter_threshold, cmp_patho, cmp_inter
     )
+    if caveat:
+        note += caveat
+    return Classification(status=status, status_color=STATUS_COLORS[status], note=note)
 
 
 def _classify_allele_by_motif(
-    locus: StrchiveLocus, count: int, motif: str | None
+    locus: StrchiveLocus, count: int, motif: str | None,
+    range_bp: tuple[int, int] | None = None,
 ) -> Classification:
     """Classify one allele of a motif-dependent locus (RFC1, FAME genes, ...).
 
@@ -239,7 +297,12 @@ def _classify_allele_by_motif(
     """
     if motif is None:
         # No usable per-segment motif data (e.g. MC missing) -- fall back to length alone.
-        return _classify_length_only(locus, count, None)
+        return _classify_length_only(locus, count, None, range_bp, None)
+
+    def cmp_ge(v: int, t: int) -> bool:
+        return v >= t
+
+    motif_len = len(motif) if motif else None
 
     if any(is_cyclic_rotation(motif, m) for m in locus.benign_motifs):
         return Classification(
@@ -249,21 +312,27 @@ def _classify_allele_by_motif(
 
     if any(is_cyclic_rotation(motif, m) for m in locus.pathogenic_motifs):
         if locus.pathogenic_min is not None and count >= locus.pathogenic_min:
-            return Classification(
-                status=STATUS_PATHOGENIC, status_color=STATUS_COLORS[STATUS_PATHOGENIC],
-                note=f"{motif} (pathogenic motif) expanded to {count} repeats, "
-                f"above pathogenic threshold (≥{locus.pathogenic_min})",
+            status = STATUS_PATHOGENIC
+            note = (
+                f"{motif} (pathogenic motif) expanded to {count} repeats, "
+                f"above pathogenic threshold (≥{locus.pathogenic_min})"
             )
-        if locus.intermediate_min is not None and count >= locus.intermediate_min:
-            return Classification(
-                status=STATUS_INTERMEDIATE, status_color=STATUS_COLORS[STATUS_INTERMEDIATE],
-                note=f"{motif} (pathogenic motif) at {count} repeats, in the intermediate range "
-                f"({locus.intermediate_min}–{locus.intermediate_max})",
+        elif locus.intermediate_min is not None and count >= locus.intermediate_min:
+            status = STATUS_INTERMEDIATE
+            note = (
+                f"{motif} (pathogenic motif) at {count} repeats, in the intermediate range "
+                f"({locus.intermediate_min}–{locus.intermediate_max})"
             )
-        return Classification(
-            status=STATUS_NORMAL, status_color=STATUS_COLORS[STATUS_NORMAL],
-            note=f"{motif} (pathogenic-consistent motif) within benign range ({count} repeats)",
+        else:
+            status = STATUS_NORMAL
+            note = f"{motif} (pathogenic-consistent motif) within benign range ({count} repeats)"
+
+        caveat = _ci_straddle_caveat(
+            status, range_bp, motif_len, locus.pathogenic_min, locus.intermediate_min, cmp_ge, cmp_ge
         )
+        if caveat:
+            note += caveat
+        return Classification(status=status, status_color=STATUS_COLORS[status], note=note)
 
     return Classification(
         status=STATUS_UNCERTAIN, status_color=STATUS_COLORS[STATUS_UNCERTAIN],
@@ -276,12 +345,14 @@ def _classify_motif_aware(
     locus: StrchiveLocus,
     a1: int | None, a2: int | None,
     a1_motif: str | None, a2_motif: str | None,
+    a1_range_bp: tuple[int, int] | None = None,
+    a2_range_bp: tuple[int, int] | None = None,
 ) -> Classification:
     candidates = []
     if a1 is not None:
-        candidates.append(_classify_allele_by_motif(locus, a1, a1_motif))
+        candidates.append(_classify_allele_by_motif(locus, a1, a1_motif, a1_range_bp))
     if a2 is not None:
-        candidates.append(_classify_allele_by_motif(locus, a2, a2_motif))
+        candidates.append(_classify_allele_by_motif(locus, a2, a2_motif, a2_range_bp))
     return max(candidates, key=lambda c: _SEVERITY[c.status])
 
 
@@ -289,6 +360,8 @@ def classify(
     locus: StrchiveLocus,
     a1: int | None, a2: int | None,
     a1_motif: str | None = None, a2_motif: str | None = None,
+    a1_range_bp: tuple[int, int] | None = None,
+    a2_range_bp: tuple[int, int] | None = None,
 ) -> Classification:
     """Classify a genotype call against a locus's benign/intermediate/pathogenic thresholds.
 
@@ -300,6 +373,12 @@ def classify(
     matching neither reported as uncertain significance rather than silently guessed.
     HMNR7_VWA1 is a one-off third case (`_is_deviation_locus`): its pathogenic range
     isn't a length threshold at all, it's "any deviation from exactly 2 repeats."
+
+    `a1_range_bp`/`a2_range_bp` are each allele's real TRGT `ALLR` confidence interval
+    (bp), when available. Per ACMG's 2026 NGS repeat-expansion points-to-consider
+    statement, a call whose point estimate lands in one classification band but whose
+    confidence interval reaches into another gets a follow-up-confirmation caveat
+    appended to its note, rather than being silently resolved to the point estimate.
     """
     values = [v for v in (a1, a2) if v is not None]
     if not values:
@@ -311,5 +390,5 @@ def classify(
     if _is_deviation_locus(locus):
         return _classify_deviation_locus(locus, a1, a2)
     if locus.is_motif_dependent:
-        return _classify_motif_aware(locus, a1, a2, a1_motif, a2_motif)
-    return _classify_length_only(locus, a1, a2)
+        return _classify_motif_aware(locus, a1, a2, a1_motif, a2_motif, a1_range_bp, a2_range_bp)
+    return _classify_length_only(locus, a1, a2, a1_range_bp, a2_range_bp)

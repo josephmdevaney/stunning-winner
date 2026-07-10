@@ -9,8 +9,10 @@ from repeatscope.paraphase import (
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-PARAPHASE_DIR = REPO_ROOT / "backend" / "fixtures" / "carrier_panel" / "paraphase"
-SAMPLE = "m84036_250714_174336_s1.bc2113"
+# Real per-sample layout: paraphase.json/sv.vcf.gz sit in a per-sample subdirectory
+# ({sample}_paraphase/, {sample}_sawfish/); f8inversion.vcf/havanno.json sit flat.
+PARAPHASE_DIR = REPO_ROOT / "backend" / "fixtures" / "carrier_panel_v2"
+SAMPLE = "m84036_250809_035451_s4.bc2113"
 SAMPLE_2 = "m84036_250809_035451_s4.bc2192"
 SAMPLE_3 = "m84036_250809_035451_s4.bc2108"
 SAMPLE_4 = "m84036_250809_035451_s4.bc2100"
@@ -18,28 +20,28 @@ SAMPLE_5 = "m84036_250809_035451_s4.bc2103"
 
 
 def _load():
-    calls = load_paraphase_calls(PARAPHASE_DIR / f"{SAMPLE}.paraphase.json")
+    calls = load_paraphase_calls(PARAPHASE_DIR / f"{SAMPLE}_paraphase" / f"{SAMPLE}.paraphase.json")
     f8_calls = load_f8_inversion_calls(PARAPHASE_DIR / f"{SAMPLE}.f8inversion.vcf")
     return calls, f8_calls
 
 
 def _load_bc2192():
-    calls = load_paraphase_calls(PARAPHASE_DIR / f"{SAMPLE_2}.paraphase.json")
+    calls = load_paraphase_calls(PARAPHASE_DIR / f"{SAMPLE_2}_paraphase" / f"{SAMPLE_2}.paraphase.json")
     f8_calls = load_f8_inversion_calls(PARAPHASE_DIR / f"{SAMPLE_2}.f8inversion.vcf")
     havanno = load_havanno_annotations(PARAPHASE_DIR / f"{SAMPLE_2}.havanno.json")
-    sawfish_calls = load_sawfish_calls(PARAPHASE_DIR / f"{SAMPLE_2}.sv.vcf")
+    sawfish_calls = load_sawfish_calls(PARAPHASE_DIR / f"{SAMPLE_2}_sawfish" / f"{SAMPLE_2}.sv.vcf.gz")
     return calls, f8_calls, havanno, sawfish_calls
 
 
 def _load_bc2108():
-    calls = load_paraphase_calls(PARAPHASE_DIR / f"{SAMPLE_3}.paraphase.json")
+    calls = load_paraphase_calls(PARAPHASE_DIR / f"{SAMPLE_3}_paraphase" / f"{SAMPLE_3}.paraphase.json")
     f8_calls = load_f8_inversion_calls(PARAPHASE_DIR / f"{SAMPLE_3}.f8inversion.vcf")
     havanno = load_havanno_annotations(PARAPHASE_DIR / f"{SAMPLE_3}.havanno.json")
     return calls, f8_calls, havanno
 
 
 def _load_sample(sample: str):
-    calls = load_paraphase_calls(PARAPHASE_DIR / f"{sample}.paraphase.json")
+    calls = load_paraphase_calls(PARAPHASE_DIR / f"{sample}_paraphase" / f"{sample}.paraphase.json")
     f8_calls = load_f8_inversion_calls(PARAPHASE_DIR / f"{sample}.f8inversion.vcf")
     havanno = load_havanno_annotations(PARAPHASE_DIR / f"{sample}.havanno.json")
     return calls, f8_calls, havanno
@@ -53,42 +55,44 @@ def test_load_paraphase_calls_has_all_genes():
 def test_load_f8_inversion_calls_real_bc2113_no_inversion():
     _, f8_calls = _load()
     assert set(f8_calls) == {"f8inv1", "f8inv22"}
-    # Real dedicated F8 inversion caller output: GT=0 (reference), SUPP=0 (no reads
-    # support the inversion breakpoint) at both probes -- no inversion detected.
-    assert f8_calls["f8inv1"]["gt"] == "0" and f8_calls["f8inv1"]["supp"] == 0
-    assert f8_calls["f8inv22"]["gt"] == "0" and f8_calls["f8inv22"]["supp"] == 0
+    # Real dedicated F8 inversion caller output for this sample: GT="." (no call,
+    # not reference "0") at both probes, SUPP=0 (no reads support an inversion
+    # breakpoint either way).
+    assert f8_calls["f8inv1"]["gt"] == "." and f8_calls["f8inv1"]["supp"] == 0
+    assert f8_calls["f8inv22"]["gt"] == "." and f8_calls["f8inv22"]["supp"] == 0
 
 
-def test_classify_hba_normal_genotype():
+def test_classify_hba_bc2113_real_unresolved_genotype():
+    """Real bc2113 data: Paraphase did not resolve an HBA1/HBA2 genotype at all for
+    this sample -- the honest answer is Uncertain, not a guessed Normal."""
     calls, _ = _load()
     finding = classify_gene("HBA1/2", calls, {})
-    assert finding.status == "Normal"
-    assert "aa/aa" in finding.note
-    assert finding.zygosity == "Homozygous"
+    assert finding.status == "Uncertain significance"
+    assert "did not report a resolved HBA1/HBA2 genotype" in finding.note
 
 
-def test_classify_smn1_normal_copy_number():
+def test_classify_smn1_bc2113_real_unresolved_copy_number():
     calls, _ = _load()
     finding = classify_gene("SMN1/2", calls, {})
-    assert finding.status == "Normal"
-    assert "2 SMN1 copies" in finding.note
+    assert finding.status == "Uncertain significance"
+    assert "did not report an SMN1 copy number" in finding.note
 
 
-def test_classify_gba_normal_no_fusion():
+def test_classify_gba_bc2113_real_unresolved_copy_number():
     calls, _ = _load()
     finding = classify_gene("GBA", calls, {})
-    assert finding.status == "Normal"
-    assert "4 total" in finding.note
+    assert finding.status == "Uncertain significance"
+    assert "did not report a copy number for this region" in finding.note
 
 
-def test_classify_cyp21_atypical_copy_number_not_guessed_normal_or_pathogenic():
-    """Real bc2113 data: total_cn=3 (not the expected 4), but gene_cn is null --
-    Paraphase itself couldn't resolve which gene lost a copy. The correct, honest
-    answer is "Uncertain significance", not a guessed Normal or Pathogenic."""
+def test_classify_cyp21_bc2113_real_unresolved_copy_number_not_guessed():
+    """Real bc2113 data: Paraphase reported no copy number at all for this region
+    (unlike bc2192/bc2108/bc2100/bc2103, where it resolves cleanly). The correct,
+    honest answer is "Uncertain significance", not a guessed Normal or Pathogenic."""
     calls, _ = _load()
     finding = classify_gene("CYP21A2", calls, {})
     assert finding.status == "Uncertain significance"
-    assert "3 total" in finding.note
+    assert "did not report a copy number for this region" in finding.note
 
 
 def test_classify_f8_no_inversion_detected():

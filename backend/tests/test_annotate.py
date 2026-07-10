@@ -11,9 +11,8 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 FIXTURE_VCF = REPO_ROOT / "backend" / "fixtures" / "synthetic_trgt.vcf"
 STRCHIVE_JSON = REPO_ROOT / "project" / "uploads" / "STRchive-loci.json"
 CATALOG_BED = REPO_ROOT / "project" / "uploads" / "repeat_catalog.hg38.bed"
-GV01_VCF = REPO_ROOT / "backend" / "fixtures" / "gv_puretarget_panel" / "GV-01.trgt.vcf"
+GV01_VCF = REPO_ROOT / "backend" / "fixtures" / "gv_puretarget_panel_v2" / "trgt_vcfs" / "GV-01.trgt.vcf"
 PURETARGET_V2_BED = REPO_ROOT / "backend" / "fixtures" / "panels" / "puretarget_v2.repeat_definitions.hg38.bed"
-BC2113_VCF = REPO_ROOT / "backend" / "fixtures" / "carrier_panel" / "bc2113.trgt.vcf"
 CARRIER_BED = REPO_ROOT / "backend" / "fixtures" / "panels" / "carrier_screen.repeat_definitions.hg38.bed"
 HG002_VCF = REPO_ROOT / "backend" / "fixtures" / "hg002_real" / "HG002.strchive_loci.trgt.vcf.gz"
 
@@ -126,30 +125,11 @@ def test_annotate_strchive_panel_scoped_to_puretarget_v2():
     assert all(l.genotyped for l in panel)
 
 
-def test_hemizygous_male_chrx_call_real_bc2113():
-    """Regression test: bc2113 is a real PacBio carrier-panel run on a male sample,
-    genotyped with trgt's proper hemizygous chrX calling (GT="1", a single allele
-    index -- not the "0/0"-style diploid padding the hg002_real fixture's
-    `--karyotype XX` run used). FXS_FMR1 here is a genuine full-mutation expansion
-    (731 CGG repeats, hemizygous), which a diploid-only GT parser would silently
-    drop as an unparseable/ungenotyped call."""
-    locus_ids = resolve_panel_locus_ids(CARRIER_BED, STRCHIVE_JSON)
-    panel = {
-        l.id: l
-        for l in annotate_strchive_panel(
-            BC2113_VCF, STRCHIVE_JSON, sample="m84036_250714_174336_s1.bc2113", locus_ids=locus_ids
-        )
-    }
-
-    fmr1 = panel["FXS_FMR1"]
-    assert fmr1.genotyped
-    assert fmr1.zygosity == "Hemizygous"
-    assert fmr1.a1 == 731
-    assert fmr1.a2 is None
-    assert fmr1.status == "Full expansion"
-
-    prts = panel["PRTS_ARX"]
-    assert prts.genotyped and prts.zygosity == "Hemizygous" and prts.a1 == 12 and prts.status == "Normal"
-
-    fxn = panel["FRDA_FXN"]
-    assert fxn.zygosity == "Heterozygous" and (fxn.a1, fxn.a2) == (9, 18)
+# A prior real carrier-panel run (bc2113, since replaced) demonstrated trgt's
+# hemizygous chrX calling (GT="1", a single allele index) via a genuine FXS_FMR1
+# full-mutation expansion. The current carrier_panel_v2 dataset's 96 real samples
+# were all called diploid on chrX (no hemizygous zygosity anywhere in the panel),
+# so that regression case has no real fixture backing it right now -- removed
+# rather than left stale or faked. The hemizygous-parsing code path itself
+# (repeatscope/trgt.py) is unchanged; re-add this test if/when a real hemizygous
+# male chrX sample becomes available.

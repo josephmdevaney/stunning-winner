@@ -10,8 +10,9 @@ import { GeneFindingScreen } from './screens/GeneFindingScreen'
 import { SampleQCScreen } from './screens/SampleQCScreen'
 import { RunQCScreen } from './screens/RunQCScreen'
 import { RepeatCatalogScreen } from './screens/RepeatCatalogScreen'
+import { ROHScreen } from './screens/ROHScreen'
 
-export type Screen = 'overview' | 'locus' | 'gene-finding' | 'qc' | 'runqc' | 'catalog'
+export type Screen = 'overview' | 'locus' | 'gene-finding' | 'qc' | 'runqc' | 'catalog' | 'roh'
 
 const TITLES: Record<Screen, string> = {
   overview: 'Overview',
@@ -20,6 +21,7 @@ const TITLES: Record<Screen, string> = {
   qc: 'Sample QC Dashboard',
   runqc: 'Run QC Dashboard',
   catalog: 'Repeat Catalog',
+  roh: 'Runs of Homozygosity',
 }
 
 export default function RepeatScopeApp({
@@ -122,6 +124,7 @@ export default function RepeatScopeApp({
           {sample && screen === 'qc' && <SampleQCScreen mode={mode} sample={sample} />}
           {sample && screen === 'runqc' && <RunQCScreen mode={mode} sample={sample} />}
           {sample && screen === 'catalog' && <RepeatCatalogScreen mode={mode} sample={sample} />}
+          {sample && screen === 'roh' && <ROHScreen sample={sample} />}
         </div>
       </div>
     </div>

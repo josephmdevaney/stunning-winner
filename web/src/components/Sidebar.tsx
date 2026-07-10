@@ -5,6 +5,7 @@ import { ProductSwitcher, type Product } from './ProductSwitcher'
 const NAV_ITEMS: { screen: Screen; label: string }[] = [
   { screen: 'overview', label: 'Overview' },
   { screen: 'locus', label: 'Locus Detail' },
+  { screen: 'roh', label: 'Runs of Homozygosity' },
   { screen: 'qc', label: 'Sample QC' },
   { screen: 'runqc', label: 'Run QC' },
   { screen: 'catalog', label: 'Repeat Catalog' },

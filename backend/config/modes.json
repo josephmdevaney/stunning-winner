@@ -7,8 +7,8 @@
   },
   "puretarget_v2": {
     "label": "PureTarget V2",
-    "vcf_dir": "fixtures/gv_puretarget_panel",
-    "panel_bed": "fixtures/panels/puretarget_v2.repeat_definitions.hg38.bed"
+    "vcf_dir": "fixtures/gv_puretarget_panel_v2/trgt_vcfs",
+    "panel_bed": "fixtures/gv_puretarget_panel_v2/PureTarget_repeat_expansion_panel_2.0.repeat_definition.GRCh38.bed"
   },
   "carrier": {
     "label": "Carrier",

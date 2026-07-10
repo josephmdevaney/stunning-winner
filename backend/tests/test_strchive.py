@@ -93,6 +93,45 @@ def test_classify_vwa1_deviation_not_contraction_direction():
     assert expansion.status == "Full expansion"
 
 
+def test_classify_ci_straddle_flagged_normal_to_pathogenic():
+    """ACMG's 2026 NGS repeat-expansion points-to-consider statement: a call whose point
+    estimate lands in one band but whose confidence interval reaches into another should
+    carry a follow-up-confirmation caveat. HTT is CAG (3bp); a called-allele point
+    estimate of 26 (Normal, <=26) with a real TRGT ALLR range wide enough to reach 38
+    repeats (>=36, pathogenic) should flag the overlap rather than reporting a clean
+    "Normal" with no caveat."""
+    loci = load_strchive_loci(STRCHIVE_JSON)
+    htt = next(l for l in loci if l.id == "HD_HTT")
+
+    result = classify(htt, 18, 26, a1_range_bp=None, a2_range_bp=(78, 114))
+    assert result.status == "Normal"
+    assert "confidence interval" in result.note
+    assert "Full expansion" in result.note
+    assert "78-114 bp" in result.note
+    assert "26-38 repeats" in result.note
+
+
+def test_classify_ci_tight_no_straddle():
+    """A narrow confidence interval that stays within the called band gets no caveat."""
+    loci = load_strchive_loci(STRCHIVE_JSON)
+    htt = next(l for l in loci if l.id == "HD_HTT")
+
+    result = classify(htt, 18, 30, a1_range_bp=None, a2_range_bp=(88, 92))
+    assert result.status == "Intermediate"
+    assert "confidence interval" not in result.note
+
+
+def test_classify_ci_absent_is_backward_compatible():
+    """Omitting the range params (the pre-existing call signature) behaves exactly as
+    before -- no caveat, since there's nothing to compare."""
+    loci = load_strchive_loci(STRCHIVE_JSON)
+    htt = next(l for l in loci if l.id == "HD_HTT")
+
+    result = classify(htt, 18, 26)
+    assert result.status == "Normal"
+    assert "confidence interval" not in result.note
+
+
 def test_classify_rfc1_motif_aware():
     """RFC1/CANVAS: pathogenicity depends on *which* motif expanded, not just length.
     A naive length-only check would misclassify a long benign-motif (AAAAG) expansion
@@ -117,3 +156,16 @@ def test_classify_rfc1_motif_aware():
     # not silently assumed benign.
     uncertain = classify(rfc1, 11, 90, "AAAAG", "ACAAG")
     assert uncertain.status == "Uncertain significance"
+
+
+def test_classify_rfc1_ci_straddle_intermediate_to_pathogenic():
+    """The CI-straddle caveat also applies to motif-dependent loci: RFC1's AAGGG is
+    5bp; a point estimate of 11 (Intermediate, >=11) with a real ALLR range wide enough
+    to reach 401 repeats (>=400, pathogenic) should flag the overlap."""
+    loci = load_strchive_loci(STRCHIVE_JSON)
+    rfc1 = next(l for l in loci if l.id == "CANVAS_RFC1")
+
+    result = classify(rfc1, 11, 90, "AAGGG", "AAAAG", a1_range_bp=(55, 2005))
+    assert result.status == "Intermediate"
+    assert "confidence interval" in result.note
+    assert "Full expansion" in result.note

@@ -152,7 +152,7 @@ def _annotate_locus(locus: StrchiveLocus, call: Optional[TrgtCall]) -> Annotated
     else:
         out.zygosity = "Heterozygous"
 
-    cls = strchive.classify(locus, a1, a2, a1_motif, a2_motif)
+    cls = strchive.classify(locus, a1, a2, a1_motif, a2_motif, a1_range, a2_range)
     out.status, out.status_color, out.note = cls.status, cls.status_color, cls.note
     return out
 

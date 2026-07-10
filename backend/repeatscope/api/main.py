@@ -239,12 +239,21 @@ def _locus_summary(l: AnnotatedLocus) -> dict:
     }
 
 
+def _first_existing(candidates: list[Path]) -> Optional[Path]:
+    return next((p for p in candidates if p.exists()), None)
+
+
 def _get_paraphase(mode: str, sample: str) -> tuple[dict, dict, dict, list]:
     """Load this sample's real Paraphase per-gene calls, F8 inversion caller output,
     havanno named-variant annotations, and sawfish structural-variant calls, if the
     mode's `paraphase_dir` has files for them -- most samples (all synthetic ones)
     won't, and get an empty result, which is exactly what `classify_gene` treats as
-    "no real data for this gene"."""
+    "no real data for this gene".
+
+    Two on-disk layouts are supported: the older flat layout (all files directly in
+    `paraphase_dir`), and PacBio's own per-sample subdirectory layout
+    (`{sample}_paraphase/{sample}.paraphase.json`, `{sample}_sawfish/{sample}.sv.vcf.gz`)
+    seen in newer pipeline exports."""
     key = (mode, sample)
     if key not in _paraphase_caches:
         paraphase_dir = _modes[mode]["paraphase_dir"]
@@ -253,17 +262,26 @@ def _get_paraphase(mode: str, sample: str) -> tuple[dict, dict, dict, list]:
         havanno: dict = {}
         sawfish_calls: list = []
         if paraphase_dir:
-            json_path = Path(paraphase_dir) / f"{sample}.paraphase.json"
-            if json_path.exists():
+            base = Path(paraphase_dir)
+            json_path = _first_existing([
+                base / f"{sample}.paraphase.json",
+                base / f"{sample}_paraphase" / f"{sample}.paraphase.json",
+            ])
+            if json_path:
                 calls = load_paraphase_calls(json_path)
-            f8_path = Path(paraphase_dir) / f"{sample}.f8inversion.vcf"
+            f8_path = base / f"{sample}.f8inversion.vcf"
             if f8_path.exists():
                 f8_calls = load_f8_inversion_calls(f8_path)
-            havanno_path = Path(paraphase_dir) / f"{sample}.havanno.json"
+            havanno_path = base / f"{sample}.havanno.json"
             if havanno_path.exists():
                 havanno = load_havanno_annotations(havanno_path)
-            sawfish_path = Path(paraphase_dir) / f"{sample}.sv.vcf"
-            if sawfish_path.exists():
+            sawfish_path = _first_existing([
+                base / f"{sample}.sv.vcf",
+                base / f"{sample}.sv.vcf.gz",
+                base / f"{sample}_sawfish" / f"{sample}.sv.vcf",
+                base / f"{sample}_sawfish" / f"{sample}.sv.vcf.gz",
+            ])
+            if sawfish_path:
                 sawfish_calls = load_sawfish_calls(sawfish_path)
         _paraphase_caches[key] = (calls, f8_calls, havanno, sawfish_calls)
     return _paraphase_caches[key]

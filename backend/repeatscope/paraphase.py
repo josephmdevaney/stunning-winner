@@ -17,12 +17,20 @@ unresolved/atypical finding rather than guessed as benign or pathogenic.
 
 from __future__ import annotations
 
+import gzip
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
 from .strchive import STATUS_COLORS, STATUS_INTERMEDIATE, STATUS_NORMAL, STATUS_PATHOGENIC, STATUS_UNCERTAIN
+
+
+def _open_text(path: str | Path):
+    path = str(path)
+    if path.endswith(".gz"):
+        return gzip.open(path, "rt")
+    return open(path, "rt", encoding="utf-8")
 
 # "Full expansion" (STATUS_PATHOGENIC) is STR-specific terminology -- none of this
 # module's findings are repeat expansions (they're SNVs/indels, gene conversions,
@@ -90,7 +98,7 @@ def load_sawfish_calls(vcf_path: str | Path) -> list[dict]:
     fail to resolve to a genotype (see `carrier_screen.non_repeat_targets.json`'s
     HBA1/2 entry: "small deletion via Paraphase, large deletion via sawfish")."""
     calls: list[dict] = []
-    with open(vcf_path, encoding="utf-8") as f:
+    with _open_text(vcf_path) as f:
         for line in f:
             if line.startswith("#"):
                 continue

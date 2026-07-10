@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="design_doc_mode" content="canvas">
+  <script src="roh-gene-model.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body { margin:0; background:oklch(0.93 0.005 90); }
+    * { box-sizing:border-box; font-family:'IBM Plex Sans', Helvetica, sans-serif; }
+    a { color:oklch(0.5 0.16 220); text-decoration:none; }
+    a:hover { color:oklch(0.42 0.16 220); text-decoration:underline; }
+    ::-webkit-scrollbar { width:9px; height:9px; }
+    ::-webkit-scrollbar-thumb { background:oklch(0.82 0.01 90); border-radius:5px; }
+  </style>
+</helmet>
+
+<section data-screen-label="ROH tool — design options">
+<div style="min-height:100vh; background:oklch(0.93 0.005 90); padding:44px; display:flex; gap:52px; align-items:flex-start; flex-wrap:wrap;">
+
+  <!-- ================= OPTION 1A ================= -->
+  <div id="1a" style="width:1480px; flex-shrink:0;">
+    <div style="display:flex; align-items:baseline; gap:12px; margin-bottom:16px;">
+      <div style="background:oklch(0.22 0.04 260); color:#fff; font-weight:700; font-size:13px; padding:5px 11px; border-radius:7px; font-family:'IBM Plex Mono';">1a</div>
+      <div style="font-size:15px; font-weight:600; color:oklch(0.3 0.02 260);">Ideogram-first</div>
+      <div style="font-size:13.5px; color:oklch(0.5 0.02 260);">Genome autozygosity map as the hero, ACMG assessment alongside</div>
+    </div>
+
+    <div style="height:1010px; border:1px solid oklch(0.86 0.01 90); border-radius:16px; overflow:hidden; box-shadow:0 12px 40px -12px oklch(0.4 0.03 260 / 0.28); display:flex; background:#fff;">
+
+      <!-- sidebar -->
+      <div style="width:236px; flex-shrink:0; background:oklch(0.22 0.04 260); display:flex; flex-direction:column; padding:20px 14px;">
+        <div style="display:flex; align-items:center; gap:10px; padding:6px 8px 20px 8px;">
+          <svg width="28" height="28" viewBox="0 0 32 32"><polygon points="16,2 28,9 28,23 16,30 4,23 4,9" fill="none" stroke="oklch(0.78 0.13 220)" stroke-width="2.5"></polygon><polygon points="16,10 22,13.5 22,20.5 16,24 10,20.5 10,13.5" fill="oklch(0.78 0.13 220)" opacity="0.55"></polygon></svg>
+          <div style="color:#fff; font-weight:600; font-size:15px; letter-spacing:0.2px;">RepeatScope</div>
+        </div>
+        <div style="color:oklch(0.6 0.02 260); font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; padding:8px 10px 6px;">Analyses</div>
+        <div style="display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:8px; color:oklch(0.85 0.02 260); font-size:13.5px; font-weight:500; cursor:pointer;"><div style="width:6px; height:6px; border-radius:2px; background:oklch(0.4 0.02 260);"></div>Overview</div>
+        <div style="display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:8px; color:oklch(0.85 0.02 260); font-size:13.5px; font-weight:500; cursor:pointer;"><div style="width:6px; height:6px; border-radius:2px; background:oklch(0.4 0.02 260);"></div>Repeat Expansions</div>
+        <div style="display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:8px; background:oklch(0.28 0.05 260); color:#fff; font-size:13.5px; font-weight:600; cursor:pointer;"><div style="width:6px; height:6px; border-radius:2px; background:oklch(0.78 0.13 220);"></div>Runs of Homozygosity</div>
+        <div style="display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:8px; color:oklch(0.85 0.02 260); font-size:13.5px; font-weight:500; cursor:pointer;"><div style="width:6px; height:6px; border-radius:2px; background:oklch(0.4 0.02 260);"></div>MitoLR</div>
+        <div style="color:oklch(0.6 0.02 260); font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; padding:16px 10px 6px;">Quality</div>
+        <div style="display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:8px; color:oklch(0.85 0.02 260); font-size:13.5px; font-weight:500; cursor:pointer;"><div style="width:6px; height:6px; border-radius:2px; background:oklch(0.4 0.02 260);"></div>Sample QC</div>
+        <div style="display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:8px; color:oklch(0.85 0.02 260); font-size:13.5px; font-weight:500; cursor:pointer;"><div style="width:6px; height:6px; border-radius:2px; background:oklch(0.4 0.02 260);"></div>Run QC</div>
+        <div style="margin-top:auto; padding:14px 12px; border-radius:10px; background:oklch(0.27 0.05 260);">
+          <div style="color:oklch(0.62 0.02 260); font-size:10.5px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase;">Active sample</div>
+          <div style="color:#fff; font-size:13.5px; font-weight:600; margin-top:4px; font-family:'IBM Plex Mono';">HG002</div>
+          <div style="color:oklch(0.68 0.03 220); font-size:11.5px; font-family:'IBM Plex Mono'; margin-top:2px;">PacBio HiFi · bcftools/roh 1.20</div>
+        </div>
+      </div>
+
+      <!-- main -->
+      <div style="flex:1; display:flex; flex-direction:column; min-width:0;">
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:16px 28px; border-bottom:1px solid oklch(0.9 0.01 90); background:#fff;">
+          <div>
+            <div style="font-size:19px; font-weight:600; color:oklch(0.22 0.02 260);">Runs of Homozygosity</div>
+            <div style="font-size:12.5px; color:oklch(0.5 0.02 260); margin-top:2px;">Sample HG002 · GRCh38 · bcftools/roh · autosomal genome 2,881 Mb</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="display:flex; align-items:center; gap:8px; padding:8px 14px; border:1px solid oklch(0.88 0.01 90); border-radius:8px; font-size:13px; color:oklch(0.5 0.02 260);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>Search region or gene</div>
+            <div style="padding:9px 16px; border-radius:8px; background:oklch(0.5 0.16 220); color:#fff; font-size:13px; font-weight:600; cursor:pointer;">Export Report</div>
+          </div>
+        </div>
+
+        <div style="flex:1; overflow-y:auto; padding:26px 28px; display:flex; flex-direction:column; gap:20px;">
+
+          <!-- stat cards -->
+          <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:14px;">
+            <sc-for list="{{ statsA }}" as="s" hint-placeholder-count="5">
+              <div style="background:#fff; border:1px solid oklch(0.9 0.01 90); border-radius:12px; padding:16px 18px;">
+                <div style="font-size:11.5px; font-weight:600; color:oklch(0.5 0.02 260); letter-spacing:0.02em;">{{ s.label }}</div>
+                <div style="font-size:25px; font-weight:700; margin-top:8px; {{ s.valueStyle }}">{{ s.value }}</div>
+                <div style="font-size:11.5px; color:oklch(0.55 0.02 260); margin-top:4px;">{{ s.sub }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <!-- UPD banner -->
+          <div style="display:flex; align-items:center; gap:14px; background:oklch(0.97 0.04 70); border:1px solid oklch(0.82 0.09 70); border-radius:12px; padding:14px 18px;">
+            <div style="width:34px; height:34px; flex-shrink:0; border-radius:9px; background:oklch(0.62 0.15 75); display:flex; align-items:center; justify-content:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M12 9v4"></path><path d="M12 17h.01"></path><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path></svg></div>
+            <div style="flex:1;">
+              <div style="font-size:14px; font-weight:600; color:oklch(0.42 0.11 60);">Possible UPD flag — chromosome 7</div>
+              <div style="font-size:12.5px; color:oklch(0.45 0.06 60); margin-top:2px;">Isolated 6.5 Mb telomeric ROH on an imprinted chromosome meets Hoppman telomeric ≥5 Mb criteria. Recommend orthogonal confirmation (methylation-specific + microsatellite/trio).</div>
+            </div>
+            <div style="padding:7px 14px; border:1px solid oklch(0.72 0.09 70); border-radius:7px; font-size:12.5px; font-weight:600; color:oklch(0.45 0.1 65); cursor:pointer;">Review chr7</div>
+          </div>
+
+          <!-- ideogram + assessment -->
+          <div style="display:grid; grid-template-columns:1.55fr 1fr; gap:20px; align-items:start;">
+            <div style="background:#fff; border:1px solid oklch(0.9 0.01 90); border-radius:12px; padding:20px 22px;">
+              <div style="display:flex; align-items:flex-start; justify-content:space-between;">
+                <div>
+                  <div style="font-size:15px; font-weight:600; color:oklch(0.22 0.02 260);">Genome-wide autozygosity map</div>
+                  <div style="font-size:12px; color:oklch(0.55 0.02 260); margin-top:2px;">ROH painted on GRCh38 chromosomes, drawn to genomic scale</div>
+                </div>
+              </div>
+              <div style="display:flex; gap:8px; margin:14px 0 6px; flex-wrap:wrap;">
+                <sc-for list="{{ legendA }}" as="c" hint-placeholder-count="4">
+                  <div onClick="{{ c.onClick }}" style="display:flex; align-items:center; gap:7px; padding:5px 11px; border-radius:20px; font-size:12px; font-weight:600; cursor:pointer; {{ c.chipStyle }}">
+                    <div style="width:10px; height:10px; border-radius:3px; {{ c.dot }}"></div>{{ c.label }}
+                  </div>
+                </sc-for>
+              </div>
+              {{ ideogramSvg }}
+              <div style="display:flex; align-items:center; gap:18px; margin-top:10px; font-size:11px; color:oklch(0.5 0.02 260);">
+                <div style="display:flex; align-items:center; gap:6px;"><div style="width:8px;height:8px;border-radius:50%;background:oklch(0.78 0.02 260);"></div>Centromere</div>
+                <div style="display:flex; align-items:center; gap:6px;"><div style="width:8px;height:8px;border-radius:2px;background:oklch(0.55 0.18 300);"></div>Imprinted chromosome (6·7·11·14·15·20)</div>
+                <div style="display:flex; align-items:center; gap:6px;"><div style="width:9px;height:9px;border:2px solid oklch(0.55 0.20 25);border-radius:2px;"></div>UPD-flagged ROH</div>
+              </div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:16px;">
+              <div style="background:#fff; border:1px solid oklch(0.9 0.01 90); border-radius:12px; padding:20px 22px;">
+                <div style="font-size:15px; font-weight:600; color:oklch(0.22 0.02 260);">Consanguinity assessment</div>
+                <div style="font-size:12px; color:oklch(0.55 0.02 260); margin-top:2px; margin-bottom:14px;">Per ACMG 2021 technical standard</div>
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                  <sc-for list="{{ fRowsA }}" as="f" hint-placeholder-count="2">
+                    <div style="display:flex; align-items:center; justify-content:space-between; padding:11px 14px; border-radius:9px; {{ f.rowStyle }}">
+                      <div><div style="font-size:12.5px; font-weight:600; color:oklch(0.3 0.02 260);">{{ f.label }}</div><div style="font-size:11px; color:oklch(0.55 0.02 260); margin-top:1px;">{{ f.sub }}</div></div>
+                      <div style="font-family:'IBM Plex Mono'; font-size:18px; font-weight:600; {{ f.valStyle }}">{{ f.value }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="margin-top:16px;">{{ ladderSvg }}</div>
+                <div style="margin-top:14px; padding:12px 14px; border-radius:9px; background:oklch(0.96 0.03 150); border:1px solid oklch(0.85 0.06 150);">
+                  <div style="font-size:12px; font-weight:600; color:oklch(0.4 0.12 150);">Consanguinity report: not indicated</div>
+                  <div style="font-size:11.5px; color:oklch(0.4 0.05 150); margin-top:3px; line-height:1.5;">{{ verdictText }}</div>
+                </div>
+              </div>
+
+              <div style="background:#fff; border:1px solid oklch(0.9 0.01 90); border-radius:12px; padding:18px 22px;">
+                <div style="font-size:14px; font-weight:600; color:oklch(0.22 0.02 260);">AR candidate genes in ROH ≥3 Mb</div>
+                <div style="font-size:11.5px; color:oklch(0.55 0.02 260); margin-top:2px; margin-bottom:12px;">{{ candidateSub }}</div>
+                <sc-for list="{{ candidateGenes }}" as="g" hint-placeholder-count="3">
+                  <div style="display:flex; align-items:center; justify-content:space-between; padding:9px 0; border-top:1px solid oklch(0.95 0.005 90);">
+                    <div><span style="font-family:'IBM Plex Mono'; font-weight:600; font-size:13px; color:oklch(0.3 0.02 260);">{{ g.gene }}</span><span style="font-size:11.5px; color:oklch(0.55 0.02 260); margin-left:8px;">{{ g.locus }}</span></div>
+                    <div style="text-align:right;"><div style="font-size:12px; color:oklch(0.4 0.02 260);">{{ g.condition }}</div><div style="font-size:11px; color:oklch(0.55 0.02 260);">{{ g.inh }}</div></div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+
+          <!-- ROH table -->
+          <div style="background:#fff; border:1px solid oklch(0.9 0.01 90); border-radius:12px; overflow:hidden;">
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:15px 20px; border-bottom:1px solid oklch(0.92 0.01 90);">
+              <div style="font-size:15px; font-weight:600; color:oklch(0.22 0.02 260);">ROH regions</div>
+              <div style="font-size:12px; color:oklch(0.55 0.02 260);">{{ tableCountA }}</div>
+            </div>
+            <div style="display:grid; grid-template-columns:0.8fr 1.7fr 0.7fr 1.1fr 0.9fr 0.7fr 0.6fr 1.2fr; gap:12px; padding:10px 20px; font-size:11px; font-weight:600; color:oklch(0.5 0.02 260); letter-spacing:0.04em; text-transform:uppercase; border-bottom:1px solid oklch(0.94 0.01 90);">
+              <div>Chr</div><div>Region (Mb)</div><div>Length</div><div>Position</div><div>Class</div><div>Markers</div><div>Q</div><div>UPD / notes</div>
+            </div>
+            <sc-for list="{{ rowsA }}" as="r" hint-placeholder-count="8">
+              <div style="display:grid; grid-template-columns:0.8fr 1.7fr 0.7fr 1.1fr 0.9fr 0.7fr 0.6fr 1.2fr; gap:12px; padding:12px 20px; align-items:center; font-size:13px; border-bottom:1px solid oklch(0.96 0.005 90); {{ r.rowBg }}">
+                <div style="font-weight:600; font-family:'IBM Plex Mono'; display:flex; align-items:center; gap:6px;">{{ r.chrom }}<span style="{{ r.imprintDot }}"></span></div>
+                <div style="font-family:'IBM Plex Mono'; font-size:12px; color:oklch(0.5 0.02 260);">{{ r.region }}</div>
+                <div style="font-family:'IBM Plex Mono'; font-weight:600;">{{ r.length }}</div>
+                <div style="color:oklch(0.45 0.02 260); font-size:12px;">{{ r.posType }}</div>
+                <div><span style="padding:3px 9px; border-radius:20px; font-size:11px; font-weight:600; color:#fff; {{ r.clsBadge }}">{{ r.cls }}</span></div>
+                <div style="font-family:'IBM Plex Mono'; color:oklch(0.5 0.02 260); font-size:12px;">{{ r.markers }}</div>
+                <div style="font-family:'IBM Plex Mono'; color:oklch(0.5 0.02 260); font-size:12px;">{{ r.q }}</div>
+                <div style="font-size:12px; {{ r.noteStyle }}">{{ r.note }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= OPTION 1B ================= -->
+  <div id="1b" style="width:1480px; flex-shrink:0;">
+    <div style="display:flex; align-items:baseline; gap:12px; margin-bottom:16px;">
+      <div style="background:oklch(0.22 0.04 260); color:#fff; font-weight:700; font-size:13px; padding:5px 11px; border-radius:7px; font-family:'IBM Plex Mono';">1b</div>
+      <div style="font-size:15px; font-weight:600; color:oklch(0.3 0.02 260);">Track &amp; table-first</div>
+      <div style="font-size:13.5px; color:oklch(0.5 0.02 260);">IGV-style — ACMG size-threshold filter drives the table, per-chromosome track viewer below</div>
+    </div>
+
+    <div style="height:1010px; border:1px solid oklch(0.86 0.01 90); border-radius:16px; overflow:hidden; box-shadow:0 12px 40px -12px oklch(0.4 0.03 260 / 0.28); display:flex; background:#fff;">
+
+      <!-- sidebar -->
+      <div style="width:236px; flex-shrink:0; background:oklch(0.22 0.04 260); display:flex; flex-direction:column; padding:20px 14px;">
+        <div style="display:flex; align-items:center; gap:10px; padding:6px 8px 20px 8px;">
+          <svg width="28" height="28" viewBox="0 0 32 32"><polygon points="16,2 28,9 28,23 16,30 4,23 4,9" fill="none" stroke="oklch(0.78 0.13 220)" stroke-width="2.5"></polygon><polygon points="16,10 22,13.5 22,20.5 16,24 10,20.5 10,13.5" fill="oklch(0.78 0.13 220)" opacity="0.55"></polygon></svg>
+          <div style="color:#fff; font-weight:600; font-size:15px; letter-spacing:0.2px;">RepeatScope</div>
+        </div>
+        <div style="color:oklch(0.6 0.02 260); font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; padding:8px 10px 6px;">Analyses</div>
+        <div style="display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:8px; color:oklch(0.85 0.02 260); font-size:13.5px; font-weight:500; cursor:pointer;"><div style="width:6px; height:6px; border-radius:2px; background:oklch(0.4 0.02 260);"></div>Overview</div>
+        <div style="display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:8px; color:oklch(0.85 0.02 260); font-size:13.5px; font-weight:500; cursor:pointer;"><div style="width:6px; height:6px; border-radius:2px; background:oklch(0.4 0.02 260);"></div>Repeat Expansions</div>
+        <div style="display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:8px; background:oklch(0.28 0.05 260); color:#fff; font-size:13.5px; font-weight:600; cursor:pointer;"><div style="width:6px; height:6px; border-radius:2px; background:oklch(0.78 0.13 220);"></div>Runs of Homozygosity</div>
+        <div style="display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:8px; color:oklch(0.85 0.02 260); font-size:13.5px; font-weight:500; cursor:pointer;"><div style="width:6px; height:6px; border-radius:2px; background:oklch(0.4 0.02 260);"></div>MitoLR</div>
+        <div style="color:oklch(0.6 0.02 260); font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; padding:16px 10px 6px;">Quality</div>
+        <div style="display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:8px; color:oklch(0.85 0.02 260); font-size:13.5px; font-weight:500; cursor:pointer;"><div style="width:6px; height:6px; border-radius:2px; background:oklch(0.4 0.02 260);"></div>Sample QC</div>
+        <div style="display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:8px; color:oklch(0.85 0.02 260); font-size:13.5px; font-weight:500; cursor:pointer;"><div style="width:6px; height:6px; border-radius:2px; background:oklch(0.4 0.02 260);"></div>Run QC</div>
+        <div style="margin-top:auto; padding:14px 12px; border-radius:10px; background:oklch(0.27 0.05 260);">
+          <div style="color:oklch(0.62 0.02 260); font-size:10.5px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase;">Active sample</div>
+          <div style="color:#fff; font-size:13.5px; font-weight:600; margin-top:4px; font-family:'IBM Plex Mono';">HG002</div>
+          <div style="color:oklch(0.68 0.03 220); font-size:11.5px; font-family:'IBM Plex Mono'; margin-top:2px;">PacBio HiFi · bcftools/roh 1.20</div>
+        </div>
+      </div>
+
+      <!-- main -->
+      <div style="flex:1; display:flex; flex-direction:column; min-width:0;">
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:16px 28px; border-bottom:1px solid oklch(0.9 0.01 90); background:#fff;">
+          <div>
+            <div style="font-size:19px; font-weight:600; color:oklch(0.22 0.02 260);">Runs of Homozygosity</div>
+            <div style="font-size:12.5px; color:oklch(0.5 0.02 260); margin-top:2px;">Sample HG002 · GRCh38 · bcftools/roh · autosomal genome 2,881 Mb</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="display:flex; align-items:center; gap:8px; padding:8px 14px; border:1px solid oklch(0.88 0.01 90); border-radius:8px; font-size:13px; color:oklch(0.5 0.02 260);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>Search region or gene</div>
+            <div style="padding:9px 16px; border-radius:8px; background:oklch(0.5 0.16 220); color:#fff; font-size:13px; font-weight:600; cursor:pointer;">Export Report</div>
+          </div>
+        </div>
+
+        <div style="flex:1; overflow-y:auto; padding:26px 28px; display:flex; flex-direction:column; gap:18px;">
+
+          <!-- compact stat strip -->
+          <div style="background:#fff; border:1px solid oklch(0.9 0.01 90); border-radius:12px; padding:16px 4px; display:grid; grid-template-columns:repeat(5,1fr);">
+            <sc-for list="{{ statsB }}" as="s" hint-placeholder-count="5">
+              <div style="padding:0 22px; border-right:1px solid oklch(0.94 0.01 90);">
+                <div style="font-size:11.5px; font-weight:600; color:oklch(0.5 0.02 260);">{{ s.label }}</div>
+                <div style="font-size:23px; font-weight:700; margin-top:6px; {{ s.valueStyle }}">{{ s.value }}</div>
+                <div style="font-size:11px; color:oklch(0.55 0.02 260); margin-top:3px;">{{ s.sub }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <!-- filter toolbar -->
+          <div style="background:#fff; border:1px solid oklch(0.9 0.01 90); border-radius:12px; padding:14px 20px; display:flex; align-items:center; gap:22px;">
+            <div style="font-size:12.5px; font-weight:600; color:oklch(0.35 0.02 260);">ACMG size threshold</div>
+            <div style="display:flex; gap:0; border:1px solid oklch(0.88 0.01 90); border-radius:8px; overflow:hidden;">
+              <sc-for list="{{ thrChips }}" as="t" hint-placeholder-count="4">
+                <div onClick="{{ t.onClick }}" style="padding:8px 16px; font-size:12.5px; font-weight:600; cursor:pointer; border-right:1px solid oklch(0.9 0.01 90); {{ t.style }}">{{ t.label }}</div>
+              </sc-for>
+            </div>
+            <div style="font-size:12px; color:oklch(0.5 0.02 260); line-height:1.4;">{{ thrNote }}</div>
+            <div style="margin-left:auto; font-size:12.5px; font-weight:600; color:oklch(0.4 0.02 260);">{{ tableCountB }}</div>
+          </div>
+
+          <!-- table (hero) -->
+          <div style="background:#fff; border:1px solid oklch(0.9 0.01 90); border-radius:12px; overflow:hidden;">
+            <div style="display:grid; grid-template-columns:0.7fr 1.6fr 0.8fr 1.1fr 0.7fr 0.6fr 0.55fr 0.8fr 1.3fr; gap:10px; padding:11px 20px; font-size:11px; font-weight:600; color:oklch(0.5 0.02 260); letter-spacing:0.03em; text-transform:uppercase; border-bottom:1px solid oklch(0.94 0.01 90); background:oklch(0.985 0.003 90);">
+              <div onClick="{{ sortChr }}" style="cursor:pointer;">Chr {{ sortChrArrow }}</div><div>Region (Mb)</div><div onClick="{{ sortLen }}" style="cursor:pointer;">Length {{ sortLenArrow }}</div><div>Position</div><div>Imprint</div><div>Markers</div><div>Q</div><div>OMIM</div><div>UPD call</div>
+            </div>
+            <sc-for list="{{ rowsB }}" as="r" hint-placeholder-count="10">
+              <div onClick="{{ r.onClick }}" style="display:grid; grid-template-columns:0.7fr 1.6fr 0.8fr 1.1fr 0.7fr 0.6fr 0.55fr 0.8fr 1.3fr; gap:10px; padding:11px 20px; align-items:center; font-size:12.5px; cursor:pointer; border-bottom:1px solid oklch(0.965 0.005 90); {{ r.rowBg }}" style-hover="background:oklch(0.975 0.006 220);">
+                <div style="font-weight:600; font-family:'IBM Plex Mono'; display:flex; align-items:center; gap:5px;">{{ r.chrom }}<span style="{{ r.selDot }}"></span></div>
+                <div style="font-family:'IBM Plex Mono'; font-size:11.5px; color:oklch(0.5 0.02 260);">{{ r.region }}</div>
+                <div style="font-family:'IBM Plex Mono'; font-weight:600; {{ r.lenStyle }}">{{ r.length }}</div>
+                <div style="color:oklch(0.45 0.02 260); font-size:11.5px;">{{ r.posType }}</div>
+                <div>{{ r.imprintTag }}</div>
+                <div style="font-family:'IBM Plex Mono'; color:oklch(0.5 0.02 260); font-size:11.5px;">{{ r.markers }}</div>
+                <div style="font-family:'IBM Plex Mono'; color:oklch(0.5 0.02 260); font-size:11.5px;">{{ r.q }}</div>
+                <div style="font-family:'IBM Plex Mono'; color:oklch(0.5 0.02 260); font-size:11.5px;">{{ r.genes }}</div>
+                <div>{{ r.updTag }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <!-- track viewer -->
+          <div style="background:#fff; border:1px solid oklch(0.9 0.01 90); border-radius:12px; padding:18px 22px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+              <div>
+                <div style="font-size:15px; font-weight:600; color:oklch(0.22 0.02 260);">Per-chromosome track</div>
+                <div style="font-size:12px; color:oklch(0.55 0.02 260); margin-top:2px;">{{ trackSub }}</div>
+              </div>
+              <div style="display:flex; gap:6px; flex-wrap:wrap; max-width:640px; justify-content:flex-end;">
+                <sc-for list="{{ chromChips }}" as="c" hint-placeholder-count="10">
+                  <div onClick="{{ c.onClick }}" style="padding:5px 11px; border-radius:7px; font-size:12px; font-weight:600; font-family:'IBM Plex Mono'; cursor:pointer; {{ c.style }}">{{ c.label }}</div>
+                </sc-for>
+              </div>
+            </div>
+            {{ trackSvg }}
+          </div>
+
+          <!-- UPD + consanguinity strip -->
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:18px;">
+            <div style="background:oklch(0.97 0.04 70); border:1px solid oklch(0.82 0.09 70); border-radius:12px; padding:16px 20px;">
+              <div style="font-size:13.5px; font-weight:600; color:oklch(0.42 0.11 60); display:flex; align-items:center; gap:8px;"><div style="width:8px;height:8px;border-radius:50%;background:oklch(0.62 0.15 75);"></div>UPD screen — 1 flag</div>
+              <div style="font-size:12.5px; color:oklch(0.45 0.06 60); margin-top:8px; line-height:1.5;">{{ updText }}</div>
+            </div>
+            <div style="background:oklch(0.96 0.03 150); border:1px solid oklch(0.85 0.06 150); border-radius:12px; padding:16px 20px;">
+              <div style="font-size:13.5px; font-weight:600; color:oklch(0.4 0.12 150); display:flex; align-items:center; gap:8px;"><div style="width:8px;height:8px;border-radius:50%;background:oklch(0.55 0.14 150);"></div>Consanguinity — not indicated</div>
+              <div style="font-size:12.5px; color:oklch(0.4 0.05 150); margin-top:8px; line-height:1.5;">{{ verdictText }}</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { classFilter:'all', minLen:0, selChrom:'chr7', sortKey:'chrom', sortDir:'asc' };
+
+  LEN = {chr1:248.96,chr2:242.19,chr3:198.30,chr4:190.21,chr5:181.54,chr6:170.81,chr7:159.35,chr8:145.14,chr9:138.39,chr10:133.80,chr11:135.09,chr12:133.28,chr13:114.36,chr14:107.04,chr15:101.99,chr16:90.34,chr17:83.26,chr18:80.37,chr19:58.62,chr20:64.44,chr21:46.71,chr22:50.82,chrX:156.04};
+  CEN = {chr1:123.4,chr2:93.9,chr3:90.9,chr4:50.0,chr5:48.8,chr6:59.8,chr7:60.1,chr8:45.2,chr9:43.0,chr10:39.8,chr11:53.4,chr12:35.5,chr13:17.7,chr14:17.2,chr15:19.0,chr16:36.8,chr17:25.1,chr18:18.5,chr19:26.2,chr20:28.1,chr21:12.0,chr22:15.0,chrX:61.0};
+  ORDER = ['chr1','chr2','chr3','chr4','chr5','chr6','chr7','chr8','chr9','chr10','chr11','chr12','chr13','chr14','chr15','chr16','chr17','chr18','chr19','chr20','chr21','chr22','chrX'];
+  IMP = new Set([6,7,11,14,15,20]);
+
+  RAW = [
+    ['chr7',152.4,158.9],['chr16',21.4,29.2],['chr2',96.1,101.8],['chr9',69.0,73.0],['chr6',25.8,29.1],
+    ['chr1',152.3,154.1],['chr4',88.4,90.0],['chr13',48.0,49.5],
+    ['chr1',55.0,55.7],['chr1',201.5,202.6],['chr2',210.0,211.1],['chr3',44.0,45.3],['chr3',128.2,129.0],
+    ['chr5',140.0,141.0],['chr6',88.0,88.7],['chr7',5.0,5.8],['chr8',12.0,13.2],['chr10',51.0,52.3],
+    ['chr11',55.0,55.9],['chr12',20.0,20.7],['chr12',110.2,111.4],['chr14',65.0,66.0],['chr15',43.0,44.2],
+    ['chr17',36.0,36.8],['chr18',22.0,23.1],['chr19',40.0,40.7],['chr20',30.0,30.9],['chr21',33.0,33.7],
+    ['chr22',24.0,25.0],['chrX',70.0,71.3]
+  ];
+
+  hash(s){ let h=7; for(let i=0;i<s.length;i++){ h=(h*31 + s.charCodeAt(i))>>>0; } return h; }
+  f1(x){ return (Math.round(x*10)/10).toFixed(1); }
+
+  enrich(){
+    const model=(typeof window!=='undefined' && window.ROH_GENE_MODEL) || [];
+    if (this._segs && this._modelLoaded) return this._segs;
+    this._modelLoaded = model.length>0;
+    this._segs = this.RAW.map(r=>{
+      const [chrom,s,e]=r;
+      const len=Math.round((e-s)*10)/10;
+      const num = chrom==='chrX'?23:parseInt(chrom.slice(3));
+      const L=this.LEN[chrom], cen=this.CEN[chrom];
+      const telo = (s<=3)||(e>=L-3);
+      const periC = (s<=cen && e>=cen);
+      const posType = periC?'Pericentromeric':(telo?'Telomeric':'Interstitial');
+      const imprinted = this.IMP.has(num);
+      const mhc = (chrom==='chr6' && s>24 && e<30);
+      let cls,clsColor;
+      if(len>=5){cls='\u22655 Mb';clsColor='oklch(0.62 0.16 70)';}
+      else if(len>=3){cls='3\u20135 Mb';clsColor='oklch(0.55 0.14 220)';}
+      else if(len>=1){cls='1\u20133 Mb';clsColor='oklch(0.68 0.10 220)';}
+      else {cls='<1 Mb';clsColor='oklch(0.8 0.05 220)';}
+      let upd=null;
+      if(chrom!=='chrX'){
+        if(telo && len>=5) upd = imprinted?'UPD? telomeric \u22655 Mb (imprinted)':'UPD? telomeric \u22655 Mb';
+        else if(!telo && imprinted && len>=10) upd='UPD? interstitial \u226510 Mb (imprinted)';
+        else if(!telo && !imprinted && len>=15) upd='UPD? interstitial \u226515 Mb';
+      }
+      const h=this.hash(chrom+s);
+      const markers=Math.round(len*172)+(h%80);
+      const q=36+(h%10);
+      const hits=model.filter(g=>g.chrom===chrom && (g.end/1e6)>=s && (g.start/1e6)<=e)
+                      .sort((a,b)=>a.start-b.start);
+      const genes=hits.length;
+      const arGenes=hits.filter(g=>g.inh==='AR').length;
+      return {chrom,num,start:s,end:e,len,L,cen,telo,periC,posType,imprinted,mhc,cls,clsColor,upd,markers,q,genes,arGenes,hits,
+        region:`${chrom}:${this.f1(s)}\u2013${this.f1(e)}`, length:`${this.f1(len)} Mb`};
+    });
+    return this._segs;
+  }
+
+  svg(w,h,inner){ return React.createElement('svg',{width:'100%',viewBox:`0 0 ${w} ${h}`,style:{display:'block'},dangerouslySetInnerHTML:{__html:inner}}); }
+
+  buildIdeogram(filter){
+    const segs=this.enrich();
+    const maxLen=248.96, colTrack=300, labelW=34, colGap=64;
+    const trackX0=labelW, trackX1=labelW+colTrack+colGap+labelW;
+    const W=trackX1+colTrack, rowH=30, topPad=10, H=topPad+12*rowH+6;
+    const left=this.ORDER.slice(0,12), right=this.ORDER.slice(12);
+    const cols=[[left,trackX0],[right,trackX1]];
+    let out='';
+    cols.forEach(([list,tx])=>{
+      list.forEach((chrom,idx)=>{
+        const L=this.LEN[chrom], cen=this.CEN[chrom];
+        const num=chrom==='chrX'?23:parseInt(chrom.slice(3));
+        const cy=topPad+idx*rowH+rowH/2, barY=cy-6, barH=12;
+        const tW=L/maxLen*colTrack;
+        const impr=this.IMP.has(num);
+        const labelColor = impr?'oklch(0.5 0.14 300)':'oklch(0.4 0.02 260)';
+        out+=`<text x="${tx-7}" y="${cy+4}" font-size="11" font-weight="600" fill="${labelColor}" text-anchor="end" font-family="IBM Plex Mono">${chrom.replace('chr','')}</text>`;
+        out+=`<rect x="${tx}" y="${barY}" width="${tW}" height="${barH}" rx="6" fill="oklch(0.93 0.008 90)" stroke="oklch(0.88 0.01 90)"/>`;
+        const cX=tx+cen/maxLen*colTrack;
+        out+=`<circle cx="${cX}" cy="${cy}" r="3" fill="oklch(0.78 0.02 260)"/>`;
+        segs.filter(sg=>sg.chrom===chrom).forEach(sg=>{
+          if(filter!=='all' && sg.cls!==filter) return;
+          const x=tx+sg.start/maxLen*colTrack, w=Math.max(sg.len/maxLen*colTrack,1.6);
+          out+=`<rect x="${x}" y="${barY}" width="${w}" height="${barH}" rx="2" fill="${sg.clsColor}"/>`;
+          if(sg.upd) out+=`<rect x="${x-1.5}" y="${barY-1.5}" width="${w+3}" height="${barH+3}" rx="3" fill="none" stroke="oklch(0.55 0.20 25)" stroke-width="1.6"/>`;
+        });
+      });
+    });
+    return this.svg(W,H,out);
+  }
+
+  buildTrack(chrom){
+    const segs=this.enrich().filter(s=>s.chrom===chrom);
+    const L=this.LEN[chrom], cen=this.CEN[chrom];
+    const num=chrom==='chrX'?23:parseInt(chrom.slice(3));
+    const impr=this.IMP.has(num);
+    const W=1000, leftPad=46, rightPad=22, trackW=W-leftPad-rightPad, scale=trackW/L;
+    const barY=44, barH=22, H=150;
+    let out='';
+    out+=`<rect x="${leftPad}" y="${barY}" width="${trackW}" height="${barH}" rx="11" fill="oklch(0.93 0.008 90)" stroke="oklch(0.88 0.01 90)"/>`;
+    // telomere caps
+    out+=`<rect x="${leftPad}" y="${barY}" width="4" height="${barH}" rx="2" fill="oklch(0.82 0.02 260)"/>`;
+    out+=`<rect x="${leftPad+trackW-4}" y="${barY}" width="4" height="${barH}" rx="2" fill="oklch(0.82 0.02 260)"/>`;
+    const cX=leftPad+cen*scale;
+    out+=`<circle cx="${cX}" cy="${barY+barH/2}" r="5" fill="oklch(0.78 0.02 260)"/>`;
+    // ROH
+    segs.forEach(sg=>{
+      const x=leftPad+sg.start*scale, w=Math.max(sg.len*scale,2.5);
+      out+=`<rect x="${x}" y="${barY}" width="${w}" height="${barH}" rx="3" fill="${sg.clsColor}"/>`;
+      if(sg.upd) out+=`<rect x="${x-2}" y="${barY-2}" width="${w+4}" height="${barH+4}" rx="4" fill="none" stroke="oklch(0.55 0.20 25)" stroke-width="2"/>`;
+      if(w>50) out+=`<text x="${x+w/2}" y="${barY-8}" font-size="10.5" font-weight="600" fill="oklch(0.4 0.02 260)" text-anchor="middle" font-family="IBM Plex Mono">${this.f1(sg.len)} Mb</text>`;
+    });
+    // ruler
+    const rulerY=barY+barH+16;
+    out+=`<line x1="${leftPad}" y1="${rulerY}" x2="${leftPad+trackW}" y2="${rulerY}" stroke="oklch(0.85 0.01 90)"/>`;
+    for(let mb=0; mb<=L; mb+=25){
+      const x=leftPad+mb*scale;
+      out+=`<line x1="${x}" y1="${rulerY}" x2="${x}" y2="${rulerY+4}" stroke="oklch(0.75 0.01 90)"/>`;
+      out+=`<text x="${x}" y="${rulerY+15}" font-size="9" fill="oklch(0.55 0.02 260)" text-anchor="middle" font-family="IBM Plex Mono">${mb}</text>`;
+    }
+    out+=`<text x="${leftPad+trackW}" y="${rulerY+15}" font-size="9" fill="oklch(0.55 0.02 260)" text-anchor="end" font-family="IBM Plex Mono">Mb</text>`;
+    // gene lane — real OMIM disease genes within ROH on this chromosome
+    const geneY=barY+barH+50;
+    const hits=[];
+    segs.forEach(s=>s.hits.forEach(g=>{ if(!hits.some(h=>h.sym===g.sym)) hits.push(g); }));
+    if(hits.length){
+      out+=`<text x="${leftPad}" y="${geneY-4}" font-size="10" font-weight="600" fill="oklch(0.5 0.02 260)" font-family="IBM Plex Sans">OMIM disease genes within ROH</text>`;
+      hits.sort((a,b)=>a.start-b.start).forEach(g=>{
+        const x=leftPad+(g.start/1e6)*scale;
+        const col = g.inh==='AR' ? 'oklch(0.55 0.14 25)' : 'oklch(0.5 0.14 260)';
+        out+=`<line x1="${x}" y1="${geneY+2}" x2="${x}" y2="${geneY+14}" stroke="${col}" stroke-width="1.6"/>`;
+        out+=`<circle cx="${x}" cy="${geneY+2}" r="3" fill="${col}"/>`;
+        out+=`<text x="${x+6}" y="${geneY+12}" font-size="10.5" font-weight="600" fill="${col}" font-family="IBM Plex Mono">${g.sym}</text>`;
+        out+=`<text x="${x+6}" y="${geneY+23}" font-size="8.5" fill="oklch(0.55 0.02 260)" font-family="IBM Plex Sans">${g.inh}</text>`;
+      });
+    } else {
+      const label = impr ? `Imprinted chromosome \u00b7 no cataloged OMIM disease genes within ROH` : `No cataloged OMIM disease genes within ROH on ${chrom}`;
+      out+=`<text x="${leftPad}" y="${geneY+6}" font-size="11" fill="oklch(0.5 0.02 260)" font-family="IBM Plex Sans">${label}</text>`;
+    }
+    return this.svg(W,H,out);
+  }
+
+  buildLadder(F3,F1){
+    const W=560, H=94, leftPad=10, rightPad=10, trackW=W-leftPad-rightPad, max=0.26;
+    const sc=trackW/max, baseY=58;
+    const px=v=>leftPad+v*sc;
+    let out='';
+    // bands
+    out+=`<rect x="${px(0.02)}" y="${baseY-9}" width="${(0.03-0.02)*sc}" height="18" fill="oklch(0.9 0.05 70)" opacity="0.6"/>`;
+    out+=`<rect x="${px(0.10)}" y="${baseY-9}" width="${(max-0.10)*sc}" height="18" fill="oklch(0.9 0.06 25)" opacity="0.5"/>`;
+    out+=`<line x1="${leftPad}" y1="${baseY}" x2="${leftPad+trackW}" y2="${baseY}" stroke="oklch(0.8 0.01 90)" stroke-width="2"/>`;
+    const marks=[[0.0156,'2nd cousin',0],[0.0313,'1c 1R',1],[0.0625,'1st cousin',0],[0.125,'2\u00b0 / dbl-1c',1],[0.25,'1st degree',0]];
+    marks.forEach(([v,lab,row])=>{
+      const x=px(v);
+      out+=`<line x1="${x}" y1="${baseY-9}" x2="${x}" y2="${baseY+9}" stroke="oklch(0.7 0.02 260)" stroke-width="1"/>`;
+      const ly = row? baseY+30 : baseY+20;
+      out+=`<text x="${x}" y="${ly}" font-size="9" fill="oklch(0.5 0.02 260)" text-anchor="middle" font-family="IBM Plex Mono">${(v*100).toFixed(v<0.05?2:1)}%</text>`;
+      out+=`<text x="${x}" y="${ly+11}" font-size="8.5" fill="oklch(0.55 0.02 260)" text-anchor="middle" font-family="IBM Plex Sans">${lab}</text>`;
+    });
+    // labels for bands
+    out+=`<text x="${px(0.025)}" y="${baseY-14}" font-size="8.5" fill="oklch(0.5 0.1 70)" text-anchor="middle" font-family="IBM Plex Sans">report 2\u20133%</text>`;
+    // F1 faint pointer
+    const x1=px(Math.min(F1,max));
+    out+=`<polygon points="${x1-4},${baseY-11} ${x1+4},${baseY-11} ${x1},${baseY-4}" fill="oklch(0.75 0.02 260)"/>`;
+    // F3 pointer
+    const x3=px(Math.min(F3,max));
+    out+=`<polygon points="${x3-6},${baseY-14} ${x3+6},${baseY-14} ${x3},${baseY-4}" fill="oklch(0.5 0.16 220)"/>`;
+    out+=`<text x="${x3}" y="${baseY-18}" font-size="10.5" font-weight="600" fill="oklch(0.4 0.14 220)" text-anchor="middle" font-family="IBM Plex Mono">F ${(F3*100).toFixed(2)}%</text>`;
+    return this.svg(W,H,out);
+  }
+
+  renderVals(){
+    const segs=this.enrich();
+    const autos=segs.filter(s=>s.chrom!=='chrX');
+    const GENOME=2881;
+    const sum=(min)=>autos.filter(s=>s.len>=min).reduce((a,s)=>a+s.len,0);
+    const sumAll=sum(0.5), sum1=sum(1), sum3=sum(3), sum5=sum(5);
+    const F1=sum1/GENOME, F3=sum3/GENOME;
+    const longest=Math.max(...segs.map(s=>s.len));
+    const updList=segs.filter(s=>s.upd);
+    const nAuto=autos.length, nX=segs.length-nAuto;
+
+    // ---- interactivity handlers
+    const setClass=(c)=>()=>this.setState({classFilter:c});
+    const setMin=(m)=>()=>this.setState({minLen:m});
+    const setChrom=(c)=>()=>this.setState({selChrom:c});
+    const toggleSort=(k)=>()=>this.setState(st=>({sortKey:k, sortDir: st.sortKey===k && st.sortDir==='desc'?'asc':'desc'}));
+
+    const cf=this.state.classFilter;
+    const clsList=['\u22655 Mb','3\u20135 Mb','1\u20133 Mb','<1 Mb'];
+    const clsColorOf={'\u22655 Mb':'oklch(0.62 0.16 70)','3\u20135 Mb':'oklch(0.55 0.14 220)','1\u20133 Mb':'oklch(0.68 0.10 220)','<1 Mb':'oklch(0.8 0.05 220)'};
+
+    // ===== OPTION 1A =====
+    const statsA=[
+      {label:'ROH segments', value:String(segs.length), sub:`${nAuto} autosomal \u00b7 ${nX} chrX (excluded)`, valueStyle:''},
+      {label:'Total ROH \u22651 Mb', value:`${sum1.toFixed(1)} Mb`, sub:`${(F1*100).toFixed(2)}% of autosomal genome`, valueStyle:''},
+      {label:'IBD-informative \u22653 Mb', value:`${sum3.toFixed(1)} Mb`, sub:`${(F3*100).toFixed(2)}% \u00b7 ACMG-weighted`, valueStyle:''},
+      {label:'Longest ROH', value:`${longest.toFixed(1)} Mb`, sub:'chr16p12.2\u2013p11.2', valueStyle:''},
+      {label:'Possible UPD', value:String(updList.length), sub:'chr7 \u00b7 telomeric \u22655 Mb', valueStyle:'color:oklch(0.55 0.16 65);'},
+    ];
+
+    const legendA=[{label:'All',cls:'all'}].concat(clsList.map(c=>({label:c,cls:c}))).map(o=>{
+      const active = cf===o.cls;
+      return {label:o.label, onClick:setClass(o.cls),
+        chipStyle: active?'background:oklch(0.28 0.05 260); color:#fff;':'background:oklch(0.96 0.005 90); color:oklch(0.4 0.02 260);',
+        dot: o.cls==='all'?'background:linear-gradient(90deg,oklch(0.62 0.16 70),oklch(0.68 0.10 220));':`background:${clsColorOf[o.cls]};`};
+    });
+
+    const fRowsA=[
+      {label:'All ROH \u22651 Mb', sub:'includes short LD / IBS segments', value:`${(F1*100).toFixed(2)}%`, rowStyle:'background:oklch(0.97 0.004 90);', valStyle:'color:oklch(0.45 0.02 260);'},
+      {label:'IBD-informative \u22653 Mb', sub:'ACMG size threshold applied', value:`${(F3*100).toFixed(2)}%`, rowStyle:'background:oklch(0.965 0.02 220);', valStyle:'color:oklch(0.4 0.14 220);'},
+    ];
+
+    const verdictText=`Autozygosity (${(F3*100).toFixed(2)}% at \u22653 Mb) is below the ACMG 2\u20133% reporting threshold and below the second-cousin value (1.56%). A consanguinity statement is not indicated; ROH \u22653 Mb are provided to support autozygosity mapping against the proband's phenotype.`;
+
+    const orderIdxG=c=>this.ORDER.indexOf(c);
+    const candidateGenes=[];
+    autos.filter(s=>s.len>=3).sort((a,b)=>orderIdxG(a.chrom)-orderIdxG(b.chrom)).forEach(s=>{
+      s.hits.filter(g=>g.inh==='AR').forEach(g=>candidateGenes.push({
+        gene:g.sym, locus:`${g.chrom.replace('chr','')} \u00b7 ${(g.start/1e6).toFixed(1)} Mb`,
+        condition:g.disease, inh:'Autosomal recessive'
+      }));
+    });
+    const nAR=candidateGenes.length;
+    const candidateSub=`${nAR} AR genes across ${autos.filter(s=>s.len>=3&&s.arGenes>0).length} ROH \u22653 Mb \u00b7 curated OMIM model (GRCh38)`;
+
+    const orderIdx=c=>this.ORDER.indexOf(c);
+    const rowsAsrc=(cf==='all'?segs:segs.filter(s=>s.cls===cf)).slice().sort((a,b)=>orderIdx(a.chrom)-orderIdx(b.chrom)||a.start-b.start);
+    const rowsA=rowsAsrc.map(s=>({
+      chrom:s.chrom, region:s.region, length:s.length, posType:s.posType, cls:s.cls, markers:String(s.markers), q:'Q'+s.q,
+      clsBadge:`background:${s.clsColor};`,
+      imprintDot: s.imprinted?'display:inline-block;width:7px;height:7px;border-radius:2px;background:oklch(0.55 0.18 300);':'display:none;',
+      rowBg: s.upd?'background:oklch(0.985 0.02 60);':(s.chrom==='chrX'?'background:oklch(0.98 0.004 90);':''),
+      note: s.upd?'Possible UPD \u2014 confirm':(s.mhc?'MHC/HLA \u2014 high LD':(s.chrom==='chrX'?'chrX \u2014 excluded from F':(s.arGenes?`${s.arGenes} AR candidate genes`:'\u2014'))),
+      noteStyle: s.upd?'color:oklch(0.5 0.14 60); font-weight:600;':(s.mhc?'color:oklch(0.5 0.1 300);':'color:oklch(0.55 0.02 260);'),
+    }));
+
+    // ===== OPTION 1B =====
+    const statsB=[
+      {label:'ROH segments', value:String(segs.length), sub:`${nAuto} autosomal`, valueStyle:''},
+      {label:'\u22653 Mb ROH', value:String(autos.filter(s=>s.len>=3).length), sub:`${sum3.toFixed(1)} Mb total`, valueStyle:''},
+      {label:'F (\u22653 Mb)', value:`${(F3*100).toFixed(2)}%`, sub:'of 2,881 Mb autosomal', valueStyle:''},
+      {label:'Longest', value:`${longest.toFixed(1)} Mb`, sub:'chr16', valueStyle:''},
+      {label:'UPD flags', value:String(updList.length), sub:'chr7 telomeric', valueStyle:'color:oklch(0.55 0.16 65);'},
+    ];
+
+    const thr=this.state.minLen;
+    const thrDefs=[{label:'All \u22650.5',v:0.5},{label:'\u22651 Mb',v:1},{label:'\u22653 Mb',v:3},{label:'\u22655 Mb',v:5}];
+    const thrChips=thrDefs.map(t=>({label:t.label, onClick:setMin(t.v),
+      style: thr===t.v?'background:oklch(0.5 0.16 220); color:#fff;':'background:#fff; color:oklch(0.4 0.02 260);'}));
+    const shownSum=autos.filter(s=>s.len>=thr).reduce((a,s)=>a+s.len,0);
+    const thrNote = thr>=3
+      ? `ACMG limits IBD estimation to \u22653\u20135 Mb \u2014 F = ${(shownSum/GENOME*100).toFixed(2)}%`
+      : `Includes short LD/IBS segments; automated F is inflated below 3 Mb`;
+    const shownCount=segs.filter(s=>s.len>=thr).length;
+    const tableCountB=`Showing ${shownCount} of ${segs.length}`;
+    const tableCountA=`${rowsA.length} of ${segs.length} shown`;
+
+    const sk=this.state.sortKey, sd=this.state.sortDir, dir=sd==='desc'?-1:1;
+    let rowsBsrc=segs.filter(s=>s.len>=thr).slice();
+    rowsBsrc.sort((a,b)=> sk==='length' ? (a.len-b.len)*dir : (orderIdx(a.chrom)-orderIdx(b.chrom)||a.start-b.start)*dir);
+    const rowsB=rowsBsrc.map(s=>({
+      chrom:s.chrom, region:s.region, length:s.length, posType:s.posType, markers:String(s.markers), q:'Q'+s.q, genes:String(s.genes),
+      onClick:setChrom(s.chrom),
+      lenStyle: s.len>=5?'color:oklch(0.5 0.14 60);':'',
+      selDot: s.chrom===this.state.selChrom?'display:inline-block;width:6px;height:6px;border-radius:50%;background:oklch(0.5 0.16 220);':'display:none;',
+      rowBg: s.chrom===this.state.selChrom?'background:oklch(0.965 0.02 220);':(s.upd?'background:oklch(0.985 0.02 60);':''),
+      imprintTag: s.imprinted
+        ? React.createElement('span',{style:{padding:'2px 8px',borderRadius:'20px',fontSize:'10.5px',fontWeight:600,background:'oklch(0.95 0.03 300)',color:'oklch(0.45 0.14 300)'}},'Imprinted')
+        : React.createElement('span',{style:{color:'oklch(0.7 0.01 90)',fontSize:'11px'}},'\u2014'),
+      updTag: s.upd
+        ? React.createElement('span',{style:{padding:'2px 8px',borderRadius:'20px',fontSize:'10.5px',fontWeight:600,background:'oklch(0.62 0.15 75)',color:'#fff'}},'Possible UPD')
+        : React.createElement('span',{style:{color:'oklch(0.6 0.02 260)',fontSize:'11.5px'}}, s.mhc?'high LD':'none'),
+    }));
+
+    const sortArrow=(k)=> sk===k ? (sd==='desc'?'\u2193':'\u2191') : '';
+
+    const chromsWith=[...new Set(segs.map(s=>s.chrom))].sort((a,b)=>orderIdx(a)-orderIdx(b));
+    const chromChips=chromsWith.map(c=>{
+      const active=c===this.state.selChrom;
+      const flagged=segs.some(s=>s.chrom===c&&s.upd);
+      return {label:c.replace('chr',''), onClick:setChrom(c),
+        style: active?'background:oklch(0.22 0.04 260); color:#fff;':(flagged?'background:oklch(0.95 0.04 70); color:oklch(0.45 0.11 60);':'background:oklch(0.96 0.005 90); color:oklch(0.4 0.02 260);')};
+    });
+    const selSegs=segs.filter(s=>s.chrom===this.state.selChrom);
+    const trackSub=`${this.state.selChrom} \u00b7 ${selSegs.length} ROH \u00b7 ${selSegs.reduce((a,s)=>a+s.len,0).toFixed(1)} Mb${this.IMP.has(selSegs[0]?selSegs[0].num:0)?' \u00b7 imprinted chromosome':''}`;
+
+    const updText=`chr7:152.4\u2013158.9 Mb (6.5 Mb) is an isolated telomeric ROH on an imprinted chromosome, meeting the Hoppman telomeric \u22655 Mb criterion for possible UPD7. Confirm with methylation-specific analysis and microsatellite/trio testing before reporting as diagnostic. All other chromosomes are below UPD thresholds (interstitial \u226515 Mb non-imprinted, \u226510 Mb imprinted).`;
+
+    return {
+      // 1A
+      statsA, legendA, ideogramSvg:this.buildIdeogram(cf), fRowsA, ladderSvg:this.buildLadder(F3,F1),
+      verdictText, candidateGenes, candidateSub, rowsA, tableCountA,
+      // 1B
+      statsB, thrChips, thrNote, tableCountB, rowsB, chromChips, trackSvg:this.buildTrack(this.state.selChrom), trackSub, updText,
+      sortChr:toggleSort('chrom'), sortLen:toggleSort('length'), sortChrArrow:sortArrow('chrom'), sortLenArrow:sortArrow('length'),
+    };
+  }
+}
+</script>
+</body>
+</html>

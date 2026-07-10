@@ -62,6 +62,10 @@ CATALOG_BED = os.environ.get(
 
 CALLER_LABEL = "TRGT v5.1.0"
 VCF_EXTENSIONS = (".vcf", ".vcf.gz")
+# Non-panel VCFs that legitimately sit alongside a sample's TRGT VCF in some modes'
+# (flat-layout) vcf_dir -- e.g. Carrier's f8inversion caller and sawfish output --
+# and would otherwise be misidentified as the sample's repeat-panel VCF.
+_AUXILIARY_VCF_MARKERS = (".f8inversion.", ".sv.")
 
 app = FastAPI(title="RepeatScope API")
 app.add_middleware(
@@ -97,7 +101,10 @@ def _resolve_config_path(p: Optional[str]) -> Optional[str]:
 
 def _discover_samples_in_dir(vcf_dir: str) -> dict[str, str]:
     paths = sorted(
-        p for p in Path(vcf_dir).iterdir() if p.name.endswith(VCF_EXTENSIONS) and p.is_file()
+        p for p in Path(vcf_dir).iterdir()
+        if p.name.endswith(VCF_EXTENSIONS)
+        and p.is_file()
+        and not any(marker in p.name for marker in _AUXILIARY_VCF_MARKERS)
     )
     found: dict[str, str] = {}
     for p in paths:

@@ -12,10 +12,9 @@
   },
   "carrier": {
     "label": "Carrier",
-    "vcf_dir": "fixtures/carrier_panel",
+    "vcf_dir": "fixtures/carrier_panel_v2",
     "panel_bed": "fixtures/panels/carrier_screen.repeat_definitions.hg38.bed",
     "non_repeat_targets": "fixtures/panels/carrier_screen.non_repeat_targets.json",
-    "paraphase_dir": "fixtures/carrier_panel/paraphase",
-    "sample_sex": "fixtures/carrier_panel/sample_sex.json"
+    "paraphase_dir": "fixtures/carrier_panel_v2"
   }
 }

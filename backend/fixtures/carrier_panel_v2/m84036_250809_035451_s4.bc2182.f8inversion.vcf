@@ -1,0 +1,16 @@
+##fileformat=VCFv4.2
+##ALT=<ID=INV,Description="Inversion">
+##FILTER=<ID=PASS,Description="All filters passed">
+##FILTER=<ID=LowDP,Description="Low depth">
+##INFO=<ID=SVLEN,Number=1,Type=Integer,Description="Length of the SV">
+##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of the SV">
+##INFO=<ID=END,Number=1,Type=Integer,Description="End position of the structural variant">
+##INFO=<ID=EVIDENCE,Number=5,Type=Integer,Description="Number of reads supporting WT breakpoint 1, WT breakpoint 2, inversion breakpoint 1, inversion breakpoint 2, and unclassified respectively">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Depth">
+##FORMAT=<ID=SUPP,Number=1,Type=Integer,Description="Read depth supporting the inversion">
+##contig=<ID=chrX,length=156040895>
+##command=/opt/scripts/f8_inversion.py --bam /mnt/miniwdl_task_container/work/_miniwdl_inputs/0/m84036_250809_035451_s4.bc2182.paraphase.bam --prefix m84036_250809_035451_s4.bc2182 --genome 38 --json --sex F --out out/
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	m84036_250809_035451_s4.bc2182
+chrX	154890327	f8inv22	N	<INV>	.	LowDP	SVTYPE=INV;END=155454650;EVIDENCE=0,0,0,0,0	GT:DP:SUPP	.:0:0
+chrX	155007148	f8inv1	N	<INV>	.	LowDP	SVTYPE=INV;END=155148826;EVIDENCE=0,0,0,0,0	GT:DP:SUPP	.:0:0

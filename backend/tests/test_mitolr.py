@@ -3,7 +3,7 @@ sample registry, and the API routes."""
 
 from fastapi.testclient import TestClient
 
-from mitolr import annotate, constraint, generate, gnomad, qc, samples, vcf
+from mitolr import annotate, constraint, generate, gnomad, haplogroup, qc, reference, samples, vcf
 from repeatscope.api.main import app
 
 client = TestClient(app)
@@ -24,8 +24,9 @@ def test_demo_variants_deterministic_and_counted():
 
 def test_demo_narrative_overrides():
     by_id = {v["id"]: v for v in generate.build_variants()}
-    assert by_id["m3243AG"]["heteroplasmy"] == 38.0
+    assert by_id["m3243AG"]["heteroplasmy"] == 58.0
     assert by_id["m3243AG"]["status"] == "Pathogenic"
+    assert "MELAS" in by_id["m3243AG"]["note"]
     assert by_id["kss_common_del"]["heteroplasmy"] == 11.0
 
 
@@ -59,6 +60,72 @@ def test_hg002_locus_annotation():
     assert by_pos[750]["consequence"] == "rRNA variant"
 
 
+# --- overlapping mtDNA reading frames ---------------------------------------
+
+def test_features_for_pos_returns_both_genes_in_overlap():
+    # MT-ATP8 (8366-8572) and MT-ATP6 (8527-9207) genuinely overlap in the real
+    # rCRS annotation -- a variant at 8550 belongs to both, not just whichever
+    # gene happens to be listed first in MT_FEATURES.
+    names = [f["name"] for f in reference.features_for_pos(8550)]
+    assert names == ["MT-ATP8", "MT-ATP6"]
+    # MT-ND4L (10470-10766) / MT-ND4 (10760-12137) likewise overlap at 10760-10766.
+    names2 = [f["name"] for f in reference.features_for_pos(10763)]
+    assert names2 == ["MT-ND4L", "MT-ND4"]
+    # A non-overlapping position still returns exactly one feature.
+    assert [f["name"] for f in reference.features_for_pos(750)] == ["MT-RNR1"]
+
+
+def test_locus_and_consequence_joins_overlapping_genes():
+    locus, consequence, genes = annotate.locus_and_consequence(8550)
+    assert locus == "MT-ATP8/MT-ATP6"
+    assert consequence == "Protein-coding variant"
+    assert genes == ["MT-ATP8", "MT-ATP6"]
+
+
+def test_constraint_for_variant_merges_both_overlapping_genes():
+    # Neither gene's constraint context should be dropped just because they
+    # share this genomic position.
+    result = constraint.constraint_for_variant(8550, ["MT-ATP8", "MT-ATP6"])
+    assert result is not None
+    symbols = {r["symbol"] for r in result["gene_rows"]}
+    assert symbols == {"MT-ATP8", "MT-ATP6"}
+
+
+# --- real (non-synthetic) large-deletion matching ---------------------------
+
+def test_match_pathogenic_deletion_real_vcf_style_call():
+    # A real MitoRSaw-style deletion call (REF longer than ALT, anchored) at the
+    # exact KSS/CPEO common-deletion breakpoints (m.8483_13459del4977) must be
+    # recognized via the real-VCF matching path -- not just the synthetic demo's
+    # hardcoded override, which used to be the only place this variant matched.
+    ref = "A" * 4978  # anchored: pos=8482 + 4978 bases -> del span 8483-13459
+    hit = annotate.match_pathogenic(8482, ref, "A")
+    assert hit is not None and hit["id"] == "kss_common_del"
+
+
+def test_match_pathogenic_deletion_different_breakpoint_not_matched():
+    # A deletion of similar size but different breakpoints is a related but
+    # distinct event -- not silently matched to the curated common deletion.
+    ref = "A" * 4978
+    assert annotate.match_pathogenic(9000, ref, "A") is None
+
+
+def test_deletion_span_wraps_across_circular_origin():
+    # A deletion starting near the D-loop whose REF extends past position
+    # 16,569 wraps back into 1..GENOME_LENGTH, rather than reporting a
+    # nonsensical position beyond the genome's real length.
+    del_start, del_stop = annotate.deletion_span(16560, "A" * 20, "A")
+    assert del_start == 16561
+    assert del_stop == 10
+
+
+def test_variant_notation_deletion_wraps_label_and_span():
+    position, change, is_del = annotate.variant_notation(16560, "A" * 20, "A")
+    assert position == "m.16561_10del"
+    assert change == "del"
+    assert is_del is False  # 19 bp span, below the >100 bp large-deletion cutoff
+
+
 def test_pileup_ratio_matches_allele_depths():
     by_pos = {v["pos"]: v for v in vcf.build_variants(HG002_VCF)}
     v = by_pos[302]  # AD = 70 ref, 1040 alt
@@ -86,12 +153,43 @@ def test_overview_dispatch_per_sample():
     hg = samples.overview("HG002")
     assert hg["stats"]["variants_called"] == 15
     assert hg["stats"]["pathogenic_findings"] == 0
-    assert hg["haplogroup"]["name"] == "Unclassified"
     assert hg["caller"].startswith("mitorsaw")
+    # Real Haplogrep 3 classification if installed (scripts/setup_haplogrep.py);
+    # otherwise honestly "Unclassified" rather than crashing when it's not
+    # available -- either is a valid state for this environment.
+    if haplogroup.available():
+        assert hg["haplogroup"]["name"] != "Unclassified"
+        assert hg["haplogroup"]["confidence"] is not None
+    else:
+        assert hg["haplogroup"]["name"] == "Unclassified"
 
     demo = samples.overview("MT-0417-P2")
     assert demo["stats"]["variants_called"] == 79
     assert demo["haplogroup"]["name"] == "H2a5b1"
+
+
+def test_haplogroup_classify_hg002_when_installed():
+    if not haplogroup.available():
+        import pytest
+        pytest.skip("Haplogrep 3 not installed -- run scripts/setup_haplogrep.py")
+    result = haplogroup.classify("HG002", samples.SAMPLES["HG002"]["vcf"])
+    assert result["name"] != "Unclassified"
+    assert result["confidence"] is not None and 0 <= result["confidence"] <= 100
+    assert "PhyloTree" in result["region"]
+
+
+def test_haplogroup_classify_unavailable_reports_honestly(tmp_path, monkeypatch):
+    # Force the "not installed" path regardless of whether the real classifier
+    # happens to be set up in this environment.
+    monkeypatch.setattr(haplogroup, "JAR_PATH", tmp_path / "does-not-exist.jar")
+    haplogroup.classify.cache_clear()
+    result = haplogroup.classify("HG002", samples.SAMPLES["HG002"]["vcf"])
+    assert result == {
+        "name": "Unclassified",
+        "confidence": None,
+        "region": "Haplogrep 3 not installed -- run `python backend/scripts/setup_haplogrep.py`",
+    }
+    haplogroup.classify.cache_clear()
 
 
 def test_qc_uses_bam_when_available():
@@ -289,6 +387,34 @@ def test_acmg_gap_between_thresholds_yields_no_evidence():
     assert gnomad.acmg_frequency_evidence(_fake_hit(0.00995)) == []
 
 
+def test_acmg_ignores_heteroplasmic_frequency_never_sums_into_homoplasmic():
+    # McCormick et al. validated BA1/BS1/PM2_supporting against AF_hom alone and
+    # give no equivalent AF_het threshold. A variant never seen homoplasmic but
+    # common heteroplasmically (AF_hom=0, AF_het=20%) must NOT qualify for BA1
+    # just because AF_hom + AF_het crosses 1% -- that was the bug.
+    result = gnomad.acmg_frequency_evidence(_fake_hit(0.0, af_het=0.20))
+    assert [e["code"] for e in result] == ["—"]
+    assert "no equivalent" in result[0]["note"] or "no ACMG frequency evidence" in result[0]["note"]
+
+
+def test_acmg_real_302_ACC_insertion_yields_no_frequency_code_not_ba1():
+    # Real gnomAD v3.1 row: chrM 302 A>ACC has AF_hom=0.0, AF_het=0.3493 -- the
+    # exact case that used to be wrongly reported as BA1 (stand-alone benign)
+    # under the old AF_hom+AF_het summation.
+    hit = gnomad.frequency_for(302, "A", "ACC")
+    assert hit is not None and hit["af_hom"] == 0.0 and hit["af_het"] > 0.3
+    result = gnomad.acmg_frequency_evidence(hit)
+    assert [e["code"] for e in result] == ["—"]
+
+
+def test_acmg_pm2_supporting_still_applies_when_het_also_absent():
+    # A variant that's rare at both homoplasmic AND heteroplasmic frequency
+    # still legitimately gets PM2_supporting -- only the "never homoplasmic but
+    # common heteroplasmic" case should be suppressed.
+    result = gnomad.acmg_frequency_evidence(_fake_hit(0.0, af_het=0.0))
+    assert [e["code"] for e in result] == ["PM2_supporting"]
+
+
 def test_acmg_pm5_supporting_different_allele_same_trna_position():
     # m.3243A>G (MELAS, MT-TL1) is in the curated panel. A different allele at the
     # same position raises suspicion (PM5_supporting); the exact same allele is
@@ -321,3 +447,133 @@ def test_hg002_acmg_evidence_end_to_end():
 def test_demo_sample_never_gets_acmg_evidence_key():
     for v in generate.build_variants():
         assert "acmg_evidence" not in v
+
+
+# --- real per-variant heteroplasmy thresholds -------------------------------
+
+def test_m8993_pathogenic_only_above_90_percent():
+    status, note = annotate._classify_m8993(89.9, "NARP / Leigh syndrome")
+    assert status == "Low-level heteroplasmy"
+    assert "90%" in note and "Thorburn" in note
+
+    status, note = annotate._classify_m8993(90.0, "NARP / Leigh syndrome")
+    assert status == "Pathogenic"
+    assert "90%" in note and "Thorburn" in note
+
+    status, note = annotate._classify_m8993(2.0, "NARP / Leigh syndrome")
+    assert status == "Not detected"
+
+
+def test_m3243_disease_specific_bands():
+    # Below 5%: not detected, but MIDD caveat still disclosed (can occur very low).
+    status, note = annotate._classify_m3243(2.0, "MELAS / MIDD")
+    assert status == "Not detected"
+    assert "MIDD" in note and "Laloi-Michelin" in note
+
+    # 5-49%: low-level, MIDD still possible even though below MELAS range.
+    status, note = annotate._classify_m3243(38.0, "MELAS / MIDD")
+    assert status == "Low-level heteroplasmy"
+    assert "MIDD" in note
+
+    # 50-89%: MELAS range.
+    status, note = annotate._classify_m3243(58.0, "MELAS / MIDD")
+    assert status == "Pathogenic"
+    assert "MELAS" in note
+
+    # >=90%: Leigh range.
+    status, note = annotate._classify_m3243(92.0, "MELAS / MIDD")
+    assert status == "Pathogenic"
+    assert "Leigh" in note
+
+
+def test_lhon_penetrance_caveat_only_when_pathogenic():
+    # Homoplasmic (typical for LHON) -> Pathogenic, with the penetrance caveat.
+    status, note = annotate._classify_lhon(100.0, "Leber hereditary optic neuropathy (LHON)")
+    assert status == "Pathogenic"
+    assert "penetrance" in note and "Yu-Wai-Man" in note
+
+    # Below the generic low-level band -> no penetrance addendum tacked onto
+    # a status where it wouldn't apply.
+    status, note = annotate._classify_lhon(2.0, "Leber hereditary optic neuropathy (LHON)")
+    assert status == "Not detected"
+    assert "penetrance" not in note
+
+
+def test_classify_pathogenic_heteroplasmy_dispatches_known_overrides_only():
+    # A curated override variant uses its real per-variant threshold...
+    status, note = annotate.classify_pathogenic_heteroplasmy("m8993TG", 95.0, "NARP / Leigh syndrome")
+    assert status == "Pathogenic" and "Thorburn" in note
+
+    # ...while any other panel variant without a sourced threshold falls back
+    # to the generic band convention, unchanged.
+    status, note = annotate.classify_pathogenic_heteroplasmy("m8344AG", 38.0, "MERRF")
+    assert status == "Pathogenic" and "generic" in note
+
+
+# --- tissue-of-origin caveat (Parikh et al. 2015) ---------------------------
+
+def test_tissue_caveat_silent_without_a_known_tissue():
+    assert annotate.tissue_caveat("Not detected", "m3243AG", None) is None
+
+
+def test_tissue_caveat_silent_for_tissues_the_guidance_does_not_address():
+    assert annotate.tissue_caveat("Not detected", "m3243AG", "muscle") is None
+
+
+def test_tissue_caveat_silent_when_finding_is_already_positive():
+    assert annotate.tissue_caveat("Pathogenic", "m3243AG", "blood") is None
+
+
+def test_tissue_caveat_fires_for_blood_and_buccal_on_negative_or_low_finding():
+    for tissue in ("blood", "buccal"):
+        for status in ("Not detected", "Low-level heteroplasmy"):
+            note = annotate.tissue_caveat(status, "m8993TG", tissue)
+            assert note is not None
+            assert "Parikh" in note and tissue in note
+
+
+def test_tissue_caveat_m3243_specific_wording_mentions_urine():
+    note = annotate.tissue_caveat("Not detected", "m3243AG", "blood")
+    assert note is not None
+    assert "urine" in note and "de Laat" in note
+
+    # A different variant on the same tissue gets the general caveat, not the
+    # m.3243A>G-specific urine wording.
+    note = annotate.tissue_caveat("Not detected", "m8993TG", "blood")
+    assert "urine" not in note
+
+
+def test_classify_appends_tissue_caveat_for_negative_pathogenic_panel_call():
+    result = annotate.classify(3243, "A", "G", 2.0, tissue="blood")
+    assert result["status"] in ("Not detected", "Low-level heteroplasmy")
+    assert "Parikh" in result["note"] and "urine" in result["note"]
+
+
+def test_classify_omits_tissue_caveat_when_tissue_unknown():
+    result = annotate.classify(3243, "A", "G", 2.0)
+    assert "Parikh" not in result["note"]
+
+
+def test_classify_tissue_has_no_effect_on_novel_variants():
+    with_tissue = annotate.classify(99999, "A", "G", 100.0, tissue="blood")
+    without_tissue = annotate.classify(99999, "A", "G", 100.0)
+    assert with_tissue["note"] == without_tissue["note"]
+
+
+# --- sample-level tissue registry --------------------------------------------
+
+def test_hg002_meta_reports_blood_tissue():
+    assert samples.meta("HG002")["tissue"] == "blood"
+
+
+def test_demo_sample_meta_has_no_fabricated_tissue():
+    assert samples.meta("MT-0417-P2")["tissue"] is None
+
+
+def test_vcf_build_variants_accepts_tissue_without_affecting_novel_calls():
+    plain = vcf.build_variants(HG002_VCF)
+    with_tissue = vcf.build_variants(HG002_VCF, tissue="blood")
+    # HG002's real calls are all novel (no curated-pathogenic hits), so the
+    # tissue caveat -- which only applies to pathogenic-panel findings --
+    # should leave every note unchanged.
+    assert [v["note"] for v in plain] == [v["note"] for v in with_tissue]

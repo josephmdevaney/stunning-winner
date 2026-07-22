@@ -17,7 +17,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Optional
 
-from . import generate, qc, vcf
+from . import generate, haplogroup, qc, vcf
 from .reference import GENE_MAP, GENOME_LENGTH, HAPLOGROUP
 
 BACKEND_ROOT = Path(__file__).resolve().parent
@@ -42,6 +42,13 @@ SAMPLES: dict[str, dict] = {
         "instrument_line": "PacBio HiFi · GRCh38 chrM",
         "reference": "GRCh38 chrM (rCRS · NC_012920.1)",
         "run_date": "GIAB HG002",
+        # NA24385/HG002's DNA source is documented, public GIAB provenance (Coriell
+        # GM24385, an EBV-transformed blood lymphoblastoid cell line) -- not a
+        # per-run fact this pipeline observes, so it's recorded here rather than
+        # inferred. Enables the Parikh et al. (2015) tissue-discordance caveat
+        # (see annotate.tissue_caveat) for any pathogenic-panel call that reads
+        # negative/low on this sample.
+        "tissue": "blood",
     },
     "MT-0417-P2": {
         "label": "MT-0417-P2 (demo)",
@@ -50,6 +57,8 @@ SAMPLES: dict[str, dict] = {
         "instrument_line": "PacBio HiFi · mtDNA amplicon",
         "reference": "rCRS (NC_012920.1)",
         "run_date": "2026-07-02",
+        # No real tissue provenance for the synthetic demo sample -- left unset
+        # rather than fabricated, so the tissue caveat correctly stays silent.
     },
 }
 
@@ -76,6 +85,7 @@ def meta(sample: str) -> dict:
         "reference": s["reference"],
         "run_date": s["run_date"],
         "caller": s["caller"],
+        "tissue": s.get("tissue"),
     }
 
 
@@ -83,7 +93,7 @@ def meta(sample: str) -> dict:
 def variants(sample: str) -> list[dict]:
     s = SAMPLES[sample]
     if s["source"] == "vcf":
-        return vcf.build_variants(s["vcf"])
+        return vcf.build_variants(s["vcf"], tissue=s.get("tissue"))
     return generate.build_variants()
 
 
@@ -104,20 +114,17 @@ def variant_by_id(sample: str, variant_id: str) -> Optional[dict]:
 def _haplogroup(sample: str) -> dict:
     if SAMPLES[sample]["source"] == "seeded":
         return dict(HAPLOGROUP)
-    # Real sample: haplogroup requires a phylogenetic classifier (Haplogrep /
-    # PhyloTree), which is out of scope for a variant-call parser. Report that
-    # honestly and surface the actual SNVs vs rCRS as informative markers.
+    # Real sample: classify via Haplogrep 3 against the sample's real VCF calls
+    # (see haplogroup.py) -- an actual phylogenetic classification, run locally.
+    # Still surface the real SNVs vs rCRS as markers regardless of whether
+    # classification succeeded, same as before real classification existed.
     snv_markers = [
         f"{v['change'].split('>')[0]}{v['pos']}{v['change'].split('>')[1]}"
         for v in variants(sample)
         if ">" in v["change"]
     ]
-    return {
-        "name": "Unclassified",
-        "confidence": None,
-        "region": "Requires phylogenetic classification (e.g. Haplogrep against PhyloTree)",
-        "markers": snv_markers,
-    }
+    result = haplogroup.classify(sample, SAMPLES[sample]["vcf"])
+    return {**result, "markers": snv_markers}
 
 
 def overview(sample: str) -> dict:

@@ -7,6 +7,11 @@ backend/.pytest_cache/
 backend/repeatscope.egg-info/
 *.pyc
 
+# Haplogrep 3 (mtDNA haplogroup classifier) + vendored PhyloTree data -- a
+# fetched build dependency, not project source. See
+# backend/scripts/setup_haplogrep.py.
+backend/mitolr/vendor/
+
 # Node / frontend
 web/node_modules/
 web/dist/

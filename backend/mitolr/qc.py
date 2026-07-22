@@ -13,7 +13,7 @@ from __future__ import annotations
 import math
 
 from .generate import seeded_rand
-from .reference import GENOME_LENGTH, MT_FEATURES, feature_for_pos
+from .reference import GENOME_LENGTH, MT_FEATURES, features_for_pos
 
 # Region lengths (bp) for gating the strand-balance metric: it is approximated
 # from read midpoints, which is unreliable for loci too small to catch enough
@@ -154,14 +154,17 @@ def build_vcf_qc(variants: list[dict]) -> dict:
     ]
     cov_max = max((c["depth"] for c in coverage), default=1000)
 
-    # Per-region adequacy: aggregate called-site depth by rCRS feature.
+    # Per-region adequacy: aggregate called-site depth by rCRS feature. A site
+    # inside an overlapping reading frame (MT-ATP8/MT-ATP6, MT-ND4L/MT-ND4)
+    # counts toward both genes' coverage adequacy, not just the first-listed one.
     by_region: dict[str, list[int]] = {}
     for v in variants:
         if v.get("depth") is None:
             continue
-        feat = feature_for_pos(v["pos"])
-        name = "D-loop" if (feat and feat["name"] == "MT-CR") else (feat["name"] if feat else "Intergenic")
-        by_region.setdefault(name, []).append(v["depth"])
+        feats = features_for_pos(v["pos"])
+        names = ["D-loop" if f["name"] == "MT-CR" else f["name"] for f in feats] or ["Intergenic"]
+        for name in names:
+            by_region.setdefault(name, []).append(v["depth"])
     regions = []
     for name, ds in sorted(by_region.items(), key=lambda kv: -max(kv[1])):
         mean = round(sum(ds) / len(ds))

@@ -1,5 +1,5 @@
 import { colors } from '../theme'
-import type { Screen } from '../RepeatScopeApp'
+import type { Screen } from '../repeatscope/AssayModeShell'
 import { ProductSwitcher, type Product } from './ProductSwitcher'
 
 const NAV_ITEMS: { screen: Screen; label: string }[] = [

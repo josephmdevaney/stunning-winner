@@ -145,7 +145,10 @@ def _region_dict(r: RohRegion) -> dict:
         "length_band": length_band(r.length_bp),
         "imprinted_chrom": r.chrom in ref.IMPRINTED_CHROMS,
         "genes": [
-            {"symbol": g["sym"], "inheritance": g["inh"], "disease": g["disease"], "omim": g["omim"]}
+            {
+                "symbol": g["sym"], "inheritance": g["inh"], "disease": g["disease"], "omim": g["omim"],
+                "start": g["start"], "end": g["end"],
+            }
             for g in genes
         ],
         "upd_flag": upd_flag(r.chrom, position, r.length_bp),
@@ -197,6 +200,7 @@ def build_overview(sample: str, path: str | Path) -> dict:
         by_chrom[chrom] = {
             "chrom": chrom,
             "chrom_length_bp": ref.CHROM_LENGTH.get(chrom),
+            "centromere_mid_bp": ref.CENTROMERE_MID.get(chrom),
             "n_regions": len(chrom_regions),
             "total_length_bp": sum(r["length_bp"] for r in chrom_regions),
             "imprinted": chrom in ref.IMPRINTED_CHROMS,

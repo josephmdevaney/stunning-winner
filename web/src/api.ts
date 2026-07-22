@@ -157,6 +157,8 @@ export interface RohGeneHit {
   inheritance: string
   disease: string
   omim: string
+  start: number
+  end: number
 }
 
 export interface RohRegion {
@@ -180,6 +182,7 @@ export interface RohRegion {
 export interface RohByChromosome {
   chrom: string
   chrom_length_bp: number | null
+  centromere_mid_bp: number | null
   n_regions: number
   total_length_bp: number
   imprinted: boolean

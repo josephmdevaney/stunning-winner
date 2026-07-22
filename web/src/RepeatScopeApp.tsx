@@ -24,11 +24,27 @@ const TITLES: Record<Screen, string> = {
   roh: 'Runs of Homozygosity',
 }
 
+// RepeatScope's three assay modes (Genome-wide, PureTarget V2, Carrier) are
+// each a top-level "Suite" section (see ProductSwitcher) rather than a nested
+// picker, so this app only ever renders for one of those three `product`
+// values -- App.tsx's ternary narrows out 'mitolr' before reaching here.
+type RepeatScopeProduct = Exclude<Product, 'mitolr'>
+
+// Runs of Homozygosity (bcftools roh, keyed by sample independent of assay
+// mode -- see ROHScreen) and the Repeat Catalog (the full STRchive reference,
+// not a targeted panel) are only meaningful for Genome-wide; PureTarget V2 and
+// Carrier are targeted panels where neither applies.
+const SCREENS_BY_PRODUCT: Record<RepeatScopeProduct, Screen[]> = {
+  genome_wide: ['overview', 'locus', 'roh', 'qc', 'runqc', 'catalog'],
+  puretarget_v2: ['overview', 'locus', 'qc', 'runqc'],
+  carrier: ['overview', 'locus', 'qc', 'runqc'],
+}
+
 export default function RepeatScopeApp({
   product,
   onSwitchProduct,
 }: {
-  product: Product
+  product: RepeatScopeProduct
   onSwitchProduct: (p: Product) => void
 }) {
   const [screen, setScreen] = useState<Screen>('overview')
@@ -36,18 +52,33 @@ export default function RepeatScopeApp({
   const [selectedGene, setSelectedGene] = useState<string>('')
 
   const [modesInfo, setModesInfo] = useState<ModesResponse | null>(null)
-  const [mode, setMode] = useState('')
+  // `mode` mirrors `product` (they share the same key -- genome_wide /
+  // puretarget_v2 / carrier) since the backend's mode keys ARE the Suite
+  // section identifiers; kept as separate state only because the samples/meta
+  // effects below key off it the same way they always have.
+  const [mode, setMode] = useState(product)
   const [samples, setSamples] = useState<string[]>([])
   const [sample, setSample] = useState('')
   const [caller, setCaller] = useState('')
   const [sex, setSex] = useState<string | null>(null)
 
   useEffect(() => {
-    api.modes().then((m) => {
-      setModesInfo(m)
-      setMode(m.default)
-    })
+    api.modes().then(setModesInfo)
   }, [])
+
+  // Clearing `sample`/`selectedLocusId`/`selectedGene` here (rather than in the
+  // `[mode]` effect below) matters: React batches state updates from the same
+  // handler into one render, so the still-mounted screen below never sees a (new
+  // mode, stale sample) pair -- e.g. requesting Carrier's overview with
+  // Genome-wide's sample, which 404s until the effect below catches up a render
+  // later.
+  useEffect(() => {
+    setSample('')
+    setSelectedLocusId('')
+    setSelectedGene('')
+    setMode(product)
+    setScreen((prev) => (SCREENS_BY_PRODUCT[product].includes(prev) ? prev : 'overview'))
+  }, [product])
 
   // Whenever the mode changes, load that mode's sample list and pick its default.
   useEffect(() => {
@@ -76,19 +107,6 @@ export default function RepeatScopeApp({
     setScreen('gene-finding')
   }
 
-  // Clearing `sample`/`selectedLocusId`/`selectedGene` here (rather than in the
-  // `[mode]` effect above) matters: React batches state updates from the same
-  // handler into one render, so the still-mounted screen below never sees a (new
-  // mode, stale sample) pair -- e.g. requesting Carrier's overview with
-  // Genome-wide's sample, which 404s until the effect above catches up a render
-  // later.
-  const selectMode = (newMode: string) => {
-    setSample('')
-    setSelectedLocusId('')
-    setSelectedGene('')
-    setMode(newMode)
-  }
-
   const activeModeLabel = modesInfo?.modes.find((m) => m.key === mode)?.label ?? ''
 
   return (
@@ -98,9 +116,7 @@ export default function RepeatScopeApp({
         onSwitchProduct={onSwitchProduct}
         screen={screen}
         onNavigate={setScreen}
-        modes={modesInfo?.modes ?? []}
-        mode={mode}
-        onSelectMode={selectMode}
+        availableScreens={SCREENS_BY_PRODUCT[product]}
         sample={sample}
         samples={samples}
         onSelectSample={setSample}

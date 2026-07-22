@@ -1,12 +1,10 @@
 import { useEffect, useState } from 'react'
-import { api, type OverviewResponse } from '../api'
+import { api, NON_REPEAT_ID_PREFIX, type OverviewResponse } from '../api'
 import { colors, mono } from '../theme'
 import { StatCard, StatGrid } from '../components/StatCard'
 import { StatusBadge } from '../components/Badge'
 
 const PILLS = ['All loci', 'Pathogenic panel', 'Novel candidates']
-
-const NON_REPEAT_PREFIX = '__non_repeat__'
 
 export function OverviewScreen({
   mode, sample, onSelectLocus, onSelectGeneFinding,
@@ -106,7 +104,7 @@ export function OverviewScreen({
             key={l.id}
             onClick={
               l.clickable
-                ? () => (l.id.startsWith(NON_REPEAT_PREFIX) ? onSelectGeneFinding(l.gene) : onSelectLocus(l.id))
+                ? () => (l.id.startsWith(NON_REPEAT_ID_PREFIX) ? onSelectGeneFinding(l.gene) : onSelectLocus(l.id))
                 : undefined
             }
             style={{

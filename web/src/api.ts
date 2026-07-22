@@ -1,5 +1,11 @@
 // Typed client for the RepeatScope FastAPI backend (backend/repeatscope/api/main.py).
 
+// LocusSummary.id prefix for gene findings (non-repeat variants, e.g. Paraphase/
+// sawfish calls) -- see backend/repeatscope/api/main.py. Distinguishes them from
+// repeat-locus ids so callers know to route to GeneFindingScreen instead of
+// LocusDetailScreen (see OverviewScreen and TopBar's search).
+export const NON_REPEAT_ID_PREFIX = '__non_repeat__'
+
 export interface Meta {
   sample: string
   source_vcf: string

@@ -3,7 +3,7 @@ import { Sidebar } from '../components/Sidebar'
 import { TopBar } from '../components/TopBar'
 import type { Product } from '../components/ProductSwitcher'
 import { colors } from '../theme'
-import { api, type ModesResponse } from '../api'
+import { api, type LocusSummary, type ModesResponse } from '../api'
 import { OverviewScreen } from '../screens/OverviewScreen'
 import { LocusDetailScreen } from '../screens/LocusDetailScreen'
 import { GeneFindingScreen } from '../screens/GeneFindingScreen'
@@ -53,6 +53,7 @@ export function AssayModeShell({
   const [sample, setSample] = useState('')
   const [caller, setCaller] = useState('')
   const [sex, setSex] = useState<string | null>(null)
+  const [loci, setLoci] = useState<LocusSummary[]>([])
 
   useEffect(() => {
     api.modes().then(setModesInfo)
@@ -71,6 +72,14 @@ export function AssayModeShell({
       setCaller(m.caller)
       setSex(m.sex)
     })
+  }, [mode, sample])
+
+  // Independent of the OverviewScreen's own overview fetch: the TopBar search
+  // box lives above the screen switch below, so it needs the sample's loci
+  // list regardless of which screen is currently showing.
+  useEffect(() => {
+    if (!sample) return
+    api.overview(mode, sample).then((o) => setLoci(o.loci))
   }, [mode, sample])
 
   const goToLocus = (id: string) => {
@@ -100,7 +109,15 @@ export function AssayModeShell({
       />
 
       <div className="app-main" style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        <TopBar title={TITLES[screen]} sample={sample} modeLabel={activeModeLabel} sex={sex} />
+        <TopBar
+          title={TITLES[screen]}
+          sample={sample}
+          modeLabel={activeModeLabel}
+          sex={sex}
+          loci={loci}
+          onSelectLocus={goToLocus}
+          onSelectGeneFinding={goToGeneFinding}
+        />
 
         <div className="app-screenbody" style={{ flex: 1, overflowY: 'auto' }}>
           {!sample && (

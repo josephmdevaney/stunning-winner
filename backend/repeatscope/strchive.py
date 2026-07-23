@@ -39,6 +39,13 @@ class StrchiveLocus:
     pathogenic_motifs: tuple[str, ...] = field(default_factory=tuple)
     benign_motifs: tuple[str, ...] = field(default_factory=tuple)
     unknown_motifs: tuple[str, ...] = field(default_factory=tuple)
+    # True for the rare locus (currently just FRAXG_BCLAF3) where pathogenicity is gated
+    # by DNA hypermethylation rather than repeat length alone -- length ranges for
+    # non-pathogenic carrier alleles and confirmed-pathogenic alleles genuinely overlap
+    # at these loci, so a length-only "Intermediate" call would overstate what an
+    # elevated repeat count alone actually establishes. Not an upstream STRchive field;
+    # set per-locus in the raw JSON. See `_classify_length_only`.
+    methylation_dependent: bool = False
 
     @property
     def region(self) -> str:
@@ -102,6 +109,7 @@ def load_strchive_loci(json_path: str | Path) -> list[StrchiveLocus]:
                 pathogenic_motifs=tuple(raw.get("pathogenic_motif_reference_orientation") or ()),
                 benign_motifs=tuple(raw.get("benign_motif_reference_orientation") or ()),
                 unknown_motifs=tuple(raw.get("unknown_motif_reference_orientation") or ()),
+                methylation_dependent=bool(raw.get("methylation_dependent", False)),
             )
         )
     return loci
@@ -250,7 +258,10 @@ def _classify_length_only(
 ) -> Classification:
     """Classify by repeat count alone: the larger of the two alleles compared against
     pathogenic, then intermediate, then benign thresholds (smaller allele instead, for
-    the rare contraction-direction loci)."""
+    the rare contraction-direction loci). At a `methylation_dependent` locus, clearing
+    the intermediate threshold reports Uncertain significance instead of Intermediate --
+    length alone doesn't establish pathogenicity there, so the higher-confidence
+    "Intermediate" label would overstate what a length-only call actually shows."""
     pairs = [(v, r) for v, r in ((a1, a1_range_bp), (a2, a2_range_bp)) if v is not None]
     contraction = _is_contraction_locus(locus)
     called, called_range_bp = (min if contraction else max)(pairs, key=lambda p: p[0])
@@ -264,6 +275,14 @@ def _classify_length_only(
         direction = "≤" if contraction else "≥"
         note = f"{'Below' if contraction else 'Above'} pathogenic threshold ({direction}{patho_threshold} repeats)"
         status = STATUS_PATHOGENIC
+    elif inter_threshold is not None and cmp_inter(called, inter_threshold) and locus.methylation_dependent:
+        note = (
+            f"{called} repeats meets this locus's screening threshold (≥{inter_threshold}), but "
+            f"pathogenicity here is gated by DNA hypermethylation, not repeat count alone -- "
+            f"length ranges for confirmed-pathogenic and non-pathogenic carrier alleles overlap. "
+            f"Confirm methylation status (long-read sequencing or a methylation array)."
+        )
+        status = STATUS_UNCERTAIN
     elif inter_threshold is not None and cmp_inter(called, inter_threshold):
         lo, hi = locus.intermediate_min, locus.intermediate_max
         lo = lo if lo is not None else "?"

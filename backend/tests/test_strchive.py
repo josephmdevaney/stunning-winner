@@ -8,7 +8,7 @@ STRCHIVE_JSON = REPO_ROOT / "project" / "uploads" / "STRchive-loci.json"
 
 def test_load_strchive_loci_count_and_fields():
     loci = load_strchive_loci(STRCHIVE_JSON)
-    assert len(loci) == 80
+    assert len(loci) == 81
     by_id = {l.id: l for l in loci}
 
     htt = by_id["HD_HTT"]
@@ -169,3 +169,46 @@ def test_classify_rfc1_ci_straddle_intermediate_to_pathogenic():
     assert result.status == "Intermediate"
     assert "confidence interval" in result.note
     assert "Full expansion" in result.note
+
+
+def test_bclaf3_locus_fields():
+    """FRAXG_BCLAF3 (LaFlamme, Clarkson, Ibanez et al. 2026): real GRCh38 coordinates
+    and screening threshold from the paper's own Additional File 1/Data S12, but no
+    pathogenic length threshold -- pathogenicity there is methylation-gated, not
+    length-gated (see test_classify_methylation_dependent_locus below)."""
+    loci = load_strchive_loci(STRCHIVE_JSON)
+    bclaf3 = next(l for l in loci if l.id == "FRAXG_BCLAF3")
+
+    assert bclaf3.gene == "BCLAF3"
+    assert bclaf3.chrom == "chrX"
+    assert (bclaf3.start, bclaf3.stop) == (19990922, 19990973)
+    assert bclaf3.motif == "CCG"
+    assert bclaf3.benign_max == 56
+    assert bclaf3.intermediate_min == 57
+    assert bclaf3.pathogenic_min is None
+    assert bclaf3.methylation_dependent is True
+
+
+def test_classify_methylation_dependent_locus():
+    """A methylation-dependent locus (FRAXG_BCLAF3) reports Uncertain significance --
+    not Intermediate -- once a call clears its screening threshold, since the paper's
+    own data shows length alone doesn't separate pathogenic from non-pathogenic alleles
+    there (an unaffected carrier's allele reached ~1,009 repeats; a confirmed-pathogenic
+    proband's was 482). A locus with no `methylation_dependent` flag (HTT) is unaffected
+    and still reports plain Intermediate."""
+    loci = load_strchive_loci(STRCHIVE_JSON)
+    bclaf3 = next(l for l in loci if l.id == "FRAXG_BCLAF3")
+    htt = next(l for l in loci if l.id == "HD_HTT")
+
+    normal = classify(bclaf3, 15, 17)
+    assert normal.status == "Normal"
+
+    above_threshold = classify(bclaf3, 15, 482)
+    assert above_threshold.status == "Uncertain significance"
+    assert "hypermethylation" in above_threshold.note
+    assert "Intermediate" not in above_threshold.note
+
+    # methylation_dependent doesn't leak into loci that don't opt into it.
+    assert htt.methylation_dependent is False
+    inter = classify(htt, 18, 30)
+    assert inter.status == "Intermediate"

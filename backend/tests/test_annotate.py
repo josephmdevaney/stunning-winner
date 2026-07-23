@@ -82,15 +82,20 @@ def test_simulate_pileup_empty_when_not_genotyped():
 
 
 def test_iter_annotated_catalog_matches_generic_and_strchive_regions():
+    """Catalog regions and the sample's own VCF calls come from different tools/sources
+    with different boundary-calling conventions, so this deliberately doesn't require an
+    exact coordinate match -- see TrgtIndex.find_overlap. The fixture's synthetic call at
+    chr1:44835-44867 (AAAT) falls entirely inside this real catalog's wider
+    chr1:44804-44906 region for the same repeat, and should still be found by overlap."""
     regions = list(iter_annotated_catalog(CATALOG_BED, FIXTURE_VCF))
-    assert len(regions) == 171_146
+    assert len(regions) == 937_195
 
     by_coords = {(r.chrom, r.start, r.stop): r for r in regions}
-    hit = by_coords[("chr1", 44835, 44867)]
+    hit = by_coords[("chr1", 44804, 44906)]
     assert hit.genotyped
     assert {hit.a1, hit.a2} == {8, 9}
 
-    miss = by_coords[("chr1", 165954, 165962)]
+    miss = by_coords[("chr1", 102078, 102182)]
     assert miss.genotyped is False
     assert miss.a1 is None
 

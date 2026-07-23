@@ -1,0 +1,5 @@
+# Large real genomic data fixtures tracked via Git LFS -- see
+# backend/fixtures/hg002_real_genomewide/README.md for provenance. Existing small fixture
+# VCFs (disease-panel-scoped, tens of KB) are left as regular git blobs; only genuinely
+# large, genome-wide files need LFS.
+backend/fixtures/hg002_real_genomewide/HG002.GRCh38.trgt.genomewide.vcf.gz filter=lfs diff=lfs merge=lfs -text

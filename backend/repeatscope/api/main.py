@@ -14,6 +14,15 @@ VCF's own header). `panel_bed` (optional) is a repeat-catalog-format BED (`ID=;M
 STRUC=`) whose IDs scope that mode's Overview/QC to just that assay's loci; omit it (or
 set null) to show STRchive's full 80-locus catalog, e.g. for genome-wide sequencing.
 
+`catalog_vcf_dir` (optional) is a *separate* per-sample VCF directory used only for the
+genome-wide "Repeat Catalog" screen's region genotypes -- e.g. Genome-wide mode's own
+`vcf_dir` holds a small VCF genotyped at just the 81 STRchive loci, while its real,
+much larger genome-wide TRGT run (hundreds of thousands of regions) lives here instead.
+Kept separate from `vcf_dir` rather than dropped in the same directory: both VCFs report
+the same sample name, so auto-discovery would silently let one overwrite the other as
+"the" path for that sample. Falls back to `vcf_dir`'s own sample_paths when a sample
+has no dedicated catalog VCF (e.g. every non-genome-wide mode).
+
 Every screen mirrors what's actually derivable from a repeat-calling VCF. Metrics that
 require aligned-read data (mapq, genome-wide coverage, GC bias, read-length
 histograms, ...) are reported under `unavailable_metrics` with a reason, rather than
@@ -128,6 +137,11 @@ def _load_modes() -> None:
         if vcf_dir and Path(vcf_dir).is_dir():
             sample_paths = _discover_samples_in_dir(vcf_dir)
 
+        catalog_vcf_dir = _resolve_config_path(cfg.get("catalog_vcf_dir"))
+        catalog_sample_paths: dict[str, str] = {}
+        if catalog_vcf_dir and Path(catalog_vcf_dir).is_dir():
+            catalog_sample_paths = _discover_samples_in_dir(catalog_vcf_dir)
+
         panel_bed = _resolve_config_path(cfg.get("panel_bed"))
         locus_ids: Optional[set] = None
         if panel_bed and Path(panel_bed).exists():
@@ -152,6 +166,7 @@ def _load_modes() -> None:
         modes[key] = {
             "label": cfg.get("label", key),
             "sample_paths": sample_paths,
+            "catalog_sample_paths": catalog_sample_paths,
             "locus_ids": locus_ids,
             "non_repeat_targets": non_repeat_targets,
             "paraphase_dir": paraphase_dir,
@@ -224,7 +239,8 @@ def _run_qc_regions(mode: str, sample: str) -> list[dict]:
 def _get_catalog(mode: str, sample: str) -> list[dict]:
     key = (mode, sample)
     if key not in _catalog_caches:
-        vcf_path = _modes[mode]["sample_paths"][sample]
+        m = _modes[mode]
+        vcf_path = m["catalog_sample_paths"].get(sample) or m["sample_paths"][sample]
         regions = iter_annotated_catalog(CATALOG_BED, vcf_path, sample=sample)
         _catalog_caches[key] = [
             {

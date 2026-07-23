@@ -1,7 +1,8 @@
 # HG002 real-data fixture
 
 `HG002.strchive_loci.trgt.vcf.gz` is a genuine TRGT v5.1.0 genotype call on real HG002
-PacBio HiFi reads at all 80 STRchive disease loci -- not simulated, not hand-built.
+PacBio HiFi reads at all 81 STRchive disease loci (80 original + FRAXG_BCLAF3, added
+2026-07-23) -- not simulated, not hand-built.
 
 ## Provenance
 
@@ -67,3 +68,29 @@ expansions, so a mostly-Normal panel with one real intermediate finding (ATXN2, 
 known real population polymorphism) is the expected, correct result -- see
 `HMNR7_VWA1`'s note in `strchive.py`'s `_is_contraction_locus` docstring for one
 remaining known STRchive data-modeling edge case this pipeline can't fully resolve.
+
+## FRAXG_BCLAF3 (added 2026-07-23)
+
+Sourced from a *different*, genuinely genome-wide TRGT run for this same donor
+(`HG002_rep1_analysis_v3_0_2/HG002.GRCh38.trgt.sorted.phased.vcf.gz`, a full
+PacBio HiFi-Solve-style workflow output, not the padded/loci-only BAM described
+above) -- the record at chrX:19,990,892-19,991,003 (`TRID=chrX_19990892_19991003_GCC`)
+was extracted as-is (unmodified REF/ALT/FORMAT) and appended to this file.
+
+That TRID and region are wider than FRAXG_BCLAF3's own catalog entry
+(chrX:19,990,922-19,990,973, motif CCG) because the genome-wide run's catalog defines
+this repeat's boundaries more broadly and reads the same repeat unit in a different
+phase (GCC is a cyclic rotation of CCG -- confirmed via `motifs.is_cyclic_rotation`).
+The record's real TRID/coordinates were kept unmodified rather than relabeled to match
+this fixture's other rows' disease-specific IDs, preserving traceability to its actual
+source; `annotate_strchive_panel` resolves it to `FRAXG_BCLAF3` via
+`TrgtIndex.find_overlap`'s coordinate-overlap fallback, verified end-to-end.
+
+The record is a genuine hemizygous TRGT call (`GT=1`, single-value FORMAT arrays --
+HG002 is male, and this genome-wide run used proper chrX/chrY hemizygous calling,
+unlike this fixture's other 80 loci, genotyped with `--karyotype XX`; see above).
+`repeatscope/trgt.py`'s `_parse_gt`/`TrgtCall.hemizygous` already handle this VCF
+convention correctly, and the record is otherwise untouched -- no fields fabricated
+or adjusted. Real value: 21 GCC repeats (depth 15), within FRAXG_BCLAF3's benign
+range (<=23) -- Normal, consistent with HG002 having no known pathogenic repeat
+expansions.

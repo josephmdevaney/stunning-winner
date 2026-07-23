@@ -47,6 +47,7 @@ from ..annotate import (
     resolve_panel_locus_ids,
     simulate_pileup_reads,
 )
+from ..genes import GeneIndex, load_genes
 from ..paraphase import (
     STATUS_PATHOGENIC_VARIANT,
     classify_gene,
@@ -68,6 +69,18 @@ STRCHIVE_JSON = os.environ.get(
 CATALOG_BED = os.environ.get(
     "REPEATSCOPE_CATALOG_BED", str(REPO_ROOT / "project" / "uploads" / "repeat_catalog.hg38.bed")
 )
+GENES_BED = os.environ.get("REPEATSCOPE_GENES_BED", str(REPO_ROOT / "project" / "uploads" / "genes.hg38.bed"))
+
+# Genomic gene-body positions don't depend on mode/sample, unlike everything else
+# cached below -- load once, lazily, the first time the catalog actually needs it.
+_gene_index: Optional[GeneIndex] = None
+
+
+def _get_gene_index() -> Optional[GeneIndex]:
+    global _gene_index
+    if _gene_index is None and Path(GENES_BED).exists():
+        _gene_index = GeneIndex(load_genes(GENES_BED))
+    return _gene_index
 
 CALLER_LABEL = "TRGT v5.1.0"
 VCF_EXTENSIONS = (".vcf", ".vcf.gz")
@@ -241,12 +254,14 @@ def _get_catalog(mode: str, sample: str) -> list[dict]:
     if key not in _catalog_caches:
         m = _modes[mode]
         vcf_path = m["catalog_sample_paths"].get(sample) or m["sample_paths"][sample]
-        regions = iter_annotated_catalog(CATALOG_BED, vcf_path, sample=sample)
+        regions = iter_annotated_catalog(CATALOG_BED, vcf_path, sample=sample, gene_index=_get_gene_index())
         _catalog_caches[key] = [
             {
                 "chrom": r.chrom, "start": r.start, "stop": r.stop, "length": r.length,
                 "motifs": r.motifs, "struc": r.struc, "genotyped": r.genotyped,
                 "a1": r.a1, "a2": r.a2, "depth": r.depth,
+                "genes": list(r.genes), "nearest_gene": r.nearest_gene,
+                "nearest_distance_bp": r.nearest_distance_bp, "nearest_direction": r.nearest_direction,
             }
             for r in regions
         ]

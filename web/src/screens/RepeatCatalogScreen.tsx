@@ -1,9 +1,20 @@
 import { useEffect, useState } from 'react'
-import { api, type CatalogResponse } from '../api'
+import { api, type CatalogResponse, type CatalogRow } from '../api'
 import { colors, mono } from '../theme'
 import { StatCard, StatGrid } from '../components/StatCard'
 
 const PAGE_SIZE = 50
+
+// Overlapping gene(s) take priority for display; otherwise the nearest gene
+// with its real distance/side. "—" only when no gene reference data was
+// available server-side at all -- never a fabricated "no gene nearby" claim.
+function formatGene(r: CatalogRow): string {
+  if (r.genes.length > 0) return r.genes.join(' / ')
+  if (!r.nearest_gene) return '—'
+  if (r.nearest_distance_bp === 0) return `adjacent to ${r.nearest_gene}`
+  const kb = (r.nearest_distance_bp! / 1000).toFixed(1)
+  return `${kb}kb ${r.nearest_direction} of ${r.nearest_gene}`
+}
 
 export function RepeatCatalogScreen({ mode, sample }: { mode: string; sample: string }) {
   const [data, setData] = useState<CatalogResponse | null>(null)
@@ -103,7 +114,7 @@ export function RepeatCatalogScreen({ mode, sample }: { mode: string; sample: st
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: '0.9fr 1fr 1fr 0.7fr 0.9fr 0.6fr 0.6fr 0.6fr 1.3fr',
+            gridTemplateColumns: '0.7fr 0.9fr 0.9fr 0.6fr 0.8fr 1.4fr 0.5fr 0.5fr 0.5fr 1fr',
             padding: '10px 20px',
             fontSize: 11,
             fontWeight: 600,
@@ -118,6 +129,7 @@ export function RepeatCatalogScreen({ mode, sample }: { mode: string; sample: st
           <div>Stop</div>
           <div>Ref len</div>
           <div>Motif</div>
+          <div>Gene</div>
           <div>A1</div>
           <div>A2</div>
           <div>Depth</div>
@@ -128,7 +140,7 @@ export function RepeatCatalogScreen({ mode, sample }: { mode: string; sample: st
             key={`${r.chrom}:${r.start}-${r.stop}`}
             style={{
               display: 'grid',
-              gridTemplateColumns: '0.9fr 1fr 1fr 0.7fr 0.9fr 0.6fr 0.6fr 0.6fr 1.3fr',
+              gridTemplateColumns: '0.7fr 0.9fr 0.9fr 0.6fr 0.8fr 1.4fr 0.5fr 0.5fr 0.5fr 1fr',
               padding: '10px 20px',
               alignItems: 'center',
               fontSize: 13,
@@ -141,6 +153,18 @@ export function RepeatCatalogScreen({ mode, sample }: { mode: string; sample: st
             <div>{r.stop.toLocaleString()}</div>
             <div>{r.length}bp</div>
             <div>{r.motifs}</div>
+            <div
+              title={formatGene(r)}
+              style={{
+                color: r.genes.length > 0 ? colors.textPrimary : colors.textSecondary,
+                fontWeight: r.genes.length > 0 ? 600 : 400,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {formatGene(r)}
+            </div>
             <div style={{ fontWeight: 600 }}>{r.a1 ?? '—'}</div>
             <div style={{ fontWeight: 600 }}>{r.a2 ?? '—'}</div>
             <div>{r.depth != null ? `${r.depth}x` : '—'}</div>

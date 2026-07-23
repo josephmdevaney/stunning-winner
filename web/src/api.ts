@@ -146,6 +146,14 @@ export interface CatalogRow {
   a1: number | null
   a2: number | null
   depth: number | null
+  // Real gene(s) this region falls inside (rare but real for overlapping/
+  // antisense transcripts), or -- if intergenic -- the nearest gene and its
+  // distance/side. genes is empty and nearest_gene is null only if no gene
+  // reference data was available server-side, not a fabricated "no gene" claim.
+  genes: string[]
+  nearest_gene: string | null
+  nearest_distance_bp: number | null
+  nearest_direction: 'upstream' | 'downstream' | null
 }
 
 export interface CatalogResponse {

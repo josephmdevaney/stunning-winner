@@ -17,6 +17,7 @@ from typing import Optional
 
 from . import strchive
 from .catalog import CatalogRegion, iter_catalog_regions
+from .genes import GeneIndex
 from .strchive import StrchiveLocus, load_strchive_loci
 from .trgt import TrgtCall, TrgtIndex
 
@@ -233,13 +234,29 @@ class AnnotatedCatalogRegion:
     a1: Optional[int] = None
     a2: Optional[int] = None
     depth: Optional[int] = None
+    # Real gene(s) this region falls inside (rare but real for overlapping/
+    # antisense transcripts -- see genes.GeneIndex), or -- if intergenic --
+    # the single nearest gene and its distance/side. Not fabricated: absent
+    # entirely (empty genes, nearest_gene=None) when no gene_index is given.
+    genes: tuple[str, ...] = field(default_factory=tuple)
+    nearest_gene: Optional[str] = None
+    nearest_distance_bp: Optional[int] = None
+    nearest_direction: Optional[str] = None
 
 
-def annotate_catalog_region(region: CatalogRegion, call: Optional[TrgtCall]) -> AnnotatedCatalogRegion:
+def annotate_catalog_region(
+    region: CatalogRegion, call: Optional[TrgtCall], gene_index: Optional[GeneIndex] = None
+) -> AnnotatedCatalogRegion:
     out = AnnotatedCatalogRegion(
         chrom=region.chrom, start=region.start, stop=region.stop, length=region.length,
         motifs=region.motifs, struc=region.struc,
     )
+    if gene_index is not None:
+        gene_annotation = gene_index.annotate(region.chrom, region.start, region.stop)
+        out.genes = gene_annotation.genes
+        out.nearest_gene = gene_annotation.nearest_gene
+        out.nearest_distance_bp = gene_annotation.nearest_distance_bp
+        out.nearest_direction = gene_annotation.nearest_direction
     if call is None or not call.genotyped:
         return out
     target_motif = region.motifs.split(",")[0] if region.motifs else None
@@ -251,10 +268,13 @@ def annotate_catalog_region(region: CatalogRegion, call: Optional[TrgtCall]) -> 
 
 
 def iter_annotated_catalog(
-    bed_path: str | Path, vcf_path: str | Path, sample: Optional[str] = None
+    bed_path: str | Path,
+    vcf_path: str | Path,
+    sample: Optional[str] = None,
+    gene_index: Optional[GeneIndex] = None,
 ):
     """Yield AnnotatedCatalogRegion for every region in the genome-wide repeat catalog BED."""
     index = TrgtIndex.from_vcf(vcf_path, sample=sample)
     for region in iter_catalog_regions(bed_path):
         call = index.by_trid.get(region.id) or index.find_overlap(region.chrom, region.start, region.stop)
-        yield annotate_catalog_region(region, call)
+        yield annotate_catalog_region(region, call, gene_index)

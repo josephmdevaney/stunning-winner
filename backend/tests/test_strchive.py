@@ -173,9 +173,11 @@ def test_classify_rfc1_ci_straddle_intermediate_to_pathogenic():
 
 def test_bclaf3_locus_fields():
     """FRAXG_BCLAF3 (LaFlamme, Clarkson, Ibanez et al. 2026): real GRCh38 coordinates
-    and screening threshold from the paper's own Additional File 1/Data S12, but no
-    pathogenic length threshold -- pathogenicity there is methylation-gated, not
-    length-gated (see test_classify_methylation_dependent_locus below)."""
+    from the paper's own Additional File 1 (Data S1). Thresholds are the empirical
+    benign/intermediate boundary from 50,747 Genomics England control genomes (Data
+    S3 -- control-allele counts drop from 24 at 23 repeats to 2 at 25) and the largest
+    confirmed expansion measured in the study (1,238 repeats, Data S9); the 24-172
+    range stays methylation-gated (see test_classify_methylation_dependent_locus)."""
     loci = load_strchive_loci(STRCHIVE_JSON)
     bclaf3 = next(l for l in loci if l.id == "FRAXG_BCLAF3")
 
@@ -183,19 +185,24 @@ def test_bclaf3_locus_fields():
     assert bclaf3.chrom == "chrX"
     assert (bclaf3.start, bclaf3.stop) == (19990922, 19990973)
     assert bclaf3.motif == "CCG"
-    assert bclaf3.benign_max == 56
-    assert bclaf3.intermediate_min == 57
-    assert bclaf3.pathogenic_min is None
+    assert bclaf3.benign_min == 6
+    assert bclaf3.benign_max == 23
+    assert bclaf3.intermediate_min == 24
+    assert bclaf3.intermediate_max == 172
+    assert bclaf3.pathogenic_min == 173
+    assert bclaf3.pathogenic_max == 1238
     assert bclaf3.methylation_dependent is True
 
 
 def test_classify_methylation_dependent_locus():
     """A methylation-dependent locus (FRAXG_BCLAF3) reports Uncertain significance --
-    not Intermediate -- once a call clears its screening threshold, since the paper's
-    own data shows length alone doesn't separate pathogenic from non-pathogenic alleles
-    there (an unaffected carrier's allele reached ~1,009 repeats; a confirmed-pathogenic
-    proband's was 482). A locus with no `methylation_dependent` flag (HTT) is unaffected
-    and still reports plain Intermediate."""
+    not Intermediate -- for a call in its intermediate band (24-172 repeats), since the
+    paper's own long-read data leaves the exact hypermethylation threshold undefined in
+    that range (bounded between 117 and 172 repeats). Above the pathogenic threshold
+    (>=173, the largest confirmed measurement in the study), length alone is enough to
+    call Full expansion -- the methylation_dependent flag only softens the intermediate
+    band, not an explicit pathogenic threshold. A locus with no `methylation_dependent`
+    flag (HTT) is unaffected and still reports plain Intermediate."""
     loci = load_strchive_loci(STRCHIVE_JSON)
     bclaf3 = next(l for l in loci if l.id == "FRAXG_BCLAF3")
     htt = next(l for l in loci if l.id == "HD_HTT")
@@ -203,10 +210,13 @@ def test_classify_methylation_dependent_locus():
     normal = classify(bclaf3, 15, 17)
     assert normal.status == "Normal"
 
-    above_threshold = classify(bclaf3, 15, 482)
-    assert above_threshold.status == "Uncertain significance"
-    assert "hypermethylation" in above_threshold.note
-    assert "Intermediate" not in above_threshold.note
+    in_uncertain_band = classify(bclaf3, 15, 117)
+    assert in_uncertain_band.status == "Uncertain significance"
+    assert "hypermethylation" in in_uncertain_band.note
+    assert "Intermediate" not in in_uncertain_band.note
+
+    above_pathogenic_threshold = classify(bclaf3, 15, 482)
+    assert above_pathogenic_threshold.status == "Full expansion"
 
     # methylation_dependent doesn't leak into loci that don't opt into it.
     assert htt.methylation_dependent is False

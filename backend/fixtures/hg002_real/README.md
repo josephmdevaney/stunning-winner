@@ -94,3 +94,25 @@ convention correctly, and the record is otherwise untouched -- no fields fabrica
 or adjusted. Real value: 21 GCC repeats (depth 15), within FRAXG_BCLAF3's benign
 range (<=23) -- Normal, consistent with HG002 having no known pathogenic repeat
 expansions.
+
+## FXS_FMR1 real methylation (replaced 2026-07-27)
+
+The original `--karyotype XX` run's `FXS_FMR1` record had `AM="."` for both
+alleles -- this padded-reference run never captured 5mCpG methylation at all (every
+locus's AM field here is `.`), so the UI's CpG methylation panel had nothing real to
+show for FMR1 specifically, unlike loci where methylation genuinely isn't clinically
+relevant.
+
+Replaced that record (chrX:147,912,050-147,912,110, diploid `GT=1/1`) with the real
+call from the same genuine genome-wide TRGT run described above for FRAXG_BCLAF3
+(`fixtures/hg002_real_genomewide/HG002.GRCh38.trgt.genomewide.vcf.gz`), which does
+carry real methylation: chrX:147,912,049-147,912,111, hemizygous `GT=1`, 29 CGG
+repeats (AM=0.12 -- matching the old run's own MC=29,29 repeat-unit count exactly,
+just now with real methylation attached and the correct hemizygous zygosity for a
+male donor, rather than the `--karyotype XX` simplification). Extracted unmodified,
+same as the BCLAF3 record above -- no fields fabricated or adjusted.
+
+This is the same real hemizygous-chrX regression case `tests/test_annotate.py` used
+to cover via a since-replaced carrier-panel sample (bc2113) before that fixture's
+data changed; `test_hg002_real_fmr1_hemizygous_with_methylation` now covers it again
+with current real data.

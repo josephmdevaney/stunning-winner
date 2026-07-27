@@ -130,11 +130,24 @@ def test_annotate_strchive_panel_scoped_to_puretarget_v2():
     assert all(l.genotyped for l in panel)
 
 
-# A prior real carrier-panel run (bc2113, since replaced) demonstrated trgt's
-# hemizygous chrX calling (GT="1", a single allele index) via a genuine FXS_FMR1
-# full-mutation expansion. The current carrier_panel_v2 dataset's 96 real samples
-# were all called diploid on chrX (no hemizygous zygosity anywhere in the panel),
-# so that regression case has no real fixture backing it right now -- removed
-# rather than left stale or faked. The hemizygous-parsing code path itself
-# (repeatscope/trgt.py) is unchanged; re-add this test if/when a real hemizygous
-# male chrX sample becomes available.
+def test_hg002_real_fmr1_hemizygous_with_methylation():
+    """A real hemizygous male chrX sample is available again: HG002's FXS_FMR1
+    record was replaced with the true hemizygous call (GT="1", a single allele
+    index) from a separate, genuinely genome-wide TRGT run for this donor
+    (fixtures/hg002_real_genomewide/) -- swapped in specifically because that
+    run also carries real 5mCpG methylation (TRGT's AM field), which the
+    original padded-reference run for this fixture never captured (AM="." for
+    every locus there). See fixtures/hg002_real/README.md's "FXS_FMR1 real
+    methylation" section. A prior real carrier-panel run (bc2113, since
+    replaced) demonstrated the same hemizygous-parsing code path; that
+    regression case had no real fixture backing it for a while -- this
+    replaces it with current real data rather than a since-removed one."""
+    panel = {l.id: l for l in annotate_strchive_panel(HG002_VCF, STRCHIVE_JSON, sample="HG002")}
+    fmr1 = panel["FXS_FMR1"]
+    assert fmr1.genotyped
+    assert fmr1.a1 == 29
+    assert fmr1.a2 is None
+    assert fmr1.zygosity == "Hemizygous"
+    assert fmr1.status == "Normal"
+    assert fmr1.a1_methylation == 0.12
+    assert fmr1.a2_methylation is None

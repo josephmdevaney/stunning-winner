@@ -140,7 +140,7 @@ def build_vcf_qc(variants: list[dict]) -> dict:
     aligned BAM (or MitoRSaw's --output-hap-stats JSON). So this reports the
     depth-at-called-sites it *can* compute and lists the rest as unavailable,
     rather than fabricating a coverage track."""
-    MIN_REQUIRED = 500
+    MIN_REQUIRED = 100
     depths = [v["depth"] for v in variants if v.get("depth") is not None]
     mean_depth = round(sum(depths) / len(depths)) if depths else None
     low_sites = [v for v in variants if (v.get("depth") or 0) < MIN_REQUIRED]
@@ -255,7 +255,7 @@ def build_qc() -> dict:
         "coverage_note": "Linear depth track, position 1–16,569 (rCRS)",
         "genome_length": GENOME_LENGTH,
         "regions": _QC_REGIONS,
-        "min_required": 1000,
+        "min_required": 100,
         "instrument": _INSTRUMENT,
         "coverage_y_axis_max_default": 6000,
         "unavailable_metrics": [

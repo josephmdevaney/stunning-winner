@@ -231,6 +231,7 @@ export interface RohOverviewResponse {
     total_autosomal_roh_bp: number
     total_f_eligible_roh_bp: number
     f_value_min_length_mb: number
+    ar_candidate_min_length_mb: number
     autosomal_genome_length_bp: number
     f_value: number
     f_value_pct: number

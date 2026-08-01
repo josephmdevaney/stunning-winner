@@ -92,7 +92,7 @@ export function ROHScreen({ sample }: { sample: string }) {
           valueStyle={s.n_upd_flags > 0 ? { color: colors.statusIntermediate } : undefined}
           dotColor={s.n_upd_flags > 0 ? colors.statusIntermediate : undefined}
         />
-        <StatCard label="AR candidate genes" value={String(s.n_ar_candidate_genes)} sub={`Within ROH ≥${s.f_value_min_length_mb} Mb`} />
+        <StatCard label="AR candidate genes" value={String(s.n_ar_candidate_genes)} sub={`Within ROH ≥${s.ar_candidate_min_length_mb} Mb`} />
       </StatGrid>
 
       {overview.upd_flags.length > 0 && (
@@ -119,7 +119,7 @@ export function ROHScreen({ sample }: { sample: string }) {
           <div style={{ background: 'white', border: `1px solid ${colors.border}`, borderRadius: 12, padding: '18px 20px' }}>
             <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>AR candidate genes</div>
             <div style={{ fontSize: 11.5, color: colors.textSecondary, marginBottom: 12 }}>
-              Autosomal-recessive OMIM genes overlapping an ROH ≥{s.f_value_min_length_mb} Mb (autozygosity-mapping candidates).
+              Autosomal-recessive OMIM genes overlapping an ROH ≥{s.ar_candidate_min_length_mb} Mb (autozygosity-mapping candidates).
             </div>
             {overview.ar_candidate_genes.length === 0 ? (
               <div style={{ fontSize: 13, color: colors.textSecondary, padding: '12px 0' }}>None found for this sample.</div>

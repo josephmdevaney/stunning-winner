@@ -178,12 +178,17 @@ def build_overview(sample: str, path: str | Path) -> dict:
 
     upd_flags = [r for r in regions if r["upd_flag"]]
 
-    # Only surface AR genes overlapped by an F-value-eligible (>=3 Mb) ROH --
-    # short background ROH are ubiquitous genome-wide and overlapping one by
-    # chance isn't a meaningful autozygosity-mapping candidate. Keep the
-    # largest overlapping region per gene if more than one qualifies.
+    # Surface AR genes overlapped by an ROH >= AR_CANDIDATE_MIN_LENGTH_BP --
+    # deliberately a lower, separate floor than the F-value's own >=3 Mb
+    # (see AR_CANDIDATE_MIN_LENGTH_BP's docstring): short background ROH are
+    # ubiquitous genome-wide and overlapping one by chance isn't a meaningful
+    # autozygosity-mapping candidate, but requiring the F-value's stricter
+    # floor here would silently drop real candidates in a smaller genuinely
+    # -autozygous ROH. Keep the largest overlapping region per gene if more
+    # than one qualifies.
+    ar_eligible = [r for r in autosomal if r["length_bp"] >= ref.AR_CANDIDATE_MIN_LENGTH_BP]
     ar_genes: dict[str, dict] = {}
-    for r in f_eligible:
+    for r in ar_eligible:
         for g in r["genes"]:
             if g["inheritance"] != "AR":
                 continue
@@ -221,6 +226,7 @@ def build_overview(sample: str, path: str | Path) -> dict:
             "total_autosomal_roh_bp": sum(r["length_bp"] for r in autosomal),
             "total_f_eligible_roh_bp": total_f_length_bp,
             "f_value_min_length_mb": ref.F_VALUE_MIN_LENGTH_BP // 1_000_000,
+            "ar_candidate_min_length_mb": ref.AR_CANDIDATE_MIN_LENGTH_BP // 1_000_000,
             "autosomal_genome_length_bp": ref.AUTOSOMAL_GENOME_LENGTH,
             "f_value": round(f_value, 5),
             "f_value_pct": round(f_value * 100, 3),

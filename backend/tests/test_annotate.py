@@ -6,11 +6,13 @@ from repeatscope.annotate import (
     resolve_panel_locus_ids,
     simulate_pileup_reads,
 )
+from repeatscope.rexprt import load_rexprt_scores
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 FIXTURE_VCF = REPO_ROOT / "backend" / "fixtures" / "synthetic_trgt.vcf"
 STRCHIVE_JSON = REPO_ROOT / "project" / "uploads" / "STRchive-loci.json"
 CATALOG_BED = REPO_ROOT / "project" / "uploads" / "repeat_catalog.hg38.bed"
+REXPRT_TSV = REPO_ROOT / "project" / "uploads" / "rexprt_scores.hg38.tsv"
 GV01_VCF = REPO_ROOT / "backend" / "fixtures" / "gv_puretarget_panel_v2" / "trgt_vcfs" / "GV-01.trgt.vcf"
 PURETARGET_V2_BED = REPO_ROOT / "backend" / "fixtures" / "panels" / "puretarget_v2.repeat_definitions.hg38.bed"
 CARRIER_BED = REPO_ROOT / "backend" / "fixtures" / "panels" / "carrier_screen.repeat_definitions.hg38.bed"
@@ -98,6 +100,26 @@ def test_iter_annotated_catalog_matches_generic_and_strchive_regions():
     miss = by_coords[("chr1", 102078, 102182)]
     assert miss.genotyped is False
     assert miss.a1 is None
+
+
+def test_iter_annotated_catalog_attaches_real_rexprt_pathogenicity():
+    """Full pipeline, real data end-to-end: FXS_FMR1's catalog region gets a
+    real RExPRT pathogenicity prediction attached, while an ordinary region
+    RExPRT never scored (motif length outside its 3-8bp trained range, or no
+    matching source row) is left at None -- never a fabricated default."""
+    scores = load_rexprt_scores(REXPRT_TSV)
+    regions = list(iter_annotated_catalog(CATALOG_BED, FIXTURE_VCF, rexprt_scores=scores))
+    by_coords = {(r.chrom, r.start, r.stop): r for r in regions}
+
+    fmr1 = by_coords[("chrX", 147_912_048, 147_912_111)]
+    assert fmr1.pathogenicity is not None
+    assert fmr1.pathogenicity.gene == "FMR1"
+    assert fmr1.pathogenicity.ensemble_binary is True
+
+    # chr1:19,274-19,473 has a 70bp motif -- well outside RExPRT's 3-8bp trained
+    # range, so it was never in RExPRT's reference set to match against.
+    unscored = by_coords[("chr1", 19274, 19473)]
+    assert unscored.pathogenicity is None
 
 
 def test_rfc1_real_gv01_call_not_misclassified_pathogenic():

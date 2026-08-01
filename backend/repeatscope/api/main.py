@@ -56,6 +56,7 @@ from ..paraphase import (
     load_paraphase_calls,
     load_sawfish_calls,
 )
+from ..rexprt import RexprtScore, load_rexprt_scores
 from .. import roh
 from ..trgt import sample_names
 
@@ -70,10 +71,15 @@ CATALOG_BED = os.environ.get(
     "REPEATSCOPE_CATALOG_BED", str(REPO_ROOT / "project" / "uploads" / "repeat_catalog.hg38.bed")
 )
 GENES_BED = os.environ.get("REPEATSCOPE_GENES_BED", str(REPO_ROOT / "project" / "uploads" / "genes.hg38.bed"))
+REXPRT_SCORES_TSV = os.environ.get(
+    "REPEATSCOPE_REXPRT_SCORES", str(REPO_ROOT / "project" / "uploads" / "rexprt_scores.hg38.tsv")
+)
 
-# Genomic gene-body positions don't depend on mode/sample, unlike everything else
-# cached below -- load once, lazily, the first time the catalog actually needs it.
+# Genomic gene-body positions and RExPRT scores don't depend on mode/sample,
+# unlike everything else cached below -- load once, lazily, the first time the
+# catalog actually needs them.
 _gene_index: Optional[GeneIndex] = None
+_rexprt_scores: Optional[dict] = None
 
 
 def _get_gene_index() -> Optional[GeneIndex]:
@@ -81,6 +87,13 @@ def _get_gene_index() -> Optional[GeneIndex]:
     if _gene_index is None and Path(GENES_BED).exists():
         _gene_index = GeneIndex(load_genes(GENES_BED))
     return _gene_index
+
+
+def _get_rexprt_scores() -> Optional[dict]:
+    global _rexprt_scores
+    if _rexprt_scores is None and Path(REXPRT_SCORES_TSV).exists():
+        _rexprt_scores = load_rexprt_scores(REXPRT_SCORES_TSV)
+    return _rexprt_scores
 
 CALLER_LABEL = "TRGT v5.1.0"
 VCF_EXTENSIONS = (".vcf", ".vcf.gz")
@@ -249,12 +262,34 @@ def _run_qc_regions(mode: str, sample: str) -> list[dict]:
     ]
 
 
+def _serialize_pathogenicity(score: Optional[RexprtScore]) -> Optional[dict]:
+    """None means "not evaluated by RExPRT" -- see repeatscope/rexprt.py -- and
+    must never be treated as a "benign" default by callers."""
+    if score is None:
+        return None
+    return {
+        "predicted_pathogenic": score.ensemble_binary,
+        "ensemble_score": score.ensemble_score,
+        "svm": score.svm, "xgb": score.xgb,
+        "region": score.region, "location": score.location, "gene": score.gene,
+        "gerp": score.gerp, "loeuf": score.loeuf, "pli": score.pli,
+        "promoter": score.promoter, "utr_5": score.utr_5, "utr_3": score.utr_3,
+        "tad": score.tad, "estr": score.estr, "open_reg_region": score.open_reg_region,
+        "rad21": score.rad21, "smc3": score.smc3, "ctcf": score.ctcf,
+        "gc_content": score.gc_content, "tissue": score.tissue,
+        "hg19_chrom": score.hg19_chrom, "hg19_start": score.hg19_start, "hg19_end": score.hg19_end,
+    }
+
+
 def _get_catalog(mode: str, sample: str) -> list[dict]:
     key = (mode, sample)
     if key not in _catalog_caches:
         m = _modes[mode]
         vcf_path = m["catalog_sample_paths"].get(sample) or m["sample_paths"][sample]
-        regions = iter_annotated_catalog(CATALOG_BED, vcf_path, sample=sample, gene_index=_get_gene_index())
+        regions = iter_annotated_catalog(
+            CATALOG_BED, vcf_path, sample=sample,
+            gene_index=_get_gene_index(), rexprt_scores=_get_rexprt_scores(),
+        )
         _catalog_caches[key] = [
             {
                 "chrom": r.chrom, "start": r.start, "stop": r.stop, "length": r.length,
@@ -262,6 +297,7 @@ def _get_catalog(mode: str, sample: str) -> list[dict]:
                 "a1": r.a1, "a2": r.a2, "depth": r.depth,
                 "genes": list(r.genes), "nearest_gene": r.nearest_gene,
                 "nearest_distance_bp": r.nearest_distance_bp, "nearest_direction": r.nearest_direction,
+                "pathogenicity": _serialize_pathogenicity(r.pathogenicity),
             }
             for r in regions
         ]
@@ -596,6 +632,7 @@ def get_run_qc(mode: Optional[str] = None, sample: Optional[str] = None):
 def get_catalog(
     mode: Optional[str] = None, sample: Optional[str] = None,
     chrom: str = "all", motif: str = "", min_len: int = 0,
+    rexprt_pathogenic_only: bool = False,
     page: int = 0, page_size: int = 50,
 ):
     m = _resolve_mode(mode)
@@ -609,17 +646,22 @@ def get_catalog(
         filtered = [r for r in filtered if needle in r["motifs"].upper()]
     if min_len:
         filtered = [r for r in filtered if r["length"] >= min_len]
+    if rexprt_pathogenic_only:
+        filtered = [r for r in filtered if r["pathogenicity"] and r["pathogenicity"]["predicted_pathogenic"]]
 
     total = len(filtered)
     start = page * page_size
     page_rows = filtered[start : start + page_size]
     chroms = sorted({r["chrom"] for r in all_regions}, key=_chrom_sort_key)
+    evaluated = [r for r in all_regions if r["pathogenicity"] is not None]
 
     return {
         "total_all": len(all_regions),
         "total_matching": total,
         "unique_motifs": len({r["motifs"] for r in all_regions}),
         "chromosomes": ["all"] + chroms,
+        "n_rexprt_evaluated": len(evaluated),
+        "n_rexprt_predicted_pathogenic": sum(1 for r in evaluated if r["pathogenicity"]["predicted_pathogenic"]),
         "page": page,
         "page_size": page_size,
         "rows": page_rows,

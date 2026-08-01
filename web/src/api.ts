@@ -154,6 +154,39 @@ export interface CatalogRow {
   nearest_gene: string | null
   nearest_distance_bp: number | null
   nearest_direction: 'upstream' | 'downstream' | null
+  // Real RExPRT (Danzi et al. 2024, PMC10832122) genome-wide pathogenicity
+  // prediction for this exact region -- null means "not evaluated by RExPRT"
+  // (e.g. motif length outside its 3-8bp trained range), never a fabricated
+  // "benign" default. See project/uploads/README.md for full provenance and a
+  // verified real false-negative example (C9orf72) this score is known to miss.
+  pathogenicity: RexprtPathogenicity | null
+}
+
+export interface RexprtPathogenicity {
+  predicted_pathogenic: boolean
+  ensemble_score: number
+  svm: number
+  xgb: number
+  region: string
+  location: string
+  gene: string
+  gerp: number
+  loeuf: number
+  pli: number
+  promoter: boolean
+  utr_5: boolean
+  utr_3: boolean
+  tad: boolean
+  estr: boolean
+  open_reg_region: boolean
+  rad21: boolean
+  smc3: boolean
+  ctcf: boolean
+  gc_content: number
+  tissue: string
+  hg19_chrom: string
+  hg19_start: number
+  hg19_end: number
 }
 
 export interface CatalogResponse {
@@ -161,6 +194,8 @@ export interface CatalogResponse {
   total_matching: number
   unique_motifs: number
   chromosomes: string[]
+  n_rexprt_evaluated: number
+  n_rexprt_predicted_pathogenic: number
   page: number
   page_size: number
   rows: CatalogRow[]
@@ -307,12 +342,14 @@ export const api = {
   runQC: (mode?: string, sample?: string) =>
     getJSON<RunQCResponse>(withModeSample('/api/qc/run', { mode, sample })),
   catalog: (params: {
-    mode?: string; sample?: string; chrom?: string; motif?: string; minLen?: number; page?: number; pageSize?: number
+    mode?: string; sample?: string; chrom?: string; motif?: string; minLen?: number
+    rexprtPathogenicOnly?: boolean; page?: number; pageSize?: number
   }) => {
     const q = new URLSearchParams()
     if (params.chrom) q.set('chrom', params.chrom)
     if (params.motif) q.set('motif', params.motif)
     if (params.minLen) q.set('min_len', String(params.minLen))
+    if (params.rexprtPathogenicOnly) q.set('rexprt_pathogenic_only', 'true')
     q.set('page', String(params.page ?? 0))
     q.set('page_size', String(params.pageSize ?? 50))
     return getJSON<CatalogResponse>(withModeSample('/api/catalog', { mode: params.mode, sample: params.sample }, q))

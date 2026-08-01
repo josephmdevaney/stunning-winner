@@ -18,6 +18,7 @@ from typing import Optional
 from . import strchive
 from .catalog import CatalogRegion, iter_catalog_regions
 from .genes import GeneIndex
+from .rexprt import RexprtScore
 from .strchive import StrchiveLocus, load_strchive_loci
 from .trgt import TrgtCall, TrgtIndex
 
@@ -242,10 +243,18 @@ class AnnotatedCatalogRegion:
     nearest_gene: Optional[str] = None
     nearest_distance_bp: Optional[int] = None
     nearest_direction: Optional[str] = None
+    # Real RExPRT genome-wide pathogenicity prediction for this exact region --
+    # see repeatscope/rexprt.py. None means "not evaluated by RExPRT" (no
+    # matching entry, e.g. motif length outside RExPRT's trained 3-8bp range),
+    # never a fabricated "benign" default.
+    pathogenicity: Optional[RexprtScore] = None
 
 
 def annotate_catalog_region(
-    region: CatalogRegion, call: Optional[TrgtCall], gene_index: Optional[GeneIndex] = None
+    region: CatalogRegion,
+    call: Optional[TrgtCall],
+    gene_index: Optional[GeneIndex] = None,
+    rexprt_scores: Optional[dict[tuple[str, int, int], RexprtScore]] = None,
 ) -> AnnotatedCatalogRegion:
     out = AnnotatedCatalogRegion(
         chrom=region.chrom, start=region.start, stop=region.stop, length=region.length,
@@ -257,6 +266,8 @@ def annotate_catalog_region(
         out.nearest_gene = gene_annotation.nearest_gene
         out.nearest_distance_bp = gene_annotation.nearest_distance_bp
         out.nearest_direction = gene_annotation.nearest_direction
+    if rexprt_scores is not None:
+        out.pathogenicity = rexprt_scores.get((region.chrom, region.start, region.stop))
     if call is None or not call.genotyped:
         return out
     target_motif = region.motifs.split(",")[0] if region.motifs else None
@@ -272,9 +283,10 @@ def iter_annotated_catalog(
     vcf_path: str | Path,
     sample: Optional[str] = None,
     gene_index: Optional[GeneIndex] = None,
+    rexprt_scores: Optional[dict[tuple[str, int, int], RexprtScore]] = None,
 ):
     """Yield AnnotatedCatalogRegion for every region in the genome-wide repeat catalog BED."""
     index = TrgtIndex.from_vcf(vcf_path, sample=sample)
     for region in iter_catalog_regions(bed_path):
         call = index.by_trid.get(region.id) or index.find_overlap(region.chrom, region.start, region.stop)
-        yield annotate_catalog_region(region, call, gene_index)
+        yield annotate_catalog_region(region, call, gene_index, rexprt_scores)

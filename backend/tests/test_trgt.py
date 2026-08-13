@@ -138,6 +138,34 @@ def test_index_lookup_by_trid_and_overlap():
     assert index.find_overlap("chr4", 999_999_999, 999_999_999 + 10) is None
 
 
+def _synthetic_call(chrom: str, pos: int, end: int, trid: str) -> TrgtCall:
+    return TrgtCall(
+        chrom=chrom, pos=pos, end=end, trid=trid, motifs=["A"], struc="<TR>",
+        ref="N", alt=["<a>"], hap1_idx=None, hap2_idx=None, phased=False, hemizygous=True,
+        allele_length=[None], allele_length_range=[None], allele_support=[None],
+        motif_count=[None], allele_purity=[None], allele_methylation=[None],
+    )
+
+
+def test_find_overlap_beyond_a_short_fixed_window():
+    """Regression test: find_overlap must not assume a short fixed backward scan
+    is enough to find a real overlap. A single wide call (early_call, pos=1000,
+    end=2000) is the only one that overlaps a later query -- but 20 narrow calls
+    sorted in between it and the query's own position push it more than 5 slots
+    back from where a fixed-size scan would start, which previously caused a real
+    overlap to be silently missed (e.g. TRExplorer v2.0's variation-cluster
+    regions, which have runs of 1000+ consecutive nearby entries)."""
+    calls = [_synthetic_call("chr1", 1000, 2000, "early_call")]
+    for i in range(20):
+        # Narrow, non-overlapping-with-query calls sorted after early_call by
+        # start position, occupying index slots between it and the query.
+        calls.append(_synthetic_call("chr1", 1001 + i, 1002 + i, f"filler_{i}"))
+    index = TrgtIndex(calls)
+
+    call = index.find_overlap("chr1", 1500, 1500)
+    assert call is not None and call.trid == "early_call"
+
+
 def test_dominant_motifs_real_rfc1_call():
     """Regression test using GV-01's real RFC1 call (real PacBio PureTarget panel data):
     GT=0/1, MOTIFS=AAGGG,ACAGG,AGGGC,AAGGC,AGAGG,AAAAG,AAAGG,AAGAG,AAAGGG,

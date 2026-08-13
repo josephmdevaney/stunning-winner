@@ -41,12 +41,14 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from ..annotate import (
+    AnnotatedCatalogRegion,
     AnnotatedLocus,
+    annotate_catalog_region,
     annotate_strchive_panel,
-    iter_annotated_catalog,
     resolve_panel_locus_ids,
     simulate_pileup_reads,
 )
+from ..catalog import CatalogIndex, chrom_sort_key
 from ..genes import GeneIndex, load_genes
 from ..paraphase import (
     STATUS_PATHOGENIC_VARIANT,
@@ -58,7 +60,7 @@ from ..paraphase import (
 )
 from ..rexprt import RexprtScore, load_rexprt_scores
 from .. import roh
-from ..trgt import sample_names
+from ..trgt import TrgtIndex, sample_names
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 BACKEND_ROOT = REPO_ROOT / "backend"
@@ -75,11 +77,12 @@ REXPRT_SCORES_TSV = os.environ.get(
     "REPEATSCOPE_REXPRT_SCORES", str(REPO_ROOT / "project" / "uploads" / "rexprt_scores.hg38.tsv")
 )
 
-# Genomic gene-body positions and RExPRT scores don't depend on mode/sample,
-# unlike everything else cached below -- load once, lazily, the first time the
-# catalog actually needs them.
+# Genomic gene-body positions, RExPRT scores, and the raw genome-wide catalog
+# itself don't depend on mode/sample, unlike everything else cached below --
+# load once, lazily, the first time the catalog actually needs them.
 _gene_index: Optional[GeneIndex] = None
 _rexprt_scores: Optional[dict] = None
+_catalog_index: Optional[CatalogIndex] = None
 
 
 def _get_gene_index() -> Optional[GeneIndex]:
@@ -94,6 +97,13 @@ def _get_rexprt_scores() -> Optional[dict]:
     if _rexprt_scores is None and Path(REXPRT_SCORES_TSV).exists():
         _rexprt_scores = load_rexprt_scores(REXPRT_SCORES_TSV)
     return _rexprt_scores
+
+
+def _get_catalog_index() -> CatalogIndex:
+    global _catalog_index
+    if _catalog_index is None:
+        _catalog_index = CatalogIndex.from_bed(CATALOG_BED)
+    return _catalog_index
 
 CALLER_LABEL = "TRGT v5.1.0"
 VCF_EXTENSIONS = (".vcf", ".vcf.gz")
@@ -122,6 +132,11 @@ _default_mode: str = ""
 _panels: dict[tuple[str, str], list[AnnotatedLocus]] = {}
 _panel_by_id: dict[tuple[str, str], dict[str, AnnotatedLocus]] = {}
 _catalog_caches: dict[tuple[str, str], list[dict]] = {}
+# The sample's own genotype index against the genome-wide catalog VCF -- built
+# once per (mode, sample), independent of the (mode-independent) raw catalog
+# index above, and shared between the full-scan path (_get_catalog, for Run QC)
+# and the paginated /api/catalog route so neither re-parses that VCF twice.
+_trgt_indexes: dict[tuple[str, str], TrgtIndex] = {}
 _paraphase_caches: dict[tuple[str, str], tuple[dict, dict, dict, list]] = {}
 
 
@@ -234,19 +249,20 @@ def _get_panel(mode: str, sample: str) -> list[AnnotatedLocus]:
     return _panels[key]
 
 
-def _chrom_sort_key(c: str):
-    order = {f"chr{i}": i for i in range(1, 23)}
-    order["chrX"] = 23
-    order["chrY"] = 24
-    order["chrM"] = 25
-    return order.get(c, 99)
+def _get_trgt_index(mode: str, sample: str) -> TrgtIndex:
+    key = (mode, sample)
+    if key not in _trgt_indexes:
+        m = _modes[mode]
+        vcf_path = m["catalog_sample_paths"].get(sample) or m["sample_paths"][sample]
+        _trgt_indexes[key] = TrgtIndex.from_vcf(vcf_path, sample=sample)
+    return _trgt_indexes[key]
 
 
 def _run_qc_regions(mode: str, sample: str) -> list[dict]:
     """Regions Run QC reports coverage over. For a targeted-panel mode (Carrier,
-    PureTarget V2, ...) the genome-wide 171k-region repeat catalog doesn't scope
-    to this assay's own loci at all (different ID space, and a targeted VCF has
-    no calls outside its own panel), so use the same STRchive-scoped panel Sample
+    PureTarget V2, ...) the genome-wide repeat catalog doesn't scope to this
+    assay's own loci at all (different ID space, and a targeted VCF has no
+    calls outside its own panel), so use the same STRchive-scoped panel Sample
     QC / Overview already use instead of the full genome-wide catalog."""
     locus_ids = _modes[mode]["locus_ids"]
     if locus_ids is None:
@@ -281,26 +297,40 @@ def _serialize_pathogenicity(score: Optional[RexprtScore]) -> Optional[dict]:
     }
 
 
+def _serialize_catalog_region(r: AnnotatedCatalogRegion) -> dict:
+    return {
+        "chrom": r.chrom, "start": r.start, "stop": r.stop, "length": r.length,
+        "motifs": r.motifs, "struc": r.struc, "genotyped": r.genotyped,
+        "a1": r.a1, "a2": r.a2, "depth": r.depth,
+        "genes": list(r.genes), "nearest_gene": r.nearest_gene,
+        "nearest_distance_bp": r.nearest_distance_bp, "nearest_direction": r.nearest_direction,
+        "pathogenicity": _serialize_pathogenicity(r.pathogenicity),
+    }
+
+
+def _annotate_catalog_regions(regions, trgt_index: TrgtIndex) -> list[dict]:
+    gene_index = _get_gene_index()
+    rexprt_scores = _get_rexprt_scores()
+    rows = []
+    for region in regions:
+        call = trgt_index.by_trid.get(region.id) or trgt_index.find_overlap(region.chrom, region.start, region.stop)
+        annotated = annotate_catalog_region(region, call, gene_index, rexprt_scores)
+        rows.append(_serialize_catalog_region(annotated))
+    return rows
+
+
 def _get_catalog(mode: str, sample: str) -> list[dict]:
+    """The full genome-wide catalog, genotype/gene/pathogenicity-annotated for
+    every region -- an inherently O(n) full scan, needed by Run QC's aggregate
+    stats. The interactive /api/catalog route below avoids this cost for the
+    common case (a paginated screen) by annotating only the page it returns;
+    this full-scan path still benefits from sharing the same lazily-cached raw
+    catalog index and TrgtIndex, so it doesn't re-parse either from scratch."""
     key = (mode, sample)
     if key not in _catalog_caches:
-        m = _modes[mode]
-        vcf_path = m["catalog_sample_paths"].get(sample) or m["sample_paths"][sample]
-        regions = iter_annotated_catalog(
-            CATALOG_BED, vcf_path, sample=sample,
-            gene_index=_get_gene_index(), rexprt_scores=_get_rexprt_scores(),
-        )
-        _catalog_caches[key] = [
-            {
-                "chrom": r.chrom, "start": r.start, "stop": r.stop, "length": r.length,
-                "motifs": r.motifs, "struc": r.struc, "genotyped": r.genotyped,
-                "a1": r.a1, "a2": r.a2, "depth": r.depth,
-                "genes": list(r.genes), "nearest_gene": r.nearest_gene,
-                "nearest_distance_bp": r.nearest_distance_bp, "nearest_direction": r.nearest_direction,
-                "pathogenicity": _serialize_pathogenicity(r.pathogenicity),
-            }
-            for r in regions
-        ]
+        index = _get_catalog_index()
+        trgt_index = _get_trgt_index(mode, sample)
+        _catalog_caches[key] = _annotate_catalog_regions(index.all, trgt_index)
     return _catalog_caches[key]
 
 
@@ -573,7 +603,7 @@ def get_run_qc(mode: Optional[str] = None, sample: Optional[str] = None):
     for r in catalog:
         by_chrom.setdefault(r["chrom"], []).append(r)
     chrom_depth = []
-    for chrom in sorted(by_chrom, key=_chrom_sort_key):
+    for chrom in sorted(by_chrom, key=chrom_sort_key):
         regions = by_chrom[chrom]
         ds = [r["depth"] for r in regions if r["depth"] is not None]
         chrom_depth.append(
@@ -635,33 +665,39 @@ def get_catalog(
     rexprt_pathogenic_only: bool = False,
     page: int = 0, page_size: int = 50,
 ):
+    """Filters/paginates against the raw (unannotated) catalog index first --
+    fast even at multi-million-row scale, since it never touches genotype/gene/
+    RExPRT data -- and only annotates the page of rows actually being returned.
+    Annotating the *entire* catalog on every request (the previous approach)
+    doesn't scale: TRExplorer v2.0's 5,599,658-region catalog measured at
+    several minutes and 15GB+ RAM that way, vs. sub-second filtering here."""
     m = _resolve_mode(mode)
     s = _resolve_sample(m, sample)
-    all_regions = _get_catalog(m, s)
-    filtered = all_regions
-    if chrom != "all":
-        filtered = [r for r in filtered if r["chrom"] == chrom]
-    if motif:
-        needle = motif.upper()
-        filtered = [r for r in filtered if needle in r["motifs"].upper()]
-    if min_len:
-        filtered = [r for r in filtered if r["length"] >= min_len]
+    index = _get_catalog_index()
+    rexprt_scores = _get_rexprt_scores() or {}
+
+    filtered = index.filter(chrom=chrom, motif=motif, min_len=min_len)
     if rexprt_pathogenic_only:
-        filtered = [r for r in filtered if r["pathogenicity"] and r["pathogenicity"]["predicted_pathogenic"]]
+        filtered = [
+            r for r in filtered
+            if (score := rexprt_scores.get((r.chrom, r.start, r.stop))) and score.ensemble_binary
+        ]
 
     total = len(filtered)
     start = page * page_size
-    page_rows = filtered[start : start + page_size]
-    chroms = sorted({r["chrom"] for r in all_regions}, key=_chrom_sort_key)
-    evaluated = [r for r in all_regions if r["pathogenicity"] is not None]
+    page_regions = filtered[start : start + page_size]
+    trgt_index = _get_trgt_index(m, s)
+    page_rows = _annotate_catalog_regions(page_regions, trgt_index)
+
+    n_predicted_pathogenic = sum(1 for score in rexprt_scores.values() if score.ensemble_binary)
 
     return {
-        "total_all": len(all_regions),
+        "total_all": index.total,
         "total_matching": total,
-        "unique_motifs": len({r["motifs"] for r in all_regions}),
-        "chromosomes": ["all"] + chroms,
-        "n_rexprt_evaluated": len(evaluated),
-        "n_rexprt_predicted_pathogenic": sum(1 for r in evaluated if r["pathogenicity"]["predicted_pathogenic"]),
+        "unique_motifs": index.unique_motifs,
+        "chromosomes": ["all"] + index.chromosomes,
+        "n_rexprt_evaluated": len(rexprt_scores),
+        "n_rexprt_predicted_pathogenic": n_predicted_pathogenic,
         "page": page,
         "page_size": page_size,
         "rows": page_rows,

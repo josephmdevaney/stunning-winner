@@ -14,11 +14,13 @@ GC content, and Alu proximity. The lab publishes real precomputed scores for
 
 This script lifts those hg19 coordinates to hg38 (UCSC hg19ToHg38 chain, via
 pyliftover) and matches them by coordinate overlap against RepeatScope's own
-non-overlapping genome-wide catalog (project/uploads/repeat_catalog.hg38.bed,
-937,195 regions), emitting one row per successfully matched catalog region.
+genome-wide catalog (project/uploads/repeat_catalog.hg38.bed -- TRExplorer
+v2.0, 5,599,658 regions, real overlapping regions in places, see
+project/uploads/README.md), emitting one row per successfully matched catalog
+region.
 
 Coverage is intentionally partial and reported to stderr, not papered over:
-only ~211k of the catalog's 937k regions have a 3-8bp motif (RExPRT's trained
+only a fraction of the catalog's regions have a 3-8bp motif (RExPRT's trained
 range) -- the rest are longer-motif repeats RExPRT was never applied to and are
 left unmatched. Regions within that range that still don't match are ones
 where liftover failed or RExPRT's reference set didn't include that exact
@@ -91,24 +93,31 @@ def load_catalog_index():
     for regions in by_chrom.values():
         regions.sort()
     starts = {chrom: [r[0] for r in regions] for chrom, regions in by_chrom.items()}
-    return by_chrom, starts
+    max_spans = {
+        chrom: max((r[1] - r[0] for r in regions), default=0) for chrom, regions in by_chrom.items()
+    }
+    return by_chrom, starts, max_spans
 
 
-def find_catalog_overlap(by_chrom, starts, chrom: str, start: int, stop: int):
-    """Best-overlap catalog region for [start, stop) on chrom, if any. Catalog
-    regions are non-overlapping and sorted, so a short backward scan from the
-    first region starting at or before `stop` is sufficient (same pattern as
-    TrgtIndex.find_overlap in repeatscope/trgt.py)."""
+def find_catalog_overlap(by_chrom, starts, max_spans, chrom: str, start: int, stop: int):
+    """Best-overlap catalog region for [start, stop) on chrom, if any. Bounds
+    the scan window by the chromosome's longest region (max_span) rather than a
+    fixed element count: TRExplorer v2.0's catalog is NOT guaranteed
+    non-overlapping (real runs of 1000+ consecutive overlapping regions were
+    measured directly against the file), where a small fixed window would
+    silently miss a real overlap. Same technique as GeneIndex.annotate in
+    repeatscope/genes.py and the equivalent fix in TrgtIndex.find_overlap
+    (repeatscope/trgt.py)."""
     regions = by_chrom.get(chrom)
     if not regions:
         return None
     chrom_starts = starts[chrom]
-    i = bisect.bisect_right(chrom_starts, stop)
+    max_span = max_spans[chrom]
+    lo = bisect.bisect_left(chrom_starts, start - max_span)
+    hi = bisect.bisect_right(chrom_starts, stop)
     best = None
-    for j in range(i - 1, max(i - 5, -1), -1):
+    for j in range(hi - 1, lo - 1, -1):
         r_start, r_stop = regions[j]
-        if r_stop < start:
-            break
         if r_start <= stop and r_stop >= start:
             overlap = min(r_stop, stop) - max(r_start, start)
             if best is None or overlap > best[2]:
@@ -125,7 +134,7 @@ def main():
     from pyliftover import LiftOver
     lo = LiftOver("hg19", "hg38")
 
-    by_chrom, starts = load_catalog_index()
+    by_chrom, starts, max_spans = load_catalog_index()
 
     n_total = n_lifted = n_matched = n_collisions = 0
     # catalog (chrom, start, stop) -> chosen (overlap_bp, out_row) -- keep the
@@ -159,7 +168,7 @@ def main():
                 continue
             n_lifted += 1
 
-            match = find_catalog_overlap(by_chrom, starts, hg38_chrom, hg38_start, hg38_end)
+            match = find_catalog_overlap(by_chrom, starts, max_spans, hg38_chrom, hg38_start, hg38_end)
             if match is None:
                 continue
             n_matched += 1

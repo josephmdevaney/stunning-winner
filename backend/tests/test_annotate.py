@@ -87,38 +87,38 @@ def test_iter_annotated_catalog_matches_generic_and_strchive_regions():
     """Catalog regions and the sample's own VCF calls come from different tools/sources
     with different boundary-calling conventions, so this deliberately doesn't require an
     exact coordinate match -- see TrgtIndex.find_overlap. The fixture's synthetic call at
-    chr1:44835-44867 (AAAT) falls entirely inside this real catalog's wider
-    chr1:44804-44906 region for the same repeat, and should still be found by overlap."""
+    chr1:44835-44867 (AAAT) happens to match this real (TRExplorer v2.0) catalog's own
+    region for the same repeat exactly, and should be found by overlap regardless."""
     regions = list(iter_annotated_catalog(CATALOG_BED, FIXTURE_VCF))
-    assert len(regions) == 937_195
+    assert len(regions) == 5_339_786
 
     by_coords = {(r.chrom, r.start, r.stop): r for r in regions}
-    hit = by_coords[("chr1", 44804, 44906)]
+    hit = by_coords[("chr1", 44835, 44867)]
     assert hit.genotyped
     assert {hit.a1, hit.a2} == {8, 9}
 
-    miss = by_coords[("chr1", 102078, 102182)]
+    miss = by_coords[("chr1", 102104, 102118)]
     assert miss.genotyped is False
     assert miss.a1 is None
 
 
 def test_iter_annotated_catalog_attaches_real_rexprt_pathogenicity():
-    """Full pipeline, real data end-to-end: FXS_FMR1's catalog region gets a
-    real RExPRT pathogenicity prediction attached, while an ordinary region
-    RExPRT never scored (motif length outside its 3-8bp trained range, or no
-    matching source row) is left at None -- never a fabricated default."""
+    """Full pipeline, real data end-to-end: the FMR1 CGG repeat's catalog region
+    gets a real RExPRT pathogenicity prediction attached, while an ordinary
+    region RExPRT never scored (motif length outside its 3-8bp trained range,
+    or no matching source row) is left at None -- never a fabricated default."""
     scores = load_rexprt_scores(REXPRT_TSV)
     regions = list(iter_annotated_catalog(CATALOG_BED, FIXTURE_VCF, rexprt_scores=scores))
     by_coords = {(r.chrom, r.start, r.stop): r for r in regions}
 
-    fmr1 = by_coords[("chrX", 147_912_048, 147_912_111)]
+    fmr1 = by_coords[("chrX", 147_912_049, 147_912_198)]
     assert fmr1.pathogenicity is not None
     assert fmr1.pathogenicity.gene == "FMR1"
     assert fmr1.pathogenicity.ensemble_binary is True
 
-    # chr1:19,274-19,473 has a 70bp motif -- well outside RExPRT's 3-8bp trained
+    # chr1:20,797-20,863 has an 18bp motif -- well outside RExPRT's 3-8bp trained
     # range, so it was never in RExPRT's reference set to match against.
-    unscored = by_coords[("chr1", 19274, 19473)]
+    unscored = by_coords[("chr1", 20797, 20863)]
     assert unscored.pathogenicity is None
 
 

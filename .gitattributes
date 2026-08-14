@@ -3,3 +3,11 @@
 # VCFs (disease-panel-scoped, tens of KB) are left as regular git blobs; only genuinely
 # large, genome-wide files need LFS.
 backend/fixtures/hg002_real_genomewide/HG002.GRCh38.trgt.genomewide.vcf.gz filter=lfs diff=lfs merge=lfs -text
+# TRExplorer v2.0 genome-wide repeat catalog (variation_clusters_and_isolated_TRs
+# variant, 5,339,786 regions, ~536MB) -- see project/uploads/README.md for
+# provenance. Far past the plain-blob precedent (the old 937k-region catalog
+# was 94MB) and GitHub's 100MB hard limit.
+project/uploads/repeat_catalog.hg38.bed filter=lfs diff=lfs merge=lfs -text
+# RExPRT scores rebuilt against the v2.0 catalog above (727,004 matches, up
+# from 225,303 against the old catalog -- ~166MB, also past the 100MB limit).
+project/uploads/rexprt_scores.hg38.tsv filter=lfs diff=lfs merge=lfs -text

@@ -70,10 +70,13 @@ def test_filter_combines_all_criteria():
 
 def test_from_bed_real_catalog_file_matches_expected_scale():
     """Sanity check against the real genome-wide catalog file, not a synthetic
-    fixture -- confirms the loader/index actually works end-to-end at scale."""
+    fixture -- confirms the loader/index actually works end-to-end. Currently
+    scoped to RExPRT-predicted-pathogenic regions only (see
+    project/uploads/README.md), so this is thousands, not millions, of rows --
+    that's the point, not a regression."""
     from pathlib import Path
 
     bed_path = Path(__file__).resolve().parents[2] / "project" / "uploads" / "repeat_catalog.hg38.bed"
     idx = CatalogIndex.from_bed(bed_path)
-    assert idx.total > 100_000
+    assert idx.total > 10_000
     assert set(idx.chromosomes) >= {f"chr{i}" for i in range(1, 23)} | {"chrX", "chrY"}

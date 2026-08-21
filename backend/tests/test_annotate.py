@@ -86,27 +86,31 @@ def test_simulate_pileup_empty_when_not_genotyped():
 def test_iter_annotated_catalog_matches_generic_and_strchive_regions():
     """Catalog regions and the sample's own VCF calls come from different tools/sources
     with different boundary-calling conventions, so this deliberately doesn't require an
-    exact coordinate match -- see TrgtIndex.find_overlap. The fixture's synthetic call at
-    chr1:44835-44867 (AAAT) happens to match this real (TRExplorer v2.0) catalog's own
-    region for the same repeat exactly, and should be found by overlap regardless."""
+    exact coordinate match -- see TrgtIndex.find_overlap. The fixture's synthetic HD_HTT
+    call (chr4:3,074,876-3,074,933, TRID "HD_HTT") doesn't share an ID with this real
+    catalog's own wider chr4:3,074,876-3,075,049 variation-cluster region for the same
+    repeat, so this genuinely exercises overlap-fallback matching, not a TRID hit."""
     regions = list(iter_annotated_catalog(CATALOG_BED, FIXTURE_VCF))
-    assert len(regions) == 5_339_786
+    assert len(regions) == 24_956
 
     by_coords = {(r.chrom, r.start, r.stop): r for r in regions}
-    hit = by_coords[("chr1", 44835, 44867)]
+    hit = by_coords[("chr4", 3_074_876, 3_075_049)]
     assert hit.genotyped
-    assert {hit.a1, hit.a2} == {8, 9}
+    assert {hit.a1, hit.a2} == {18, 44}
 
-    miss = by_coords[("chr1", 102104, 102118)]
+    miss = by_coords[("chr1", 14069, 14081)]
     assert miss.genotyped is False
     assert miss.a1 is None
 
 
 def test_iter_annotated_catalog_attaches_real_rexprt_pathogenicity():
     """Full pipeline, real data end-to-end: the FMR1 CGG repeat's catalog region
-    gets a real RExPRT pathogenicity prediction attached, while an ordinary
-    region RExPRT never scored (motif length outside its 3-8bp trained range,
-    or no matching source row) is left at None -- never a fabricated default."""
+    gets a real RExPRT pathogenicity prediction attached. The genome-wide
+    catalog is now scoped to RExPRT-predicted-pathogenic regions only (see
+    project/uploads/README.md), so every region here has one by construction
+    -- repeatscope/rexprt.py's "never fabricate an unmatched score" behavior
+    is covered directly there instead, against a region genuinely outside
+    this catalog's scope."""
     scores = load_rexprt_scores(REXPRT_TSV)
     regions = list(iter_annotated_catalog(CATALOG_BED, FIXTURE_VCF, rexprt_scores=scores))
     by_coords = {(r.chrom, r.start, r.stop): r for r in regions}
@@ -115,11 +119,6 @@ def test_iter_annotated_catalog_attaches_real_rexprt_pathogenicity():
     assert fmr1.pathogenicity is not None
     assert fmr1.pathogenicity.gene == "FMR1"
     assert fmr1.pathogenicity.ensemble_binary is True
-
-    # chr1:20,797-20,863 has an 18bp motif -- well outside RExPRT's 3-8bp trained
-    # range, so it was never in RExPRT's reference set to match against.
-    unscored = by_coords[("chr1", 20797, 20863)]
-    assert unscored.pathogenicity is None
 
 
 def test_rfc1_real_gv01_call_not_misclassified_pathogenic():

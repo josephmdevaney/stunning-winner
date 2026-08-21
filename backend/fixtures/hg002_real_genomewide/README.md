@@ -1,27 +1,24 @@
-# HG002 genome-wide TRGT fixture (Git LFS)
+# HG002 genome-wide TRGT fixture
 
-`HG002.GRCh38.trgt.genomewide.vcf.gz` is the real, unmodified output of a genuinely
-genome-wide TRGT run for HG002/NA24385, genotyped against the Broad Institute's
-TRExplorer v2.0 catalog -- see `project/uploads/README.md` for the catalog's own
-provenance.
+`HG002.GRCh38.trgt.genomewide.vcf.gz` holds real, unmodified genotype calls
+from a genuinely genome-wide TRGT run for HG002/NA24385, currently rescoped
+to just the 24,956 regions RExPRT predicts pathogenic -- see
+`project/uploads/README.md` for the catalog's own provenance and why.
 
-## Provenance (replaced 2026-08-14)
+## Provenance (rescoped 2026-08-21)
 
-- **Genotyper**: the real `trgt` v5.1.0 binary (same version already used
-  elsewhere in this project -- see `../hg002_real/README.md`), run against real
-  HG002 PacBio HiFi reads by the user directly (own local TRGT build/run, not
-  downloaded from a public bucket like the loci-only fixture).
-- **Catalog**: TRExplorer v2.0's `variation_clusters_and_isolated_TRs`
-  catalog -- 5,339,786 regions, hg38, the same file this project's own
-  `project/uploads/repeat_catalog.hg38.bed` now uses. TRID-for-TRID identical
-  to the catalog: every single one of the catalog's 5,339,786 regions has a
-  real matching genotype call in this VCF (verified directly --
-  `TrgtIndex.by_trid` hits 100% of catalog region IDs, no coordinate-overlap
-  fallback needed at all for this pairing).
-- **Copied unmodified**: same TRID/coordinates/REF/ALT/FORMAT values as the
-  source file, no records added, removed, or edited.
-- **Tracked via Git LFS** (see `.gitattributes`): at 278MB gzip-compressed,
-  this exceeds GitHub's 100MB single-file limit for a regular git blob.
+- **Rescoped from**: the real, unmodified full genome-wide TRGT VCF described
+  under "History" below, via real `bcftools view -R` region extraction
+  against the 24,956 RExPRT-positive regions (see
+  `backend/scripts/real_data/build_rexprt_pathogenic_subset.py`) -- not
+  resimulated, re-genotyped, or approximated. Same TRID/coordinates/REF/ALT/
+  FORMAT values as the source records for every region kept.
+- **Coverage**: every one of the catalog's 24,956 regions has a real matching
+  genotype call in this VCF (TRID-exact match verified directly --
+  `TrgtIndex.by_trid` hits 100% of catalog region IDs).
+- **No longer needs Git LFS**: at ~1.5MB gzip-compressed (down from 278MB
+  before rescoping), this is well under GitHub's 100MB single-file limit for
+  a regular git blob -- see `.gitattributes`.
 
 ## What it's used for
 
@@ -33,17 +30,22 @@ provenance.
   auto-discovering both VCFs from the same directory would silently let one
   overwrite the other as "the" path for sample HG002, since both files report the
   same sample name.
-- **Performance note**: parsing this VCF's ~5.34M records into `TrgtIndex` takes
-  ~2 minutes on first access per (mode, sample) -- a one-time cost, cached for
-  the process's lifetime afterward (see `repeatscope/api/main.py`'s
-  `_get_trgt_index`). Not yet optimized further; `iter_trgt_records`'s
-  per-record FORMAT-field parsing is the dominant cost, same bottleneck
-  identified (but not addressed) when benchmarking the old, smaller VCF.
 
 ## History
 
 - **2026-07-23 (first added)**: a 937,195-region genome-wide run, itself the
-  original source of the (now-replaced) 937,195-region repeat catalog.
-- **2026-08-14 (replaced)**: swapped for this 5,339,786-region run against
-  TRExplorer v2.0, alongside the matching catalog swap in
-  `project/uploads/repeat_catalog.hg38.bed`.
+  original source of the repeat catalog at the time.
+- **2026-08-14 (replaced)**: swapped for a full 5,339,786-region run genotyped
+  directly against the full TRExplorer v2.0 catalog. Parsing that VCF's ~5.34M
+  records into `TrgtIndex` measured ~2 minutes / several GB RAM on first
+  access per (mode, sample) under normal conditions -- and, on 2026-08-21,
+  was observed taking 15+ minutes without finishing on a machine under real
+  memory pressure (~60MB free system RAM at the time) -- a real, measured
+  scaling cost, not a theoretical one.
+- **2026-08-21 (rescoped)**: narrowed to just the 24,956 RExPRT-predicted
+  -pathogenic regions in response to the cost above, once it was clear the
+  product's actual use of this screen was "browse candidate loci RExPRT
+  flagged," not "browse all 5.3M reference definitions." The full
+  5,339,786-record 2026-08-14 VCF remains recoverable from git history (it
+  was a real Git LFS object) if the full genome-wide run is ever needed
+  again -- e.g. to browse regions RExPRT scored benign or never evaluated.

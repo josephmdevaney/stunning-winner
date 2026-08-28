@@ -16,7 +16,7 @@ set null) to show STRchive's full 80-locus catalog, e.g. for genome-wide sequenc
 
 `catalog_vcf_dir` (optional) is a *separate* per-sample VCF directory used only for the
 genome-wide "Repeat Catalog" screen's region genotypes -- e.g. Genome-wide mode's own
-`vcf_dir` holds a small VCF genotyped at just the 81 STRchive loci, while its real,
+`vcf_dir` holds a small VCF genotyped at just the 82 STRchive loci, while its real,
 much larger genome-wide TRGT run (hundreds of thousands of regions) lives here instead.
 Kept separate from `vcf_dir` rather than dropped in the same directory: both VCFs report
 the same sample name, so auto-discovery would silently let one overwrite the other as

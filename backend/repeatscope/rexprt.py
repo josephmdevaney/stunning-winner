@@ -1,5 +1,5 @@
 """RExPRT genome-wide tandem-repeat pathogenicity predictions for the genome-wide
-repeat catalog (not the 81-locus STRchive disease panel, which has its own
+repeat catalog (not the 82-locus STRchive disease panel, which has its own
 curated, length-threshold-based clinical classification and is unaffected by
 this module).
 

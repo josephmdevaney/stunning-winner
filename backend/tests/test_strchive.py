@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from repeatscope.strchive import classify, load_strchive_loci
+from repeatscope.strchive import StrchiveLocus, classify, load_strchive_loci
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 STRCHIVE_JSON = REPO_ROOT / "project" / "uploads" / "STRchive-loci.json"
@@ -8,7 +8,7 @@ STRCHIVE_JSON = REPO_ROOT / "project" / "uploads" / "STRchive-loci.json"
 
 def test_load_strchive_loci_count_and_fields():
     loci = load_strchive_loci(STRCHIVE_JSON)
-    assert len(loci) == 81
+    assert len(loci) == 82
     by_id = {l.id: l for l in loci}
 
     htt = by_id["HD_HTT"]
@@ -173,11 +173,15 @@ def test_classify_rfc1_ci_straddle_intermediate_to_pathogenic():
 
 def test_bclaf3_locus_fields():
     """FRAXG_BCLAF3 (LaFlamme, Clarkson, Ibanez et al. 2026): real GRCh38 coordinates
-    from the paper's own Additional File 1 (Data S1). Thresholds are the empirical
-    benign/intermediate boundary from 50,747 Genomics England control genomes (Data
-    S3 -- control-allele counts drop from 24 at 23 repeats to 2 at 25) and the largest
-    confirmed expansion measured in the study (1,238 repeats, Data S9); the 24-172
-    range stays methylation-gated (see test_classify_methylation_dependent_locus)."""
+    from the paper's own Additional File 1 (Data S1), unaffected by STRchive's own
+    2026-08 re-curation. Thresholds below match STRchive's *current* upstream values
+    (github.com/dashnowlab/STRchive) as of that re-curation -- notably narrower and
+    without an intermediate band, a real revision from the original addition's
+    Genomics England-control-derived estimate (see git history for that prior version).
+    methylation_dependent is our own custom field (not part of STRchive's schema), so a
+    wholesale sync from upstream doesn't carry it -- restored manually; see
+    test_classify_methylation_dependent_locus for why it's still meaningful even though
+    this specific locus no longer has an intermediate band for it to gate."""
     loci = load_strchive_loci(STRCHIVE_JSON)
     bclaf3 = next(l for l in loci if l.id == "FRAXG_BCLAF3")
 
@@ -185,37 +189,65 @@ def test_bclaf3_locus_fields():
     assert bclaf3.chrom == "chrX"
     assert (bclaf3.start, bclaf3.stop) == (19990922, 19990973)
     assert bclaf3.motif == "CCG"
-    assert bclaf3.benign_min == 6
+    assert bclaf3.inheritance == "XR"
+    assert bclaf3.evidence == "Provisional"
+    assert bclaf3.benign_min == 5
     assert bclaf3.benign_max == 23
-    assert bclaf3.intermediate_min == 24
-    assert bclaf3.intermediate_max == 172
-    assert bclaf3.pathogenic_min == 173
+    assert bclaf3.intermediate_min is None
+    assert bclaf3.intermediate_max is None
+    assert bclaf3.pathogenic_min == 482
     assert bclaf3.pathogenic_max == 1238
     assert bclaf3.methylation_dependent is True
 
 
-def test_classify_methylation_dependent_locus():
-    """A methylation-dependent locus (FRAXG_BCLAF3) reports Uncertain significance --
-    not Intermediate -- for a call in its intermediate band (24-172 repeats), since the
-    paper's own long-read data leaves the exact hypermethylation threshold undefined in
-    that range (bounded between 117 and 172 repeats). Above the pathogenic threshold
-    (>=173, the largest confirmed measurement in the study), length alone is enough to
-    call Full expansion -- the methylation_dependent flag only softens the intermediate
-    band, not an explicit pathogenic threshold. A locus with no `methylation_dependent`
-    flag (HTT) is unaffected and still reports plain Intermediate."""
+def test_classify_real_bclaf3_uncharacterized_gap_is_uncertain_not_normal():
+    """Real, live consequence of STRchive's 2026-08 re-curation removing BCLAF3's
+    intermediate band: a call well above the real benign range (>23) but below the
+    real pathogenic threshold (482) now falls into a genuinely uncharacterized gap.
+    _classify_length_only must report Uncertain significance here, not silently
+    "Normal ... within benign range" -- see the classification-gap fix in
+    strchive.py's _classify_length_only. This exact scenario is also live in real
+    fixture data today for other loci (FRA2A_AFF3, OPDM2_GIPC1, EPM1_CSTB, ...)."""
     loci = load_strchive_loci(STRCHIVE_JSON)
     bclaf3 = next(l for l in loci if l.id == "FRAXG_BCLAF3")
-    htt = next(l for l in loci if l.id == "HD_HTT")
 
     normal = classify(bclaf3, 15, 17)
     assert normal.status == "Normal"
 
-    in_uncertain_band = classify(bclaf3, 15, 117)
-    assert in_uncertain_band.status == "Uncertain significance"
-    assert "hypermethylation" in in_uncertain_band.note
-    assert "Intermediate" not in in_uncertain_band.note
+    in_gap = classify(bclaf3, 15, 117)
+    assert in_gap.status == "Uncertain significance"
+    assert "characterized benign range" in in_gap.note
+    assert "Intermediate" not in in_gap.note
 
     above_pathogenic_threshold = classify(bclaf3, 15, 482)
+    assert above_pathogenic_threshold.status == "Full expansion"
+
+
+def test_classify_methylation_dependent_locus_gates_a_real_intermediate_band():
+    """The methylation_dependent flag's actual purpose: at a locus that *does* have a
+    defined intermediate band, clearing it should report Uncertain significance (with
+    a methylation-specific note) rather than a plain, higher-confidence Intermediate --
+    length alone doesn't establish pathogenicity there. No real STRchive locus
+    currently has both methylation_dependent=True and a defined intermediate band at
+    the same time (FRAXG_BCLAF3 -- the one locus with the flag -- lost its intermediate
+    band in STRchive's 2026-08 re-curation; see test_bclaf3_locus_fields), so this
+    exercises the logic directly against a synthetic locus rather than relying on real
+    data that could silently stop covering it again on a future sync."""
+    methylation_gated = StrchiveLocus(
+        id="SYNTHETIC_METHYLATION_GATED", gene="TESTGENE", disease="Test disease",
+        chrom="chr1", start=1000, stop=1050, motif="CCG", inheritance="AD", evidence="Limited",
+        benign_min=6, benign_max=23, intermediate_min=24, intermediate_max=172,
+        pathogenic_min=173, pathogenic_max=1238, methylation_dependent=True,
+    )
+    htt = load_strchive_loci(STRCHIVE_JSON)
+    htt = next(l for l in htt if l.id == "HD_HTT")
+
+    in_intermediate_band = classify(methylation_gated, 15, 117)
+    assert in_intermediate_band.status == "Uncertain significance"
+    assert "hypermethylation" in in_intermediate_band.note
+    assert "Intermediate" not in in_intermediate_band.note
+
+    above_pathogenic_threshold = classify(methylation_gated, 15, 200)
     assert above_pathogenic_threshold.status == "Full expansion"
 
     # methylation_dependent doesn't leak into loci that don't opt into it.

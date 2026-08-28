@@ -23,9 +23,9 @@ def _panel():
     return annotate_strchive_panel(FIXTURE_VCF, STRCHIVE_JSON)
 
 
-def test_annotate_strchive_panel_covers_all_81_loci():
+def test_annotate_strchive_panel_covers_all_82_loci():
     panel = _panel()
-    assert len(panel) == 81
+    assert len(panel) == 82
 
 
 def test_genotyped_loci_classified_correctly():

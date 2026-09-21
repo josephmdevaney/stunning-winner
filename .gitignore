@@ -12,6 +12,16 @@ backend/repeatscope.egg-info/
 # backend/scripts/setup_haplogrep.py.
 backend/mitolr/vendor/
 
+# PacBio's own interpret_paraphase.py annotation script + data -- fetched build
+# dependency, not project source (and not ours to redistribute: Paraphase ships
+# under PacBio's proprietary EULA, "distribute in binary form only"). See
+# backend/scripts/setup_paraphase_annotate.py.
+backend/paraphase_annotate/vendor/
+
+# Per-sample Paraphase annotation output (CSVs from interpret_paraphase.py) --
+# derived, sample-specific results, not project source.
+backend/paraphase_annotate/results/
+
 # Node / frontend
 web/node_modules/
 web/dist/

@@ -43,8 +43,13 @@ export function MitoOverviewScreen({ sample, onSelectVariant }: { sample: string
 
   return (
     <div style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 22 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 16 }}>
         <MitoStat label="Variants called" value={String(data.stats.variants_called)} sub="Genome-wide, vs rCRS" />
+        <MitoStat
+          label="mtDNA coverage"
+          value={data.stats.mtdna_mean_coverage != null ? `${data.stats.mtdna_mean_coverage.toLocaleString()}x` : '—'}
+          sub={data.stats.mtdna_coverage_source ?? 'Not available for this sample'}
+        />
         <MitoStat
           label="Pathogenic findings"
           value={String(pathoCount)}

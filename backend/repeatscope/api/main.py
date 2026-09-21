@@ -123,6 +123,12 @@ from mitolr.router import router as mito_router  # noqa: E402
 
 app.include_router(mito_router)
 
+# Paraphase Annotation is another sibling product, served under /api/paraphase.
+# Also self-contained -- its own sample registry (paraphase_annotate/samples.py).
+from paraphase_annotate.router import router as paraphase_router  # noqa: E402
+
+app.include_router(paraphase_router)
+
 # Per-mode state: {mode_key: {label, sample_paths: {sample: vcf_path}, locus_ids: set|None}}
 _modes: dict[str, dict] = {}
 _default_mode: str = ""

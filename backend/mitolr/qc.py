@@ -11,6 +11,7 @@ under ``unavailable_metrics`` rather than fabricated -- mirroring RepeatScope.
 from __future__ import annotations
 
 import math
+from typing import Optional
 
 from .generate import seeded_rand
 from .reference import GENOME_LENGTH, MT_FEATURES, features_for_pos
@@ -21,6 +22,22 @@ from .reference import GENOME_LENGTH, MT_FEATURES, features_for_pos
 _REGION_LEN = {f["name"]: f["stop"] - f["start"] + 1 for f in MT_FEATURES}
 _REGION_LEN["D-loop"] = (GENOME_LENGTH - 16024 + 1) + 576
 _STRAND_MIN_LEN = 200
+
+
+def mtdna_coverage_from_mosdepth(path: str) -> Optional[float]:
+    """Real, whole-genome (all 16,569 bp of chrM) mean depth from a mosdepth
+    `*.mosdepth.summary.txt` -- the same per-chromosome table RepeatScope's
+    sex_inference.py reads for chrX/chrY, just the chrM row here."""
+    try:
+        with open(path, encoding="utf-8") as f:
+            header = f.readline().rstrip("\n").split("\t")
+            for line in f:
+                row = dict(zip(header, line.rstrip("\n").split("\t")))
+                if row.get("chrom") == "chrM":
+                    return float(row["mean"])
+    except OSError:
+        return None
+    return None
 
 
 def build_bam_qc(bam: dict) -> dict:

@@ -1,12 +1,13 @@
 import { colors } from '../theme'
 
-export type Product = 'genome_wide' | 'puretarget_v2' | 'carrier' | 'mitolr'
+export type Product = 'genome_wide' | 'puretarget_v2' | 'carrier' | 'mitolr' | 'paraphase'
 
 const PRODUCTS: { key: Product; label: string }[] = [
   { key: 'genome_wide', label: 'RepeatScope' },
   { key: 'puretarget_v2', label: 'PureTarget V2' },
   { key: 'carrier', label: 'Carrier' },
   { key: 'mitolr', label: 'MitoLR' },
+  { key: 'paraphase', label: 'Paraphase' },
 ]
 
 // Top-level section switcher pinned to every sidebar. All four sections share

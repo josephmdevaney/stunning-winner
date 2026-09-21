@@ -26,15 +26,53 @@ from pathlib import Path
 from typing import Optional
 
 from . import roh_reference as ref
+from . import sex_inference
 
 BACKEND_ROOT = Path(__file__).resolve().parents[1]
 
-# sample -> real bcftools roh RG-output fixture. Only HG002 has a real ROH run
-# right now; no synthetic sample is added here (the point of this tool is
-# real autozygosity/consanguinity/UPD calls, not a demo state).
+# sample -> real bcftools roh RG-output. HG002 is the public GIAB fixture
+# (committed); CDS27601 is real per-participant hackathon data, kept outside
+# the repo (never committed) -- see backend/config/modes.local.json's own
+# genome_wide entry for the matching TRGT data for this same sample.
 ROH_SAMPLES: dict[str, str] = {
     "HG002": str(BACKEND_ROOT / "fixtures" / "roh" / "HG002.GRCh38.roh.txt"),
+    "CDS27601": "/Users/joedevaney/hackathon_cds2760x/CDS27601.GRCh38.roh.txt",
+    "CDS48001": "/Users/joedevaney/hackathon_cds48001/CDS48001.GRCh38.roh.txt",
 }
+
+# sample -> real mosdepth `*.mosdepth.summary.txt`, used to infer biological
+# sex from chrX/chrY coverage relative to the autosomal mean (see
+# sex_inference.py). This is what lets chrX/chrY ROH calls below be read as
+# hemizygosity rather than autozygosity for a male sample.
+MOSDEPTH_SUMMARIES: dict[str, str] = {
+    "CDS27601": "/Users/joedevaney/hackathon_cds2760x/CDS27601.GRCh38.mosdepth.summary.txt",
+}
+
+# Fallback for samples with no mosdepth coverage in this build. HG002/NA24385
+# is the GIAB trio's father -- documented public pedigree fact, not something
+# this pipeline infers from its own data.
+KNOWN_SEX: dict[str, str] = {
+    "HG002": "M",
+}
+
+
+@lru_cache(maxsize=None)
+def sex_for_sample(sample: str) -> dict:
+    """Best-available sex call for `sample`: real coverage-based inference
+    when a mosdepth summary is on file, else known external provenance, else
+    unknown (never guessed)."""
+    mosdepth_path = MOSDEPTH_SUMMARIES.get(sample)
+    if mosdepth_path and Path(mosdepth_path).exists():
+        result = sex_inference.infer_sex_from_mosdepth(mosdepth_path)
+        if result["sex"]:
+            return result
+    known = KNOWN_SEX.get(sample)
+    if known:
+        return {
+            "sex": known,
+            "method": "known sample provenance (not inferred from coverage in this build)",
+        }
+    return {"sex": None, "method": None}
 
 
 @dataclass
@@ -129,9 +167,50 @@ def upd_flag(chrom: str, position: Optional[str], length_bp: int) -> Optional[st
     return None
 
 
+def _non_autosomal_note(sex_info: dict) -> str:
+    sex = sex_info["sex"]
+    if sex == "M":
+        if "chrX_mean_depth" in sex_info:
+            evidence = (
+                f"Inferred sex: male (XY), from real mosdepth coverage -- chrX mean depth "
+                f"{sex_info['chrX_mean_depth']:.2f}x is {sex_info['chrX_autosomal_ratio']:.0%} of the "
+                f"autosomal mean ({sex_info['autosomal_mean_depth']:.2f}x, consistent with one copy), "
+                f"and chrY mean depth {sex_info['chrY_mean_depth']:.2f}x confirms a Y chromosome is "
+                f"present."
+            )
+        else:
+            evidence = "Sample sex: male (XY), from known sample provenance (no mosdepth coverage on file)."
+        return (
+            f"{evidence} chrX/chrY regions below are real bcftools roh calls, but bcftools genotypes "
+            "chrX/chrY as if diploid -- for a male sample this makes the entire non-PAR region trivially "
+            "\"homozygous,\" reflecting hemizygosity (one copy), not autozygosity. They are excluded from "
+            "the autosomal F-value and AR-candidate-gene search below. Mitochondrial DNA (chrM) has no "
+            "diploid homozygosity concept either."
+        )
+    if sex == "F":
+        evidence = "Inferred sex: female (XX), from real mosdepth coverage."
+        return (
+            f"{evidence} Unlike a male sample, chrX here is genuinely diploid, so chrX ROH regions may "
+            "reflect real autozygosity -- however they are still conservatively excluded from the "
+            "autosomal F-value and AR-candidate-gene search below (this build's reference gene model and "
+            "F-value baseline are autosome-only; extending them to chrX would need dedicated X-chromosome "
+            "reference data). chrY coverage is negligible as expected. Mitochondrial DNA (chrM) has no "
+            "diploid homozygosity concept."
+        )
+    return (
+        "chrX, chrY, and chrM regions are real bcftools roh calls but are excluded from the autosomal "
+        "F-value: this sample's sex could not be determined (no mosdepth coverage on file and no known "
+        "provenance), and chrX/chrY homozygosity means something different depending on sex -- "
+        "hemizygosity (not autozygosity) for a male, potentially real autozygosity for a female. "
+        "Mitochondrial DNA has no diploid homozygosity concept regardless."
+    )
+
+
 def _region_dict(r: RohRegion) -> dict:
     position = classify_position(r.chrom, r.start, r.end)
     genes = gene_overlaps(r.chrom, r.start, r.end)
+    sex = sex_for_sample(r.sample)["sex"]
+    hemizygous = sex == "M" and r.chrom in ("chrX", "chrY")
     return {
         "sample": r.sample,
         "chrom": r.chrom,
@@ -154,6 +233,7 @@ def _region_dict(r: RohRegion) -> dict:
         "upd_flag": upd_flag(r.chrom, position, r.length_bp),
         "autosomal": r.chrom in ref.AUTOSOMES,
         "f_value_eligible": r.chrom in ref.AUTOSOMES and r.length_bp >= ref.F_VALUE_MIN_LENGTH_BP,
+        "hemizygous": hemizygous,
     }
 
 
@@ -169,6 +249,8 @@ def regions_for_sample(sample: str) -> list[dict]:
 
 def build_overview(sample: str, path: str | Path) -> dict:
     regions = build_regions(sample, path)
+    sex_info = sex_for_sample(sample)
+    sex = sex_info["sex"]
 
     autosomal = [r for r in regions if r["autosomal"]]
     f_eligible = [r for r in autosomal if r["f_value_eligible"]]
@@ -209,6 +291,7 @@ def build_overview(sample: str, path: str | Path) -> dict:
             "n_regions": len(chrom_regions),
             "total_length_bp": sum(r["length_bp"] for r in chrom_regions),
             "imprinted": chrom in ref.IMPRINTED_CHROMS,
+            "hemizygous": sex == "M" and chrom in ("chrX", "chrY"),
         }
 
     return {
@@ -239,11 +322,8 @@ def build_overview(sample: str, path: str | Path) -> dict:
             {"relationship": name, "f_value": val, "f_value_pct": round(val * 100, 4)}
             for name, val in ref.RELATIONSHIP_F_VALUES
         ],
-        "non_autosomal_note": (
-            "chrX, chrY, and chrM regions are real bcftools roh calls but are excluded from the "
-            "autosomal F-value: chrX/chrY homozygosity in a male sample reflects hemizygosity, not "
-            "autozygosity, and mitochondrial DNA has no diploid homozygosity concept."
-        ),
+        "sex_inference": sex_info,
+        "non_autosomal_note": _non_autosomal_note(sex_info),
         "upd_methodology_note": (
             "UPD flags are a screening heuristic (telomeric ≥5 Mb / interstitial ≥10 Mb on an "
             "imprinted chromosome / interstitial ≥15 Mb elsewhere), commonly attributed to "

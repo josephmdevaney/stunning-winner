@@ -30,6 +30,43 @@ REFERENCE_RANGES = [
 
 # key -> descriptor. `source` selects the builder.
 SAMPLES: dict[str, dict] = {
+    "CDS48001": {
+        "label": "CDS48001 (MitoRSaw)",
+        "source": "vcf",
+        # Real per-participant hackathon data -- kept outside the repo
+        # (never committed). Unlike CDS27601, no mosdepth summary was
+        # supplied for this sample -- "mosdepth" key is intentionally
+        # omitted rather than pointed at a nonexistent file; coverage/sex
+        # inference falls back accordingly (see sex_for_sample in roh.py).
+        "vcf": "/Users/joedevaney/hackathon_cds48001/CDS48001.GRCh38.mitorsaw.vcf.gz",
+        "caller": "mitorsaw 0.2.7-8ee9b5b",
+        "instrument_line": "PacBio HiFi · GRCh38 chrM",
+        "reference": "GRCh38 chrM (rCRS · NC_012920.1)",
+        "run_date": "Hackathon run",
+        # Tissue provenance not supplied for this sample -- left unset
+        # rather than fabricated, same reasoning as CDS27601/MT-0417-P2 below.
+    },
+    "CDS27601": {
+        "label": "CDS27601 (MitoRSaw)",
+        "source": "vcf",
+        # Real per-participant hackathon data -- kept outside the repo
+        # (never committed), unlike HG002's public GIAB fixture below.
+        "vcf": "/Users/joedevaney/hackathon_cds2760x/CDS27601.GRCh38.mitorsaw.vcf.gz",
+        # No aligned-BAM QC precomputed for this sample (see
+        # scripts/real_data/build_mito_bam_qc.py) -- falls back to
+        # VCF-derived QC automatically, same as MT-0417-P2. Real whole-genome
+        # chrM coverage is available from mosdepth, though (see
+        # repeatscope/sex_inference.py's own use of this same file for chrX/Y).
+        "mosdepth": "/Users/joedevaney/hackathon_cds2760x/CDS27601.GRCh38.mosdepth.summary.txt",
+        "caller": "mitorsaw 0.2.7-8ee9b5b",
+        "instrument_line": "PacBio HiFi · GRCh38 chrM",
+        "reference": "GRCh38 chrM (rCRS · NC_012920.1)",
+        "run_date": "Hackathon run",
+        # Tissue provenance not supplied for this sample -- left unset
+        # rather than fabricated, same as MT-0417-P2 (see its own comment
+        # below), so the Parikh et al. tissue-discordance caveat correctly
+        # stays silent rather than asserting a tissue type nobody confirmed.
+    },
     "HG002": {
         "label": "HG002 (MitoRSaw)",
         "source": "vcf",
@@ -62,7 +99,7 @@ SAMPLES: dict[str, dict] = {
     },
 }
 
-DEFAULT_SAMPLE = "HG002"
+DEFAULT_SAMPLE = "CDS27601"
 
 
 def sample_keys() -> list[str]:
@@ -111,6 +148,29 @@ def variant_by_id(sample: str, variant_id: str) -> Optional[dict]:
     return next((v for v in variants(sample) if v["id"] == variant_id), None)
 
 
+@lru_cache(maxsize=None)
+def _mtdna_coverage(sample: str) -> dict:
+    """Best-available whole-mtDNA-genome mean coverage: real mosdepth (all
+    16,569 bp) if on file, else the real aligned-BAM mean (also genome-wide),
+    else the synthetic demo's seeded figure, else honestly unavailable --
+    never the sparse per-called-site depth (that's not genome-wide)."""
+    s = SAMPLES[sample]
+    mosdepth_path = s.get("mosdepth")
+    if mosdepth_path and Path(mosdepth_path).exists():
+        mean = qc.mtdna_coverage_from_mosdepth(mosdepth_path)
+        if mean is not None:
+            return {"mean_coverage": mean, "source": "mosdepth, real per-base depth across the whole 16,569 bp genome"}
+
+    bam = _bam_qc(sample)
+    if bam is not None:
+        return {"mean_coverage": bam["coverage_mean"], "source": "aligned HiFi BAM, real per-base depth across the whole genome"}
+
+    if s["source"] == "seeded":
+        return {"mean_coverage": 4820, "source": "synthetic demo coverage (seeded, not real sequencing data)"}
+
+    return {"mean_coverage": None, "source": None}
+
+
 def _haplogroup(sample: str) -> dict:
     if SAMPLES[sample]["source"] == "seeded":
         return dict(HAPLOGROUP)
@@ -131,6 +191,7 @@ def overview(sample: str) -> dict:
     vs = variants(sample)
     haplo = _haplogroup(sample)
     pathogenic = [v for v in vs if v["status"] == "Pathogenic"]
+    coverage = _mtdna_coverage(sample)
     return {
         **meta(sample),
         "stats": {
@@ -138,6 +199,8 @@ def overview(sample: str) -> dict:
             "pathogenic_findings": len(pathogenic),
             "haplogroup": haplo["name"],
             "qc_status": "Pass",
+            "mtdna_mean_coverage": coverage["mean_coverage"],
+            "mtdna_coverage_source": coverage["source"],
         },
         "variants": vs,
         "haplogroup": haplo,

@@ -3,19 +3,23 @@ import GenomeWideApp from './repeatscope/GenomeWideApp'
 import PureTargetV2App from './repeatscope/PureTargetV2App'
 import CarrierApp from './repeatscope/CarrierApp'
 import MitoApp from './mito/MitoApp'
+import ParaphaseApp from './paraphase/ParaphaseApp'
 import type { Product } from './components/ProductSwitcher'
 
-// The suite ships four separate tools behind one deployable, combined into a
+// The suite ships five separate tools behind one deployable, combined into a
 // single Suite switcher and sharing one visual system: three RepeatScope
 // assay-mode apps (GenomeWideApp, PureTargetV2App, CarrierApp -- each its own
-// component, not one app internally reassigning its mode) and MitoLR
-// (MitoApp). Switching `product` swaps which tool is mounted.
+// component, not one app internally reassigning its mode), MitoLR (MitoApp),
+// and Paraphase Annotation (ParaphaseApp). Switching `product` swaps which
+// tool is mounted.
 export default function App() {
   const [product, setProduct] = useState<Product>('genome_wide')
 
   switch (product) {
     case 'mitolr':
       return <MitoApp product={product} onSwitchProduct={setProduct} />
+    case 'paraphase':
+      return <ParaphaseApp product={product} onSwitchProduct={setProduct} />
     case 'puretarget_v2':
       return <PureTargetV2App product={product} onSwitchProduct={setProduct} />
     case 'carrier':

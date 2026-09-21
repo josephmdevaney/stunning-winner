@@ -226,6 +226,7 @@ export interface RohRegion {
   upd_flag: string | null
   autosomal: boolean
   f_value_eligible: boolean
+  hemizygous: boolean
 }
 
 export interface RohByChromosome {
@@ -235,6 +236,18 @@ export interface RohByChromosome {
   n_regions: number
   total_length_bp: number
   imprinted: boolean
+  hemizygous: boolean
+}
+
+export interface RohSexInference {
+  sex: 'M' | 'F' | null
+  method: string | null
+  reason?: string
+  autosomal_mean_depth?: number
+  chrX_mean_depth?: number
+  chrY_mean_depth?: number
+  chrX_autosomal_ratio?: number
+  chrY_autosomal_ratio?: number
 }
 
 export interface RohArCandidateGene {
@@ -276,6 +289,7 @@ export interface RohOverviewResponse {
   upd_flags: RohRegion[]
   ar_candidate_genes: RohArCandidateGene[]
   relationship_f_values: RohRelationshipFValue[]
+  sex_inference: RohSexInference
   non_autosomal_note: string
   upd_methodology_note: string
 }

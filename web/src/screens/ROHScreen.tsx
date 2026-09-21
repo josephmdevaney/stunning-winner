@@ -78,6 +78,8 @@ export function ROHScreen({ sample }: { sample: string }) {
 
   return (
     <div style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <SexInferenceBanner sexInference={overview.sex_inference} />
+
       <StatGrid>
         <StatCard
           label="Autosomal F (inbreeding coefficient)"
@@ -167,6 +169,35 @@ export function ROHScreen({ sample }: { sample: string }) {
   )
 }
 
+// ---- Sex inference banner (drives chrX/chrY hemizygous-vs-autozygous interpretation below) ----
+
+function SexInferenceBanner({ sexInference }: { sexInference: RohOverviewResponse['sex_inference'] }) {
+  const { sex } = sexInference
+  const label = sex === 'M' ? 'Male (XY)' : sex === 'F' ? 'Female (XX)' : 'Unknown'
+  const color = sex ? colors.textBody : colors.statusIntermediate
+  const bg = sex ? colors.borderSoftest : colors.interpBg.intermediate
+  const border = sex ? colors.border : colors.statusIntermediate
+
+  let evidence: string
+  if (sex && sexInference.chrX_mean_depth != null) {
+    evidence =
+      `Inferred from mosdepth coverage — chrX mean depth ${sexInference.chrX_mean_depth.toFixed(2)}x is ` +
+      `${((sexInference.chrX_autosomal_ratio ?? 0) * 100).toFixed(0)}% of the autosomal mean ` +
+      `(${sexInference.autosomal_mean_depth?.toFixed(2)}x); chrY mean depth ${sexInference.chrY_mean_depth?.toFixed(2)}x.`
+  } else if (sex) {
+    evidence = `From ${sexInference.method ?? 'known sample provenance'} (no mosdepth coverage on file).`
+  } else {
+    evidence = 'Could not be determined — no mosdepth coverage or known provenance on file. chrX/chrY ROH below cannot be resolved to hemizygosity vs. autozygosity.'
+  }
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', borderRadius: 10, background: bg, border: `1px solid ${border}` }}>
+      <div style={{ fontSize: 12, fontWeight: 700, color, whiteSpace: 'nowrap' }}>Sex: {label}</div>
+      <div style={{ fontSize: 11.5, color: colors.textSecondary, lineHeight: 1.4 }}>{evidence}</div>
+    </div>
+  )
+}
+
 // ---- Genome-wide autozygosity ideogram (project/Runs of Homozygosity.dc.html, Option 1A: buildIdeogram) ----
 
 const IDEOGRAM_COL_TRACK = 300
@@ -245,6 +276,20 @@ function IdeogramCard({
           <div style={{ width: 9, height: 9, border: `2px solid ${colors.rohUpdOutline}`, borderRadius: 2 }} />
           UPD-flagged ROH
         </div>
+        {overview.by_chromosome.some((c) => c.hemizygous) && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <svg width={10} height={10}>
+              <defs>
+                <pattern id="hemi-hatch-legend" width={4} height={4} patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                  <rect width={4} height={4} fill={colors.rohHemizygous} />
+                  <line x1={0} y1={0} x2={0} y2={4} stroke={colors.rohHemizygousStroke} strokeWidth={1.4} />
+                </pattern>
+              </defs>
+              <rect width={10} height={10} rx={2} fill="url(#hemi-hatch-legend)" stroke={colors.rohHemizygousStroke} />
+            </svg>
+            Hemizygous chrX/chrY (not autozygous)
+          </div>
+        )}
       </div>
     </div>
   )
@@ -278,6 +323,12 @@ function Ideogram({
 
   return (
     <svg width="100%" viewBox={`0 0 ${width} ${height}`} style={{ display: 'block' }}>
+      <defs>
+        <pattern id="hemi-hatch" width={4} height={4} patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <rect width={4} height={4} fill={colors.rohHemizygous} />
+          <line x1={0} y1={0} x2={0} y2={4} stroke={colors.rohHemizygousStroke} strokeWidth={1.4} />
+        </pattern>
+      </defs>
       {columns.map(({ list, trackX }, colIdx) =>
         list.map((c, idx) => {
           const cy = IDEOGRAM_TOP_PAD + idx * IDEOGRAM_ROW_H + IDEOGRAM_ROW_H / 2
@@ -300,7 +351,7 @@ function Ideogram({
                 const w = Math.max((r.length_bp / maxLen) * IDEOGRAM_COL_TRACK, 1.6)
                 return (
                   <g key={`${r.chrom}:${r.start}`}>
-                    <rect x={x} y={barY} width={w} height={barH} rx={2} fill={rohBandColor(r.length_band)} />
+                    <rect x={x} y={barY} width={w} height={barH} rx={2} fill={c.hemizygous ? 'url(#hemi-hatch)' : rohBandColor(r.length_band)} />
                     {r.upd_flag && (
                       <rect x={x - 1.5} y={barY - 1.5} width={w + 3} height={barH + 3} rx={3} fill="none" stroke={colors.rohUpdOutline} strokeWidth={1.6} />
                     )}
@@ -351,7 +402,9 @@ function PerChromosomeTrackCard({
         <div>
           <div style={{ fontSize: 15, fontWeight: 600, color: colors.textPrimary }}>Per-chromosome track</div>
           <div style={{ fontSize: 12, color: colors.textTertiary, marginTop: 2 }}>
-            {selChrom} · {selSegs.length} ROH · {totalMb.toFixed(1)} Mb{selMeta.imprinted ? ' · imprinted chromosome' : ''}
+            {selChrom} · {selSegs.length} {selMeta.hemizygous ? 'hemizygous region' : 'ROH'} · {totalMb.toFixed(1)} Mb
+            {selMeta.imprinted ? ' · imprinted chromosome' : ''}
+            {selMeta.hemizygous ? ' · not autozygosity' : ''}
           </div>
         </div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', maxWidth: 640, justifyContent: 'flex-end' }}>
@@ -369,7 +422,7 @@ function PerChromosomeTrackCard({
                   fontWeight: 600,
                   fontFamily: mono,
                   cursor: 'pointer',
-                  background: active ? colors.sidebarBg : flagged ? colors.interpBg.intermediate : colors.chipBg,
+                  background: active ? colors.sidebarBg : flagged ? colors.interpBg.intermediate : c.hemizygous ? colors.rohHemizygous : colors.chipBg,
                   color: active ? 'white' : flagged ? colors.interpColor.intermediate : colors.textLabel,
                 }}
               >
@@ -379,6 +432,12 @@ function PerChromosomeTrackCard({
           })}
         </div>
       </div>
+      {selMeta.hemizygous && (
+        <div style={{ fontSize: 11.5, color: colors.textSecondary, background: colors.borderSoftest, borderRadius: 8, padding: '8px 12px', marginBottom: 10, lineHeight: 1.4 }}>
+          Hemizygous chromosome (one copy) — these regions reflect bcftools calling a single copy as
+          "homozygous," not real autozygosity.
+        </div>
+      )}
       <ChromosomeTrack chromMeta={selMeta} segments={selSegs} />
     </div>
   )
@@ -409,6 +468,12 @@ function ChromosomeTrack({
 
   return (
     <svg width="100%" viewBox={`0 0 ${TRACK_W} ${TRACK_H}`} style={{ display: 'block' }}>
+      <defs>
+        <pattern id="hemi-hatch-track" width={5} height={5} patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <rect width={5} height={5} fill={colors.rohHemizygous} />
+          <line x1={0} y1={0} x2={0} y2={5} stroke={colors.rohHemizygousStroke} strokeWidth={1.6} />
+        </pattern>
+      </defs>
       <rect x={TRACK_LEFT_PAD} y={TRACK_BAR_Y} width={trackW} height={TRACK_BAR_H} rx={11} fill={colors.trackBg} stroke={colors.borderInputAlt} />
       <rect x={TRACK_LEFT_PAD} y={TRACK_BAR_Y} width={4} height={TRACK_BAR_H} rx={2} fill={colors.borderInput} />
       <rect x={TRACK_LEFT_PAD + trackW - 4} y={TRACK_BAR_Y} width={4} height={TRACK_BAR_H} rx={2} fill={colors.borderInput} />
@@ -419,7 +484,7 @@ function ChromosomeTrack({
         const w = Math.max(s.length_bp * scale, 2.5)
         return (
           <g key={`${s.chrom}:${s.start}`}>
-            <rect x={x} y={TRACK_BAR_Y} width={w} height={TRACK_BAR_H} rx={3} fill={rohBandColor(s.length_band)} />
+            <rect x={x} y={TRACK_BAR_Y} width={w} height={TRACK_BAR_H} rx={3} fill={s.hemizygous ? 'url(#hemi-hatch-track)' : rohBandColor(s.length_band)} />
             {s.upd_flag && (
               <rect x={x - 2} y={TRACK_BAR_Y - 2} width={w + 4} height={TRACK_BAR_H + 4} rx={4} fill="none" stroke={colors.rohUpdOutline} strokeWidth={2} />
             )}
@@ -472,9 +537,11 @@ function ChromosomeTrack({
         </>
       ) : (
         <text x={TRACK_LEFT_PAD} y={TRACK_GENE_Y + 6} fontSize={11} fill={colors.textSecondary}>
-          {chromMeta.imprinted
-            ? 'Imprinted chromosome · no cataloged OMIM disease genes within ROH'
-            : `No cataloged OMIM disease genes within ROH on ${chromMeta.chrom}`}
+          {chromMeta.hemizygous
+            ? `Hemizygous chromosome — regions above reflect one copy, not autozygosity; no AR/AD gene search is run on ${chromMeta.chrom}`
+            : chromMeta.imprinted
+              ? 'Imprinted chromosome · no cataloged OMIM disease genes within ROH'
+              : `No cataloged OMIM disease genes within ROH on ${chromMeta.chrom}`}
         </text>
       )}
     </svg>
@@ -719,13 +786,16 @@ function RegionsTable({
             <div>{r.n_markers.toLocaleString()}</div>
             <div>{r.quality.toFixed(1)}</div>
             <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {r.hemizygous && (
+                <span style={{ color: colors.textSecondary, fontWeight: 600, marginRight: 8, fontStyle: 'italic' }}>hemizygous, not autozygous</span>
+              )}
               {r.upd_flag && <span style={{ color: colors.statusIntermediate, fontWeight: 600, marginRight: 8 }}>{r.upd_flag}</span>}
               {r.genes.map((g) => (
                 <span key={g.symbol} style={{ color: g.inheritance === 'AR' ? colors.accentButtonBg : colors.textSecondary, marginRight: 8 }}>
                   {g.symbol} ({g.inheritance})
                 </span>
               ))}
-              {!r.upd_flag && r.genes.length === 0 && <span style={{ color: colors.textTertiary }}>—</span>}
+              {!r.hemizygous && !r.upd_flag && r.genes.length === 0 && <span style={{ color: colors.textTertiary }}>—</span>}
             </div>
           </div>
         ))}

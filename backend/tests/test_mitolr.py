@@ -145,8 +145,11 @@ def test_variant_notation_forms():
 
 # --- sample registry / dispatch --------------------------------------------
 
-def test_default_sample_is_hg002():
-    assert samples.resolve(None) == "HG002"
+def test_default_sample_resolves_to_configured_default():
+    # DEFAULT_SAMPLE is environment-configurable (points at whichever real
+    # sample is loaded); this only checks resolve(None) honors it, not which
+    # sample that happens to be.
+    assert samples.resolve(None) == samples.DEFAULT_SAMPLE
 
 
 def test_overview_dispatch_per_sample():
@@ -165,6 +168,18 @@ def test_overview_dispatch_per_sample():
 
     demo = samples.overview("MT-0417-P2")
     assert demo["stats"]["variants_called"] == 79
+
+
+def test_mtdna_coverage_uses_real_whole_genome_source():
+    # HG002 has a real per-base BAM QC fixture -> genome-wide mean from that.
+    hg = samples.overview("HG002")
+    assert hg["stats"]["mtdna_mean_coverage"] == 1194
+    assert "BAM" in hg["stats"]["mtdna_coverage_source"]
+
+    # MT-0417-P2 is the synthetic demo -> seeded figure, honestly labeled.
+    demo = samples.overview("MT-0417-P2")
+    assert demo["stats"]["mtdna_mean_coverage"] == 4820
+    assert "synthetic" in demo["stats"]["mtdna_coverage_source"]
     assert demo["haplogroup"]["name"] == "H2a5b1"
 
 
@@ -237,13 +252,13 @@ def test_snv_pileup_uses_bam_indel_uses_caller():
 
 def test_samples_endpoint():
     body = client.get("/api/mito/samples").json()
-    assert body["default"] == "HG002"
+    assert body["default"] == samples.DEFAULT_SAMPLE
     keys = [s["key"] for s in body["samples"]]
     assert "HG002" in keys and "MT-0417-P2" in keys
 
 
-def test_overview_endpoint_defaults_to_hg002():
-    body = client.get("/api/mito/overview").json()
+def test_overview_endpoint_for_hg002():
+    body = client.get("/api/mito/overview?sample=HG002").json()
     assert body["stats"]["variants_called"] == 15
 
 

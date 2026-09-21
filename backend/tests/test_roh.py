@@ -157,7 +157,8 @@ def test_query_regions_paginates():
 
 def test_roh_samples_endpoint():
     body = client.get("/api/roh/samples").json()
-    assert body == {"samples": ["HG002"], "default": "HG002"}
+    assert body["default"] == "HG002"
+    assert set(body["samples"]) == {"HG002", "CDS27601", "CDS48001"}
 
 
 def test_roh_overview_endpoint_defaults_to_hg002():

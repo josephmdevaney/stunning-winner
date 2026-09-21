@@ -48,6 +48,10 @@ export const colors = {
   rohCentromere: 'oklch(0.78 0.02 260)',
   rohImprinted: 'oklch(0.55 0.18 300)',
   rohUpdOutline: 'oklch(0.55 0.20 25)',
+  // Neutral (not a length-band color) for chrX/chrY regions in a male sample --
+  // hemizygous, not autozygous, so it must read as visually distinct from ROH.
+  rohHemizygous: 'oklch(0.7 0.01 90)',
+  rohHemizygousStroke: 'oklch(0.55 0.01 90)',
 
   methylated: 'oklch(0.55 0.18 300)',
   unmethylated: 'oklch(0.8 0.01 90)',

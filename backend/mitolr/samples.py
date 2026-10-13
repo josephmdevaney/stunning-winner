@@ -30,6 +30,20 @@ REFERENCE_RANGES = [
 
 # key -> descriptor. `source` selects the builder.
 SAMPLES: dict[str, dict] = {
+    "CDS57401": {
+        "label": "CDS57401 (MitoRSaw)",
+        "source": "vcf",
+        # Real per-participant hackathon data -- kept outside the repo
+        # (never committed). No mosdepth summary supplied for this sample
+        # either (see CDS48001's own comment below for what that means).
+        "vcf": "/Users/joedevaney/hackathon_cds57401/CDS57401.GRCh38.mitorsaw.vcf.gz",
+        "caller": "mitorsaw 0.2.7-8ee9b5b",
+        "instrument_line": "PacBio HiFi · GRCh38 chrM",
+        "reference": "GRCh38 chrM (rCRS · NC_012920.1)",
+        "run_date": "Hackathon run",
+        # Tissue provenance not supplied for this sample -- left unset
+        # rather than fabricated, same reasoning as CDS27601/MT-0417-P2 below.
+    },
     "CDS48001": {
         "label": "CDS48001 (MitoRSaw)",
         "source": "vcf",

@@ -38,6 +38,7 @@ ROH_SAMPLES: dict[str, str] = {
     "HG002": str(BACKEND_ROOT / "fixtures" / "roh" / "HG002.GRCh38.roh.txt"),
     "CDS27601": "/Users/joedevaney/hackathon_cds2760x/CDS27601.GRCh38.roh.txt",
     "CDS48001": "/Users/joedevaney/hackathon_cds48001/CDS48001.GRCh38.roh.txt",
+    "CDS57401": "/Users/joedevaney/hackathon_cds57401/CDS57401.GRCh38.roh.txt",
 }
 
 # sample -> real mosdepth `*.mosdepth.summary.txt`, used to infer biological

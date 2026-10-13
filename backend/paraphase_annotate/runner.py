@@ -30,7 +30,16 @@ VENDOR_CONFIG = VENDOR_DIR / "data" / "config_grch38.yaml"
 # it. v3.5.0 also happens to sidestep a separate Python-version issue: main's
 # script uses an f-string with a nested double-quoted dict key, valid only
 # under PEP 701 (Python 3.12+) -- this project's backend venv is 3.9.
-RESULTS_ROOT = Path(__file__).resolve().parent / "results"
+#
+# Deliberately outside the repo (like the hackathon sample data itself, see
+# samples.py) -- a real ~1.5-hour CDS27601 run once finished cleanly (log
+# ended with the real "Completed annotating all regions" line) but left both
+# output CSVs at 0 bytes, matching this same repo directory's independently
+# confirmed exposure to Google Drive folder sync (a stray `.tmp.driveupload/`
+# was found at the repo root during an unrelated `git push`). A long-lived
+# process writing steadily to a file for that long, inside a folder Drive is
+# also trying to sync, is exactly the shape of thing that goes wrong.
+RESULTS_ROOT = Path("/Users/joedevaney/paraphase_results")
 
 # The 14 regions interpret_paraphase.py annotates by default when -r is
 # omitted -- passed explicitly here anyway so the behavior doesn't silently
@@ -98,6 +107,23 @@ def status(sample: str) -> dict:
     if log.exists():
         log_text = log.read_text(errors="replace")
         if _COMPLETION_MARKER in log_text:
+            # Belt-and-suspenders: a real run has left the log's own
+            # completion marker with a 0-byte (or missing) CSV before --
+            # not a bug in interpret_paraphase.py, which writes each file's
+            # header the moment it opens it, but external interference with
+            # a long-lived write (see RESULTS_ROOT's own comment). Don't
+            # report "done" over genuinely empty results.
+            summary, detailed = summary_csv(sample), detailed_csv(sample)
+            if not summary.exists() or summary.stat().st_size == 0 or not detailed.exists() or detailed.stat().st_size == 0:
+                return {
+                    "state": "failed",
+                    "log_tail": (
+                        "Run log reports completion, but its output file(s) are empty or "
+                        f"missing ({summary.name}: {summary.stat().st_size if summary.exists() else 'missing'} bytes, "
+                        f"{detailed.name}: {detailed.stat().st_size if detailed.exists() else 'missing'} bytes). "
+                        "Likely external interference with the write (not a script bug) -- retry the run.\n\n"
+                    ) + log_text[-2000:],
+                }
             return {"state": "done"}
         # A run was attempted but never reached its own completion marker --
         # failed, regardless of whether it left partial CSVs behind.

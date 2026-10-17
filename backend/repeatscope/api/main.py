@@ -129,6 +129,13 @@ from paraphase_annotate.router import router as paraphase_router  # noqa: E402
 
 app.include_router(paraphase_router)
 
+# Kivvi (LPA KIV2 / D4Z4 large-unit VNTR genotyper) is another sibling product,
+# served under /api/kivvi. Self-contained -- reads Kivvi's own output files from
+# an external results root (kivvi/samples.py).
+from kivvi.router import router as kivvi_router  # noqa: E402
+
+app.include_router(kivvi_router)
+
 # Per-mode state: {mode_key: {label, sample_paths: {sample: vcf_path}, locus_ids: set|None}}
 _modes: dict[str, dict] = {}
 _default_mode: str = ""

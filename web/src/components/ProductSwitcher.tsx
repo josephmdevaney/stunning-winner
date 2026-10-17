@@ -1,6 +1,6 @@
 import { colors } from '../theme'
 
-export type Product = 'genome_wide' | 'puretarget_v2' | 'carrier' | 'mitolr' | 'paraphase'
+export type Product = 'genome_wide' | 'puretarget_v2' | 'carrier' | 'mitolr' | 'paraphase' | 'kivvi'
 
 const PRODUCTS: { key: Product; label: string }[] = [
   { key: 'genome_wide', label: 'RepeatScope' },
@@ -8,9 +8,10 @@ const PRODUCTS: { key: Product; label: string }[] = [
   { key: 'carrier', label: 'Carrier' },
   { key: 'mitolr', label: 'MitoLR' },
   { key: 'paraphase', label: 'Paraphase' },
+  { key: 'kivvi', label: 'Kivvi' },
 ]
 
-// Top-level section switcher pinned to every sidebar. All four sections share
+// Top-level section switcher pinned to every sidebar. All sections share
 // one deployable and one visual system; this is how you move between them.
 export function ProductSwitcher({ product, onChange }: { product: Product; onChange: (p: Product) => void }) {
   return (

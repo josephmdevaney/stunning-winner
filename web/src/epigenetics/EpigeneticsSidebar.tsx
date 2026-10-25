@@ -2,11 +2,13 @@ import { colors, mono } from '../theme'
 import { ProductSwitcher, type Product } from '../components/ProductSwitcher'
 import type { SampleInfo } from './api'
 
-export type EpigeneticsScreen = 'overview' | 'region' | 'methods'
+export type EpigeneticsScreen = 'overview' | 'region' | 'episignatures' | 'signature' | 'methods'
 
 const NAV_ITEMS: { screen: EpigeneticsScreen; label: string }[] = [
   { screen: 'overview', label: 'Imprinting' },
   { screen: 'region', label: 'Region Detail' },
+  { screen: 'episignatures', label: 'Episignatures' },
+  { screen: 'signature', label: 'Signature Detail' },
   { screen: 'methods', label: 'Methods' },
 ]
 
@@ -16,6 +18,7 @@ export function EpigeneticsSidebar({
   screen,
   onNavigate,
   regionSelected,
+  signatureSelected,
   samples,
   sample,
   onSelectSample,
@@ -26,6 +29,7 @@ export function EpigeneticsSidebar({
   screen: EpigeneticsScreen
   onNavigate: (s: EpigeneticsScreen) => void
   regionSelected: boolean
+  signatureSelected: boolean
   samples: SampleInfo[]
   sample: string
   onSelectSample: (s: string) => void
@@ -79,7 +83,7 @@ export function EpigeneticsSidebar({
           key={item.screen}
           active={screen === item.screen}
           label={item.label}
-          disabled={item.screen === 'region' && !regionSelected}
+          disabled={(item.screen === 'region' && !regionSelected) || (item.screen === 'signature' && !signatureSelected)}
           onClick={() => onNavigate(item.screen)}
         />
       ))}

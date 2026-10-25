@@ -6,13 +6,17 @@ import { EpigeneticsSidebar, type EpigeneticsScreen } from './EpigeneticsSidebar
 import { EpigeneticsTopBar } from './EpigeneticsTopBar'
 import { ImprintingScreen } from './screens/ImprintingScreen'
 import { MethodsScreen } from './screens/MethodsScreen'
+import { EpisignatureScreen } from './screens/EpisignatureScreen'
+import { EpisignaturesScreen } from './screens/EpisignaturesScreen'
 import { RegionScreen } from './screens/RegionScreen'
-import { useImprinting } from './useEpigeneticsData'
+import { useEpisignatures, useImprinting } from './useEpigeneticsData'
 import { Message } from './ui'
 
 const TITLES: Record<EpigeneticsScreen, string> = {
   overview: 'Imprinting',
   region: 'Region Detail',
+  episignatures: 'Episignatures',
+  signature: 'Signature Detail',
   methods: 'Methods',
 }
 
@@ -25,6 +29,7 @@ export default function EpigeneticsApp({ product, onSwitchProduct }: { product: 
   const [window, setWindow] = useState<Window>('core')
   const [overrides, setOverrides] = useState<ThresholdOverrides>({})
   const [regionId, setRegionId] = useState<string | null>(null)
+  const [modelId, setModelId] = useState<string | null>(null)
 
   useEffect(() => {
     epigeneticsApi
@@ -38,10 +43,17 @@ export default function EpigeneticsApp({ product, onSwitchProduct }: { product: 
   }, [])
 
   const { overview, error, loading } = useImprinting(sample, window, overrides)
+  const wantsEpisignatures = screen === 'episignatures' || screen === 'signature'
+  const episignatures = useEpisignatures(sample, wantsEpisignatures)
 
   const openRegion = (id: string) => {
     setRegionId(id)
     setScreen('region')
+  }
+
+  const openModel = (id: string) => {
+    setModelId(id)
+    setScreen('signature')
   }
 
   const sampleInfo = samples.find((s) => s.key === sample)
@@ -57,12 +69,15 @@ export default function EpigeneticsApp({ product, onSwitchProduct }: { product: 
         screen={screen}
         onNavigate={setScreen}
         regionSelected={regionId != null}
+        signatureSelected={modelId != null}
         samples={samples}
         sample={sample}
         onSelectSample={(s) => {
           setSample(s)
           setRegionId(null)
+          setModelId(null)
           if (screen === 'region') setScreen('overview')
+          if (screen === 'signature') setScreen('episignatures')
         }}
         footer={sampleInfo ? sampleInfo.tracks.join(' · ') : 'GRCh38'}
       />
@@ -78,6 +93,12 @@ export default function EpigeneticsApp({ product, onSwitchProduct }: { product: 
           {overview && screen === 'overview' && <ImprintingScreen overview={overview} onOpenRegion={openRegion} />}
           {overview && screen === 'region' && (
             <RegionScreen sample={sample} window={window} overview={overview} regionId={regionId ?? overview.regions[0].id} onSelectRegion={setRegionId} />
+          )}
+          {sample && screen === 'episignatures' && <EpisignaturesScreen data={episignatures.data} error={episignatures.error} onOpenModel={openModel} />}
+          {sample && screen === 'signature' && !episignatures.data && !episignatures.error && <Message>Scoring episignatures…</Message>}
+          {screen === 'signature' && episignatures.error && !episignatures.data && <Message tone="error">Episignatures could not be scored: {episignatures.error}</Message>}
+          {screen === 'signature' && episignatures.data?.installed && (
+            <EpisignatureScreen data={episignatures.data} modelId={modelId ?? episignatures.data.models[0].id} onSelectModel={setModelId} />
           )}
           {overview && screen === 'methods' && (
             <MethodsScreen overview={overview} window={window} overrides={overrides} onChangeWindow={setWindow} onChangeOverrides={setOverrides} />

@@ -12,6 +12,8 @@ from fastapi import APIRouter, HTTPException
 from . import samples, service
 from .analysis import Thresholds
 from .cpg import TabixError
+from .episignature import service as episignature_service
+from .episignature import vendor as episignature_vendor
 
 router = APIRouter(prefix="/api/epigenetics", tags=["epigenetics"])
 
@@ -81,3 +83,22 @@ def get_imprinting_region(sample: Optional[str] = None, id: Optional[str] = None
     if out is None:
         raise HTTPException(status_code=404, detail=f"unknown imprinted DMR {id!r}")
     return out
+
+
+@router.get("/episignatures")
+def get_episignatures(sample: Optional[str] = None):
+    """EpiSignaLR episignature scores for a genome. The models are fetched at setup, so until they are there this
+    answers `installed: false` with the command to run instead of an error."""
+    s = _sample(sample)
+    if not episignature_vendor.installed():
+        return {
+            "installed": False, "setup_command": episignature_vendor.SETUP_COMMAND, "repo": episignature_vendor.REPO,
+            "available": [{"id": k, "name": v[1], "gene": v[2]} for k, v in episignature_vendor.CATALOG.items()],
+            "sample": s.key, "label": s.label, "models": [],
+        }
+    try:
+        return {"installed": True, **episignature_service.overview(s)}
+    except TabixError as e:
+        raise HTTPException(status_code=503, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=503, detail=f"the fetched EpiSignaLR files are inconsistent: {e}")

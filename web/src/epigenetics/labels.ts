@@ -1,5 +1,5 @@
 import { colors } from '../theme'
-import type { Category, DisorderStatus, Status } from './api'
+import type { Category, DisorderStatus, EpiCall, Status } from './api'
 
 export const STATUS_LABEL: Record<Status, string> = {
   imprinted: 'Imprint intact',
@@ -56,3 +56,28 @@ export const TRACK_COLOR = {
 
 export const fmtPct = (v: number | null | undefined): string => (v == null ? '—' : `${v.toFixed(1)}%`)
 export const fmtPos = (n: number): string => n.toLocaleString('en-US')
+export const mean = (v: number[]): number | null => (v.length ? v.reduce((a, b) => a + b, 0) / v.length : null)
+
+// ---- Episignatures ----
+
+export const EPI_CALL_LABEL: Record<EpiCall, string> = {
+  positive: 'Matches signature',
+  indeterminate: 'Indeterminate',
+  negative: 'No signature',
+  insufficient_data: 'Not enough data',
+}
+
+// A match is red and a clear negative green, as for the imprinting calls; the grey is for "no call".
+export const EPI_CALL_COLOR: Record<EpiCall, string> = {
+  positive: colors.statusPathogenic,
+  indeterminate: colors.statusIntermediate,
+  negative: colors.statusNormal,
+  insufficient_data: colors.statusUnknown,
+}
+
+// Training controls and cases, and the genome being scored.
+export const EPI_COLOR = {
+  control: 'oklch(0.58 0.12 230)',
+  case: 'oklch(0.58 0.19 25)',
+  sample: 'oklch(0.2 0.02 260)',
+} as const

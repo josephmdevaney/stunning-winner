@@ -170,4 +170,78 @@ export const epigeneticsApi = {
     getJSON<ImprintingOverview>(`/api/epigenetics/imprinting${query({ sample, window, ...overrides })}`),
   region: (sample: string, id: string, window: Window, flank = 3000) =>
     getJSON<RegionTrack>(`/api/epigenetics/imprinting/region${query({ sample, id, window, flank })}`),
+  episignatures: (sample: string) => getJSON<EpisignatureResponse>(`/api/epigenetics/episignatures${query({ sample })}`),
 }
+
+// ---- Episignatures (EpiSignaLR) -------------------------------------------------------------------------------
+
+export type EpiCall = 'positive' | 'indeterminate' | 'negative' | 'insufficient_data'
+
+export interface EpiWarning {
+  id: string
+  severity: 'caution' | 'note'
+  text: string
+}
+
+export interface EpiFeature {
+  dmr: string
+  region: Interval | null
+  weight: number
+  z: number
+  contribution: number // this DMR's share of the SVM decision value; positive pushes toward "case"
+  value: number | null // the genome's methylation fraction (0-1), null when the DMR had no covered CpG
+  imputed: boolean
+  n_cpgs: number
+  n_cpgs_listed: number
+  mean_coverage: number
+  training_mean: number
+  controls: number[]
+  cases: number[]
+}
+
+export interface EpiModel {
+  id: string
+  name: string
+  gene: string
+  probability: number | null
+  decision: number
+  intercept: number
+  call: EpiCall
+  threshold: number
+  indeterminate_zone: [number, number]
+  features: EpiFeature[]
+  dmrs: { panel: number; selected: number; with_data: number; imputed_selected: number }
+  training: { cases: number; controls: number }
+  performance: {
+    design: string
+    auc: number
+    sensitivity: number
+    specificity: number
+    balanced_accuracy: number
+    permutation_p: number
+    confusion_matrix: number[][]
+  }
+  loo: { group: 0 | 1; score: number }[]
+  warnings: EpiWarning[]
+}
+
+export interface EpisignatureOverview {
+  installed: true
+  sample: string
+  label: string
+  source: { repo: string; commit: string; fetched_at: string; source: string; licence: string }
+  provenance: Provenance
+  models: EpiModel[]
+}
+
+export interface EpisignatureNotInstalled {
+  installed: false
+  setup_command: string
+  repo: string
+  available: { id: string; name: string; gene: string }[]
+  sample: string
+  label: string
+  models: []
+}
+
+export type EpisignatureResponse = EpisignatureOverview | EpisignatureNotInstalled

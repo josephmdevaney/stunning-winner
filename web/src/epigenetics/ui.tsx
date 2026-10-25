@@ -85,3 +85,13 @@ export function Message({ children, tone }: { children: ReactNode; tone?: 'error
     </div>
   )
 }
+
+export function Callout({ tone, title, children }: { tone: 'caution' | 'note'; title: string; children: React.ReactNode }) {
+  const color = tone === 'caution' ? colors.statusIntermediate : colors.textSecondary
+  return (
+    <div style={{ background: 'white', border: `1px solid ${colors.border}`, borderLeft: `4px solid ${color}`, borderRadius: 8, padding: '12px 16px' }}>
+      <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>{title}</div>
+      <div style={{ fontSize: 12.5, color: colors.textBody, lineHeight: 1.6 }}>{children}</div>
+    </div>
+  )
+}

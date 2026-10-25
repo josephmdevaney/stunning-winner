@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { epigeneticsApi, type ImprintingOverview, type ThresholdOverrides, type Window } from './api'
+import { epigeneticsApi, type EpisignatureResponse, type ImprintingOverview, type ThresholdOverrides, type Window } from './api'
 
 // The overview for one sample. A refetch (new thresholds, other window) keeps the previous result on screen with
 // `loading` set, so the table doesn't flash empty on every change.
@@ -29,4 +29,27 @@ export function useImprinting(sample: string, window: Window, overrides: Thresho
   }, [sample, window, key])
 
   return { overview, error, loading }
+}
+
+// EpiSignaLR scores for one sample. Fetched only once the Episignatures screens are opened (`enabled`), because the
+// first request reads a few thousand CpGs and the imprinting screens do not need it.
+export function useEpisignatures(sample: string, enabled: boolean) {
+  const [data, setData] = useState<EpisignatureResponse | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!sample || !enabled) return
+    let current = true
+    setData(null)
+    setError(null)
+    epigeneticsApi
+      .episignatures(sample)
+      .then((d) => current && setData(d))
+      .catch((e) => current && setError(String(e.message ?? e)))
+    return () => {
+      current = false
+    }
+  }, [sample, enabled])
+
+  return { data, error }
 }

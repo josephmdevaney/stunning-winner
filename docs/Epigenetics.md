@@ -7,9 +7,10 @@ The Epigenetics suite reads CpG methylation from a genome's PacBio pileup and re
 | **Imprinting** | 48 imprinted DMRs, which imprinting disorders their pattern fits, and a multi-locus check | Built |
 | **Region Detail** | CpG-by-CpG methylation for one DMR, split by haplotype | Built |
 | **Methods** | Thresholds, analysis window, data provenance, how each call is made | Built |
-| **Episignatures** | Genome-wide DMR scoring with EpiSignaLR's classifiers | Not built (see [Next](#next-episignatures-from-episignalr)) |
+| **Episignatures / Signature Detail** | Scores for three conditions from EpiSignaLR's sequencing-derived models, and the DMRs behind each score | Built, needs a one-time setup (see [Episignatures](#episignatures-from-episignalr)) |
+| **Array-derived signatures** | EpiSignaLR's 34 array-derived classifiers | Not built (see [Next](#next)) |
 
-Backend: `backend/epigenetics/` (routes under `/api/epigenetics`). Frontend: `web/src/epigenetics/`. Tests: `backend/tests/test_epigenetics.py`, `test_epigenetics_api.py`.
+Backend: `backend/epigenetics/` (routes under `/api/epigenetics`; episignatures in `backend/epigenetics/episignature/`). Frontend: `web/src/epigenetics/`. Tests: `backend/tests/test_epigenetics.py`, `test_epigenetics_api.py`, `test_episignature.py`.
 
 **Research use only.** A methylation pattern is not a diagnosis. The thresholds are defaults chosen for this panel and have not been clinically validated.
 
@@ -102,11 +103,42 @@ A bad threshold or window is a 422, an unknown sample or DMR a 404, a missing `t
 - Whole-genome pileups made in `model` mode are not the same scale as the array-derived or `count`-mode data other tools were trained on.
 - Mosaicism below the thresholds' sensitivity, and tissue, are not modelled.
 
-## Next: episignatures from EpiSignaLR
+## Episignatures from EpiSignaLR
 
-Not built yet. The plan, from the paper and repository:
+[EpiSignaLR](https://github.com/millerlaboratory/EpiSignaLR) (Miller laboratory; a medRxiv preprint, October 2026) scores a long-read genome against methylation signatures of three conditions: **SETD1B-related disorder**, **Kleefstra syndrome (EHMT1)** and **Kabuki syndrome (KMT2D)**. Each is an ElasticNet-selected set of DMRs and a linear SVM, trained on nanopore genomes of blood DNA from 9 or 10 cases and 10 controls. This suite scores a registered genome with them.
 
-- EpiSignaLR scores genome-wide DMR methylation against 34 episignature classifiers (elastic net and linear SVM, with probabilities; 0.5 positive, 0.4–0.6 indeterminate).
-- Its repository has no license, so its code and models are **fetched at setup into a gitignored directory and never committed**.
-- The models are pickled `joblib` files. Loading a pickle runs code, so scoring would run in a separate subprocess from a pinned checkout, never in the API process.
-- PacBio controls sit shifted toward the cases in the paper, and the models were trained on count-mode data. Every episignature result would carry both warnings.
+### Setup
+
+```
+python backend/scripts/setup_episignalr.py
+```
+
+The EpiSignaLR repository publishes no licence, so none of it is committed. The script fetches each file from one pinned commit into `backend/epigenetics/episignature/vendor/` (gitignored), checks every file against a SHA-256 pinned in the script, and records what it fetched in `vendor/VERSION.json`. Until it has been run, the Episignatures screen says so and shows the command.
+
+The models are pickles, and a pickle can run code when it is loaded, so they are never loaded in the API process. `episignature/convert.py` reads each one in a separate `python -I` process that allows only numpy's array reconstruction, stands in for every scikit-learn class with an empty object that keeps the state it is given, and refuses anything else (`os.system` and the like). It needs only numpy and joblib; if the Python running the setup lacks them, the script makes a small virtualenv for the two inside the vendor folder. The output is plain JSON: the scaler, the selected features, the SVM's weights and the Platt sigmoid's two numbers. The converted weights are checked against the ones the authors publish in each model's metadata.
+
+### How a genome is scored
+
+1. **DMR values.** For each DMR in the model's panel, the pooled fraction Σ`est_mod_count` ÷ Σ`cov` over the DMR's listed CpGs that have at least 2 reads, from the combined pileup. This is EpiSignaLR's own PacBio calculation (`--weighted --min-coverage 2`).
+2. **Score.** The selected DMRs are standardised with the training mean and spread, and the decision value is the SVM intercept plus one weight × value term per DMR. The case probability is scikit-learn's: a Platt sigmoid, refined by libsvm's two-class step, which is ported as written so the numbers match.
+3. **Call.** 0.5 or more is a match; 0.4 to 0.6 is indeterminate; below is no signature. A DMR with no covered CpG is replaced by the training mean, as in EpiSignaLR; if that applies to more than a quarter of the selected DMRs, no call is made.
+
+Each model's screen shows the decision value split into its per-DMR terms, and every selected DMR beside the training controls and cases, so a score can be checked against the data behind it.
+
+### Validation
+
+- **The probability** was compared with the authors' scikit-learn 1.8.0 pipeline on about 370 profiles per model (the training rows, random profiles, and profiles with missing DMRs): decision values and probabilities agree to 10⁻¹⁵. Tests keep a few of those numbers.
+- **End to end**, the authors' own scripts (`region_average_methylation.py`, `run_enet_svm.py`) were run on HG002's pileup: every DMR value is identical and the scores match: SETD1B 0.0065, Kleefstra 0.5232, Kabuki 0.3602.
+
+### Reading the scores
+
+- **Platform.** The models are nanopore-trained. In the paper, PacBio controls sit at the edge of the control group nearest the cases, and PacBio libraries made 9 of the 12 indeterminate or false-positive calls among other groups' samples for the Kabuki and Kleefstra models. A match or an indeterminate score is a lead; a negative score is not clearance.
+- **Pileup mode.** EpiSignaLR's PacBio pileups are made with `--pileup-mode count --modsites-mode reference`. A pileup in another mode (HG002's is `model`, `denovo`) gives different methylation values, so its scores are not comparable with the published ones. The screen says which mode the pileup was made in and what to re-run.
+- **Sample type.** The signatures come from blood DNA (the paper notes dried-blood-spot DNA scoring differently). HG002's reference DNA is from a lymphoblastoid cell line, so it is not a like-for-like control. It scores Kleefstra 0.52 (indeterminate); with a cell line, a pileup in another mode and 20 training genomes, that is a reason to doubt the score, not a finding.
+- **Training size.** The cohorts are 19 to 20 people. Kabuki's leave-one-out specificity is 50%: half of its controls were called cases in the authors' own test.
+
+## Next
+
+- **The 34 array-derived classifiers** (adapted from NSBEpi): a linear SVM per condition, trained at run time on reference profiles, over 3,642 array CpGs. They need the same fetch-and-convert treatment (the reference data is a pickled set of pandas tables) and the SVM weights exported at setup.
+- **A pileup in count mode**, so scores can be compared with the paper's, if a genome's BAM is at hand and `aligned_bam_to_cpg_scores` is installed.
+- **Reference ranges** from a control cohort, so a DMR value can be placed against the same platform's controls rather than the nanopore training set.

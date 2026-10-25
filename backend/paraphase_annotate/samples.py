@@ -14,7 +14,7 @@ from pathlib import Path
 
 # key -> path to that sample's <key>.paraphase.json. Real per-participant
 # hackathon data, kept outside the repo (never committed) like this project's
-# other real samples (see repeatscope/roh.py, mitolr/samples.py).
+# other real samples (see roh/analysis.py, mitolr/samples.py).
 SAMPLES: dict[str, str] = {
     "CDS27601": "/Users/joedevaney/hackathon_cds2760x/CDS27601.paraphase.json",
     "CDS48001": "/Users/joedevaney/hackathon_cds48001/CDS48001.paraphase.json",

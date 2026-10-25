@@ -2,18 +2,18 @@
 
 This document describes the ROH module of RepeatScope: its architecture (backend, API, frontend, tests) and its analytical methodology (parsing, region classification, gene overlap, the inbreeding-coefficient estimate, and the UPD screening heuristic), including the caveats around each.
 
-> Reference build: `backend/repeatscope/roh.py`, `roh_reference.py`, `api/main.py`, `tests/test_roh.py`; frontend `web/src/api.ts`, `web/src/screens/ROHScreen.tsx`.
+> Reference build: the self-contained backend package `backend/roh/` (`analysis.py`, `reference.py`, `sex_inference.py`, `router.py`) and `tests/test_roh.py`, `tests/test_sex_inference.py`; the ROH suite frontend `web/src/roh/`. ROH is its own tool in the RepeatScope suite (the **ROH** entry in the Suite switcher), with no imports from the rest of RepeatScope.
 
 ## Table of Contents
 
 1. [Overview](#1-overview)
 2. [Inputs & Data Sources](#2-inputs--data-sources)
 3. [Parts (Architecture)](#3-parts-architecture)
-   - 3.1 [Backend module — `backend/repeatscope/roh.py`](#31-backend-module--backendrepeatscoperohpy)
-   - 3.2 [Reference data — `backend/repeatscope/roh_reference.py`](#32-reference-data--backendrepeatscoperoh_referencepy)
-   - 3.3 [API layer — `backend/repeatscope/api/main.py`](#33-api-layer--backendrepeatscopeapimainpy)
-   - 3.4 [Frontend client — `web/src/api.ts`](#34-frontend-client--websrcapits)
-   - 3.5 [UI — `web/src/screens/ROHScreen.tsx`](#35-ui--websrcscreensrohscreentsx)
+   - 3.1 [Backend module — `backend/roh/analysis.py`](#31-backend-module--backendrohanalysispy)
+   - 3.2 [Reference data — `backend/roh/reference.py`](#32-reference-data--backendrohreferencepy)
+   - 3.3 [API layer — `backend/roh/router.py`](#33-api-layer--backendrohrouterpy)
+   - 3.4 [Frontend client — `web/src/roh/api.ts`](#34-frontend-client--websrcrohapits)
+   - 3.5 [UI — `web/src/roh/`](#35-ui--websrcroh)
    - 3.6 [Tests — `backend/tests/test_roh.py`](#36-tests--backendteststest_rohpy)
 4. [Methods (Methodology)](#4-methods-methodology)
    - 4.1 [Parsing](#41-parsing)
@@ -35,21 +35,21 @@ This document describes the ROH module of RepeatScope: its architecture (backend
 
 ROH (Runs of Homozygosity) is a self-contained analysis module within RepeatScope that surfaces autozygosity, consanguinity signal, and possible uniparental disomy (UPD) from real `bcftools roh` output. Unlike the rest of RepeatScope — which is organized around a repeat-panel "mode" and sample — ROH is keyed only by sample: homozygosity mapping is a whole-genome SNP-based analysis and does not depend on a tandem-repeat catalog/panel at all.
 
-Currently one real sample has an ROH run: HG002, from real `bcftools roh` RG-region output. There is no synthetic or demo sample — by design, the module surfaces real autozygosity/consanguinity/UPD calls only, not placeholder data.
+Four samples are registered, each from real `bcftools roh` RG-region output: HG002 (the public GIAB reference, committed as a fixture and used by the tests) and three real hackathon samples whose files live outside the repository. There is no synthetic or demo sample — by design, the module surfaces real autozygosity/consanguinity/UPD calls only, not placeholder data. Sex is inferred from `mosdepth` coverage where a summary is on file (see 4.10).
 
 ## 2. Inputs & Data Sources
 
 - **Primary input:** `bcftools roh` RG (region-summary) lines — tab-separated `sample, chrom, start, end, length_bp, n_markers, quality`. ST (per-marker) lines and header/comment lines are ignored.
 - **Fixture:** `backend/fixtures/roh/HG002.GRCh38.roh.txt` (sample HG002, genome build GRCh38).
-- **Static reference data** (`roh_reference.py`): GRCh38 chromosome lengths and centromere midpoints (UCSC/NCBI), a curated OMIM disease-gene model, UPD-screening length thresholds, and theoretical relationship-based F values.
+- **Static reference data** (`reference.py`): GRCh38 chromosome lengths and centromere midpoints (UCSC/NCBI), a curated OMIM disease-gene model, UPD-screening length thresholds, and theoretical relationship-based F values.
 
 ## 3. Parts (Architecture)
 
 The module spans four layers: a backend analysis module, a small API surface, a typed frontend client, and a dedicated screen with several chart components.
 
-### 3.1 Backend module — `backend/repeatscope/roh.py`
+### 3.1 Backend module — `backend/roh/analysis.py`
 
-Pure-Python module (293 lines) that parses real `bcftools roh` output and derives all downstream analysis from those real regions only — no simulated values are introduced at any step.
+Pure-Python module that parses real `bcftools roh` output and derives all downstream analysis from those real regions only — no simulated values are introduced at any step.
 
 | Function | Purpose |
 |---|---|
@@ -57,16 +57,16 @@ Pure-Python module (293 lines) that parses real `bcftools roh` output and derive
 | `classify_position(chrom, start, end)` | Classifies a region as telomeric / pericentromeric / interstitial using real GRCh38 chromosome lengths and centromere midpoints. Returns `None` for chromosomes outside that reference (chrY, chrM). |
 | `length_band(length_bp)` | Buckets a region's length into `<1 Mb` / `1–3 Mb` / `3–5 Mb` / `≥5 Mb` for display/coloring. |
 | `gene_overlaps(chrom, start, end)` | Returns curated OMIM disease-gene model entries whose coordinates overlap the region. |
-| `upd_flag(chrom, position, length_bp)` | Screening-only UPD flag using the SNP-microarray-style length/position thresholds in `roh_reference.py`. Autosomes only. |
+| `upd_flag(chrom, position, length_bp)` | Screening-only UPD flag using the SNP-microarray-style length/position thresholds in `reference.py`. Autosomes only. |
 | `_region_dict(r)` | Assembles the full per-region dict served by the API: adds position class, gene overlaps, length band, imprinted flag, UPD flag, and F-value eligibility to a parsed `RohRegion`. |
 | `build_regions(sample, path)` / `regions_for_sample(sample)` | Builds (and, for the cached variant, memoizes) the full list of region dicts for a sample. |
 | `build_overview(sample, path)` / `overview_for_sample(sample)` | Aggregates per-sample summary statistics: F-value, UPD flags, AR-candidate genes, per-chromosome rollup, and the relationship F-value reference table. |
-| `sample_keys()` | Returns the list of sample IDs that have a real ROH run (currently just HG002). |
+| `sample_keys()` | Returns the list of sample IDs that have a real ROH run (the registered samples, `ROH_SAMPLES`). |
 | `query_regions(sample, chrom, min_len_mb, page, page_size)` | Filters and paginates a sample's regions for the UI's regions table. |
 
-### 3.2 Reference data — `backend/repeatscope/roh_reference.py`
+### 3.2 Reference data — `backend/roh/reference.py`
 
-Static constants module (144 lines): assembly geometry, screening thresholds, and the curated gene model, documented in its own module docstring as to what is a public reference fact versus a user-curated / heuristic value.
+Static constants module: assembly geometry, screening thresholds, and the curated gene model, documented in its own module docstring as to what is a public reference fact versus a user-curated / heuristic value.
 
 | Constant | Description |
 |---|---|
@@ -84,9 +84,9 @@ Static constants module (144 lines): assembly geometry, screening thresholds, an
 | `RELATIONSHIP_F_VALUES` | Theoretical F = (1/2)^n by pedigree relationship, for the consanguinity ladder reference points. |
 | `GENE_MODEL` | The 12-entry curated OMIM disease-gene table (see Section 4.4). |
 
-### 3.3 API layer — `backend/repeatscope/api/main.py`
+### 3.3 API layer — `backend/roh/router.py`
 
-Three routes, added as a self-contained section of the FastAPI app (not scoped by the `mode`/panel query parameters the rest of RepeatScope's API uses). A helper, `_resolve_roh_sample`, defaults to the first available sample when none is given and returns 404 for an unrecognized sample.
+Three routes on a FastAPI `APIRouter` (prefix `/api/roh`) that the shared app mounts, like the other suites. They are not scoped by the `mode`/panel query parameters the rest of RepeatScope's API uses. A helper, `_resolve_roh_sample`, defaults to the first available sample when none is given and returns 404 for an unrecognized sample.
 
 | Route | Params | Returns |
 |---|---|---|
@@ -96,24 +96,29 @@ Three routes, added as a self-contained section of the FastAPI app (not scoped b
 
 An unrecognized sample value returns HTTP 404 on both `/api/roh/overview` and `/api/roh/regions`.
 
-### 3.4 Frontend client — `web/src/api.ts`
+### 3.4 Frontend client — `web/src/roh/api.ts`
 
 TypeScript interfaces mirror the backend response shapes exactly: `RohGeneHit`, `RohRegion`, `RohByChromosome`, `RohArCandidateGene`, `RohRelationshipFValue`, `RohOverviewResponse`, `RohRegionsResponse`, `RohSamplesResponse`. The `rohApi` client exposes `samples()`, `overview(sample)`, and `regions(params)`, each a thin fetch wrapper returning the typed response.
 
-### 3.5 UI — `web/src/screens/ROHScreen.tsx`
+### 3.5 UI — `web/src/roh/`
 
-A 785-line screen assembled from the following components:
+The ROH suite is a self-contained frontend tool with its own app shell, sidebar, top bar, API client and data hook. Three screens share one sample's data (the overview and the full region list are loaded once by `useRohData`):
 
-- **ROHScreen** — top-level screen; loads the overview and full region list on sample change and lays out the stat row, UPD banner, ideogram, consanguinity card, AR-candidate list, per-chromosome track, and regions table.
-- **StatGrid / StatCard** — shared stat-tile components: autosomal F (%), autosomal ROH total, UPD flag count, AR candidate gene count.
+- **Overview** (`ROHOverviewScreen`) — the sex-inference banner, stat tiles (autosomal F, autosomal ROH total, UPD flag count, AR candidate gene count), the UPD banner, the genome-wide ideogram, the consanguinity assessment, the AR-candidate list, and the non-autosomal note.
+- **Chromosome Detail** (`ROHChromosomeScreen`) — the per-chromosome track for a selected chromosome (defaults to the chromosome carrying a UPD flag).
+- **Regions** (`ROHRegionsScreen`) — a filterable, paginated table of individual ROH regions.
+
+Shared components live in `components.tsx`:
+
+- **StatGrid / StatCard** (from `web/src/components`) — the stat tiles.
 - **IdeogramCard / Ideogram** — genome-wide autozygosity map: all 24 chromosomes drawn to genomic scale in two columns, ROH regions painted by length band, with centromere, imprinted-chromosome, and UPD-flag legend markers; filterable by length band.
 - **PerChromosomeTrackCard / ChromosomeTrack** — a zoomed single-chromosome track: ROH segments to scale, centromere marker, an Mb ruler, and OMIM disease-gene tick marks colored by inheritance (AR/AD).
 - **ConsanguinityCard / ConsanguinityLadder / consanguinityVerdict** — F at the ≥1 Mb and ≥3 Mb floors, a horizontal ladder plotting the sample's F against theoretical relationship-degree F values, and an ACMG-threshold-based verdict banner (indicated / possible / not indicated).
-- **RegionsTable / Field / PageButton** — a filterable, paginated table of individual ROH regions: chromosome, coordinates, length, position class, marker count, quality, and overlapping genes/UPD flag.
+- **RegionsTable / Field / PageButton** — the regions table: chromosome, coordinates, length, position class, marker count, quality, and overlapping genes/UPD flag.
 
 ### 3.6 Tests — `backend/tests/test_roh.py`
 
-184 lines, 20 tests, all run against the real HG002 fixture (no mocked ROH data). See [Section 8](#8-test-coverage) for the full breakdown.
+21 tests in `test_roh.py` (plus 4 in `test_sex_inference.py`), all run against the real HG002 fixture (no mocked ROH data). See [Section 8](#8-test-coverage) for the full breakdown.
 
 ## 4. Methods (Methodology)
 
@@ -202,7 +207,7 @@ Theoretical inbreeding coefficient F = (1/2)^n, for n meioses separating the par
 
 ### 4.10 Non-autosomal handling (chrX, chrY, chrM)
 
-chrX, chrY, and chrM regions are real `bcftools roh` calls and are reported in full, but excluded from the autosomal F-value: chrX/chrY homozygosity in a male sample reflects hemizygosity, not autozygosity, and mitochondrial DNA has no diploid homozygosity concept to begin with.
+chrX, chrY, and chrM regions are real `bcftools roh` calls and are reported in full, but excluded from the autosomal F-value, the AR-candidate search and the UPD screen. `bcftools roh` genotypes chrX/chrY as if diploid, so in a male sample their "ROH" reflects hemizygosity, not autozygosity; mitochondrial DNA has no diploid homozygosity concept to begin with. Sex comes from `sex_inference.py`: chrX/autosome mean depth ≤0.75 with chrY ≥0.1× is male, >0.75 with chrY <0.1× is female, anything else is left unknown rather than guessed. Without a mosdepth summary, a sample's sex falls back to known provenance (`KNOWN_SEX`, HG002 only) or unknown, and the response carries the evidence (`sex_inference`) and an explanatory `non_autosomal_note`.
 
 ## 5. API Reference
 
@@ -240,7 +245,7 @@ An unrecognized `sample` returns HTTP 404 on `/api/roh/overview` and `/api/roh/r
 
 ## 7. Limitations & Caveats
 
-- Single real sample supported (HG002) — by design, there is no synthetic/demo ROH sample; the tool surfaces real calls only.
+- Only HG002 is covered by the automated tests (the other registered samples are real per-participant data kept outside the repository) — by design, there is no synthetic/demo ROH sample; the tool surfaces real calls only.
 - UPD screening thresholds: the attribution to Hoppman-Chaney-style SNP-microarray convention has not been independently verified against a primary source in this codebase. Treat flags as screening candidates, not diagnostic calls.
 - Centromere positions are approximate midpoints (from UCSC cytoBand ranges), used only to detect centromere-spanning regions — not exact acrocentric/metacentric arm boundaries.
 - The OMIM disease-gene model is a curated 12-gene subset (chr2, 6, 7, 9, 13, 16), not a comprehensive AR/AD gene panel.
@@ -248,7 +253,7 @@ An unrecognized `sample` returns HTTP 404 on `/api/roh/overview` and `/api/roh/r
 
 ## 8. Test Coverage
 
-20 tests in `backend/tests/test_roh.py`, all exercised against the real HG002 fixture (8,966 parsed RG regions):
+21 tests in `backend/tests/test_roh.py` (and 4 in `test_sex_inference.py`), all exercised against the real HG002 fixture (8,966 parsed RG regions):
 
 | Area | What's covered |
 |---|---|

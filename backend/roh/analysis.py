@@ -10,7 +10,7 @@ real regions only:
 * an autosomal inbreeding-coefficient (F) estimate from total ROH length
 * a UPD (uniparental disomy) screening flag using a commonly cited but
   NOT independently verified SNP-microarray ROH heuristic -- see
-  roh_reference.py's module docstring
+  reference.py's module docstring
 
 chrX/chrY/chrM regions are reported (bcftools genuinely calls "ROH" there)
 but excluded from the autosomal F-value: chrX/Y homozygosity in a male
@@ -25,7 +25,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Optional
 
-from . import roh_reference as ref
+from . import reference as ref
 from . import sex_inference
 
 BACKEND_ROOT = Path(__file__).resolve().parents[1]
@@ -150,7 +150,7 @@ def gene_overlaps(chrom: str, start: int, end: int) -> list[ref.GeneModelEntry]:
 
 
 def upd_flag(chrom: str, position: Optional[str], length_bp: int) -> Optional[str]:
-    """Screening-only UPD flag. See roh_reference.py docstring: thresholds
+    """Screening-only UPD flag. See reference.py docstring: thresholds
     follow a commonly cited SNP-microarray convention not independently
     verified against a primary source in this codebase."""
     if chrom not in ref.AUTOSOMES:

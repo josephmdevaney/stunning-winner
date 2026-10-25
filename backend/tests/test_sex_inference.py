@@ -1,6 +1,6 @@
 """Tests for coverage-based sex inference from mosdepth summary files."""
 
-from repeatscope import sex_inference
+from roh import sex_inference
 
 
 def _write_summary(tmp_path, rows):

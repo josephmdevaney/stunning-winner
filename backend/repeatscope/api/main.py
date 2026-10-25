@@ -59,7 +59,6 @@ from ..paraphase import (
     load_sawfish_calls,
 )
 from ..rexprt import RexprtScore, load_rexprt_scores
-from .. import roh
 from ..trgt import TrgtIndex, sample_names
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -135,6 +134,12 @@ app.include_router(paraphase_router)
 from kivvi.router import router as kivvi_router  # noqa: E402
 
 app.include_router(kivvi_router)
+
+# Runs of Homozygosity is another sibling product, served under /api/roh.
+# Self-contained -- its own sample registry and reference data (roh/analysis.py).
+from roh.router import router as roh_router  # noqa: E402
+
+app.include_router(roh_router)
 
 # PacBio tool versions: which release of Paraphase, TRGT, sawfish, MitoRSaw, ...
 # produced the data loaded above, against each tool's newest GitHub release.
@@ -726,42 +731,4 @@ def get_catalog(
 
 
 # --- Runs of Homozygosity (ROH) ------------------------------------------------
-# Self-contained: real `bcftools roh` output for one sample (HG002), independent
-# of the mode/panel-scoped repeat-genotyping data above. Not scoped by `mode`
-# since ROH doesn't depend on a repeat panel at all -- it's keyed by `sample`
-# only, and only samples in roh.ROH_SAMPLES have a real ROH run.
 
-
-def _resolve_roh_sample(sample: Optional[str]) -> str:
-    if sample is None:
-        keys = roh.sample_keys()
-        if not keys:
-            raise HTTPException(status_code=404, detail="no ROH samples available")
-        return keys[0]
-    if sample not in roh.ROH_SAMPLES:
-        raise HTTPException(status_code=404, detail=f"no ROH run for sample {sample!r}")
-    return sample
-
-
-@app.get("/api/roh/samples")
-def get_roh_samples():
-    keys = roh.sample_keys()
-    return {"samples": keys, "default": keys[0] if keys else ""}
-
-
-@app.get("/api/roh/overview")
-def get_roh_overview(sample: Optional[str] = None):
-    s = _resolve_roh_sample(sample)
-    return roh.overview_for_sample(s)
-
-
-@app.get("/api/roh/regions")
-def get_roh_regions(
-    sample: Optional[str] = None,
-    chrom: str = "all",
-    min_len_mb: float = 0,
-    page: int = 0,
-    page_size: int = 100,
-):
-    s = _resolve_roh_sample(sample)
-    return roh.query_regions(s, chrom=chrom, min_len_mb=min_len_mb, page=page, page_size=page_size)

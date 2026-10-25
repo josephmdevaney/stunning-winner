@@ -1,177 +1,11 @@
-import { useEffect, useState } from 'react'
-import { rohApi, type RohGeneHit, type RohOverviewResponse, type RohRegion, type RohRegionsResponse, type RohRelationshipFValue } from '../api'
 import { colors, mono, rohBandColor } from '../theme'
-import { StatCard, StatGrid } from '../components/StatCard'
+import type { RohGeneHit, RohOverviewResponse, RohRegion, RohRegionsResponse, RohRelationshipFValue } from './api'
 
-const PAGE_SIZE = 50
 const LENGTH_BANDS = ['≥5 Mb', '3–5 Mb', '1–3 Mb', '<1 Mb']
-
-export function ROHScreen({ sample }: { sample: string }) {
-  const [overview, setOverview] = useState<RohOverviewResponse | null>(null)
-  const [notFound, setNotFound] = useState(false)
-  const [regions, setRegions] = useState<RohRegionsResponse | null>(null)
-  const [chrom, setChrom] = useState('all')
-  const [minLenMb, setMinLenMb] = useState('')
-  const [page, setPage] = useState(0)
-  const [allRegions, setAllRegions] = useState<RohRegion[]>([])
-  const [ideogramFilter, setIdeogramFilter] = useState('all')
-  const [selChrom, setSelChrom] = useState('')
-
-  useEffect(() => {
-    setOverview(null)
-    setNotFound(false)
-    setAllRegions([])
-    rohApi
-      .overview(sample)
-      .then(setOverview)
-      .catch(() => setNotFound(true))
-  }, [sample])
-
-  useEffect(() => {
-    if (!overview) return
-    const withRegions = overview.by_chromosome.filter((c) => c.centromere_mid_bp != null && c.n_regions > 0)
-    if (withRegions.length === 0) return
-    setSelChrom((prev) => {
-      if (prev && withRegions.some((c) => c.chrom === prev)) return prev
-      const updChrom = overview.upd_flags[0]?.chrom
-      if (updChrom && withRegions.some((c) => c.chrom === updChrom)) return updChrom
-      return withRegions[0].chrom
-    })
-  }, [overview])
-
-  useEffect(() => {
-    if (!overview) return
-    rohApi
-      .regions({ sample, chrom: 'all', minLenMb: 0, page: 0, pageSize: Math.max(1, overview.stats.n_regions_total) })
-      .then((r) => setAllRegions(r.rows))
-  }, [sample, overview])
-
-  useEffect(() => {
-    if (notFound) return
-    setRegions(null)
-    rohApi
-      .regions({ sample, chrom, minLenMb: minLenMb ? Number(minLenMb) : undefined, page, pageSize: PAGE_SIZE })
-      .then(setRegions)
-  }, [sample, chrom, minLenMb, page, notFound])
-
-  if (notFound) {
-    return (
-      <div style={{ padding: 28 }}>
-        <div style={{ background: 'white', border: `1px solid ${colors.border}`, borderRadius: 12, padding: '60px 24px', textAlign: 'center', color: colors.textSecondary, fontSize: 14 }}>
-          No ROH (Runs of Homozygosity) run for sample "{sample}". Real bcftools roh output is only available for HG002.
-        </div>
-      </div>
-    )
-  }
-
-  if (!overview) {
-    return (
-      <div style={{ padding: 28 }}>
-        <div style={{ background: 'white', border: `1px solid ${colors.border}`, borderRadius: 12, padding: '60px 24px', textAlign: 'center', color: colors.textSecondary, fontSize: 14 }}>
-          Loading ROH analysis…
-        </div>
-      </div>
-    )
-  }
-
-  const s = overview.stats
-
-  return (
-    <div style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 20 }}>
-      <SexInferenceBanner sexInference={overview.sex_inference} />
-
-      <StatGrid>
-        <StatCard
-          label="Autosomal F (inbreeding coefficient)"
-          value={`${s.f_value_pct}%`}
-          sub={`ROH ≥${s.f_value_min_length_mb} Mb, ${overview.genome_build} autosomes`}
-        />
-        <StatCard label="Autosomal ROH total" value={`${(s.total_autosomal_roh_bp / 1_000_000).toFixed(1)} Mb`} sub={`${s.n_regions_autosomal.toLocaleString()} regions`} />
-        <StatCard
-          label="UPD screening flags"
-          value={String(s.n_upd_flags)}
-          sub="Heuristic, not diagnostic"
-          valueStyle={s.n_upd_flags > 0 ? { color: colors.statusIntermediate } : undefined}
-          dotColor={s.n_upd_flags > 0 ? colors.statusIntermediate : undefined}
-        />
-        <StatCard label="AR candidate genes" value={String(s.n_ar_candidate_genes)} sub={`Within ROH ≥${s.ar_candidate_min_length_mb} Mb`} />
-      </StatGrid>
-
-      {overview.upd_flags.length > 0 && (
-        <div style={{ background: colors.interpBg.intermediate, border: `1px solid ${colors.statusIntermediate}`, borderRadius: 12, padding: '16px 20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 600, color: colors.interpColor.intermediate }}>
-            <div style={{ width: 8, height: 8, borderRadius: '50%', background: colors.statusIntermediate }} />
-            Possible UPD — {overview.upd_flags.length} region{overview.upd_flags.length > 1 ? 's' : ''} flagged
-          </div>
-          {overview.upd_flags.map((f) => (
-            <div key={`${f.chrom}:${f.start}`} style={{ fontSize: 12.5, color: colors.textBody, marginTop: 6, fontFamily: mono }}>
-              {f.chrom}:{f.start.toLocaleString()}–{f.end.toLocaleString()} ({f.length_mb} Mb, {f.position}) — {f.upd_flag}
-            </div>
-          ))}
-          <div style={{ fontSize: 11.5, color: colors.textSecondary, marginTop: 8, lineHeight: 1.5 }}>{overview.upd_methodology_note}</div>
-        </div>
-      )}
-
-      <div style={{ display: 'grid', gridTemplateColumns: '1.55fr 1fr', gap: 20, alignItems: 'start' }}>
-        <IdeogramCard overview={overview} allRegions={allRegions} filter={ideogramFilter} onFilterChange={setIdeogramFilter} />
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <ConsanguinityCard overview={overview} allRegions={allRegions} />
-
-          <div style={{ background: 'white', border: `1px solid ${colors.border}`, borderRadius: 12, padding: '18px 20px' }}>
-            <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>AR candidate genes</div>
-            <div style={{ fontSize: 11.5, color: colors.textSecondary, marginBottom: 12 }}>
-              Autosomal-recessive OMIM genes overlapping an ROH ≥{s.ar_candidate_min_length_mb} Mb (autozygosity-mapping candidates).
-            </div>
-            {overview.ar_candidate_genes.length === 0 ? (
-              <div style={{ fontSize: 13, color: colors.textSecondary, padding: '12px 0' }}>None found for this sample.</div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {overview.ar_candidate_genes.map((g) => (
-                  <div key={g.symbol} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12.5, borderBottom: `1px solid ${colors.borderSoftest}`, paddingBottom: 8 }}>
-                    <div>
-                      <span style={{ fontWeight: 700, fontFamily: mono }}>{g.symbol}</span>
-                      <span style={{ color: colors.textSecondary, marginLeft: 8 }}>{g.disease}</span>
-                    </div>
-                    <div style={{ color: colors.textTertiary, fontFamily: mono, whiteSpace: 'nowrap' }}>
-                      {g.chrom} · {g.roh_length_mb} Mb
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {selChrom && <PerChromosomeTrackCard overview={overview} allRegions={allRegions} selChrom={selChrom} onSelectChrom={setSelChrom} />}
-
-      <div style={{ background: 'white', border: `1px solid ${colors.border}`, borderRadius: 12, padding: '18px 20px' }}>
-        <div style={{ fontSize: 11, color: colors.textSecondary, lineHeight: 1.5 }}>{overview.non_autosomal_note}</div>
-      </div>
-
-      <RegionsTable
-        regions={regions}
-        chrom={chrom}
-        minLenMb={minLenMb}
-        onChangeChrom={(c) => {
-          setChrom(c)
-          setPage(0)
-        }}
-        onChangeMinLen={(v) => {
-          setMinLenMb(v)
-          setPage(0)
-        }}
-        page={page}
-        onChangePage={setPage}
-      />
-    </div>
-  )
-}
 
 // ---- Sex inference banner (drives chrX/chrY hemizygous-vs-autozygous interpretation below) ----
 
-function SexInferenceBanner({ sexInference }: { sexInference: RohOverviewResponse['sex_inference'] }) {
+export function SexInferenceBanner({ sexInference }: { sexInference: RohOverviewResponse['sex_inference'] }) {
   const { sex } = sexInference
   const label = sex === 'M' ? 'Male (XY)' : sex === 'F' ? 'Female (XX)' : 'Unknown'
   const color = sex ? colors.textBody : colors.statusIntermediate
@@ -206,7 +40,7 @@ const IDEOGRAM_COL_GAP = 64
 const IDEOGRAM_ROW_H = 30
 const IDEOGRAM_TOP_PAD = 10
 
-function IdeogramCard({
+export function IdeogramCard({
   overview,
   allRegions,
   filter,
@@ -377,7 +211,7 @@ const TRACK_RULER_Y = TRACK_BAR_Y + TRACK_BAR_H + 16
 const TRACK_GENE_Y = TRACK_BAR_Y + TRACK_BAR_H + 50
 const TRACK_H = 150
 
-function PerChromosomeTrackCard({
+export function PerChromosomeTrackCard({
   overview,
   allRegions,
   selChrom,
@@ -578,7 +412,7 @@ function consanguinityVerdict(f3Pct: number, secondCousinPct: number) {
   }
 }
 
-function ConsanguinityCard({ overview, allRegions }: { overview: RohOverviewResponse; allRegions: RohRegion[] }) {
+export function ConsanguinityCard({ overview, allRegions }: { overview: RohOverviewResponse; allRegions: RohRegion[] }) {
   const s = overview.stats
   const f3Pct = s.f_value_pct
   const autosomalGenomeBp = s.autosomal_genome_length_bp
@@ -682,13 +516,14 @@ function ConsanguinityLadder({
   )
 }
 
-function RegionsTable({
+export function RegionsTable({
   regions,
   chrom,
   minLenMb,
   onChangeChrom,
   onChangeMinLen,
   page,
+  pageSize,
   onChangePage,
 }: {
   regions: RohRegionsResponse | null
@@ -697,6 +532,7 @@ function RegionsTable({
   onChangeChrom: (c: string) => void
   onChangeMinLen: (v: string) => void
   page: number
+  pageSize: number
   onChangePage: (p: number) => void
 }) {
   return (
@@ -809,13 +645,13 @@ function RegionsTable({
           <div style={{ fontSize: 12.5, color: colors.textSecondary }}>
             {regions.total_matching === 0
               ? 'No results'
-              : `Showing ${(page * PAGE_SIZE + 1).toLocaleString()}–${Math.min(regions.total_matching, page * PAGE_SIZE + PAGE_SIZE).toLocaleString()} of ${regions.total_matching.toLocaleString()}`}
+              : `Showing ${(page * pageSize + 1).toLocaleString()}–${Math.min(regions.total_matching, page * pageSize + pageSize).toLocaleString()} of ${regions.total_matching.toLocaleString()}`}
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
             <PageButton label="Prev" disabled={page === 0} onClick={() => onChangePage(Math.max(0, page - 1))} />
             <PageButton
               label="Next"
-              disabled={page >= Math.max(0, Math.ceil(regions.total_matching / PAGE_SIZE) - 1)}
+              disabled={page >= Math.max(0, Math.ceil(regions.total_matching / pageSize) - 1)}
               onClick={() => onChangePage(page + 1)}
             />
           </div>

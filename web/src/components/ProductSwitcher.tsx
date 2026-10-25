@@ -1,6 +1,6 @@
 import { colors } from '../theme'
 
-export type Product = 'genome_wide' | 'puretarget_v2' | 'carrier' | 'mitolr' | 'paraphase' | 'kivvi'
+export type Product = 'genome_wide' | 'puretarget_v2' | 'carrier' | 'mitolr' | 'paraphase' | 'kivvi' | 'roh'
 
 const PRODUCTS: { key: Product; label: string }[] = [
   { key: 'genome_wide', label: 'RepeatScope' },
@@ -9,6 +9,7 @@ const PRODUCTS: { key: Product; label: string }[] = [
   { key: 'mitolr', label: 'MitoLR' },
   { key: 'paraphase', label: 'Paraphase' },
   { key: 'kivvi', label: 'Kivvi' },
+  { key: 'roh', label: 'ROH' },
 ]
 
 // Top-level section switcher pinned to every sidebar. All sections share

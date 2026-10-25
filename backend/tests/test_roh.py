@@ -4,7 +4,7 @@ API routes -- all against the real HG002 fixture."""
 
 from fastapi.testclient import TestClient
 
-from repeatscope import roh
+from roh import analysis as roh
 from repeatscope.api.main import app
 
 client = TestClient(app)
@@ -85,7 +85,7 @@ def test_overview_stats_are_internally_consistent():
 
 
 def roh_reference_autosomal_length():
-    from repeatscope import roh_reference as ref
+    from roh import reference as ref
     return ref.AUTOSOMAL_GENOME_LENGTH
 
 

@@ -62,7 +62,12 @@ export function MitoOverviewScreen({ sample, onSelectVariant }: { sample: string
           sub={data.haplogroup.confidence != null ? `${data.haplogroup.confidence}% confidence` : 'Requires classifier'}
           valueMono
         />
-        <MitoStat label="Sample QC" value={data.stats.qc_status} sub="Genome-wide coverage sufficient" valueColor={colors.statusNormal} />
+        <MitoStat
+          label="Sample QC"
+          value={data.stats.qc_status}
+          sub={data.stats.qc_summary}
+          valueColor={data.stats.qc_status === 'Pass' ? colors.statusNormal : colors.statusIntermediate}
+        />
       </div>
 
       <div style={{ background: 'white', border: `1px solid ${colors.border}`, borderRadius: 12, overflow: 'hidden' }}>

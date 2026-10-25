@@ -592,3 +592,54 @@ def test_vcf_build_variants_accepts_tissue_without_affecting_novel_calls():
     # tissue caveat -- which only applies to pathogenic-panel findings --
     # should leave every note unchanged.
     assert [v["note"] for v in plain] == [v["note"] for v in with_tissue]
+
+
+# --- QC: one coverage floor, a real overview status, and the sample's own caller -----------
+
+def test_one_coverage_floor_of_150x_everywhere():
+    assert qc.MIN_REQUIRED_COVERAGE == 150
+    assert samples.sample_qc("HG002")["min_required"] == 150  # BAM-derived QC
+    assert qc.build_vcf_qc(samples.variants("HG002"))["min_required"] == 150
+    assert qc.build_qc()["min_required"] == 150  # the seeded demo
+
+
+def test_bam_qc_flags_are_judged_against_the_app_floor_not_the_files():
+    import copy
+    import json
+
+    with open(samples.SAMPLES["HG002"]["bam_qc"], encoding="utf-8") as f:
+        bam = copy.deepcopy(json.load(f))
+    # 120x clears the old 100x floor but not 150x; the file's own stale "Pass" must not win.
+    bam["regions"][0]["depth"] = 120
+    bam["regions"][0]["flag"] = "Pass"
+    result = qc.build_bam_qc(bam)
+    assert result["overall_status"] == "Review"
+    assert result["regions"][0]["flag"] == "Low depth"
+    assert result["stats"][0]["sub"].endswith("regions ≥ 150x")
+    assert result["min_required"] == 150
+
+
+def test_overview_qc_status_follows_the_sample_qc_result():
+    for key in ("HG002", "MT-0417-P2"):
+        stats = samples.overview(key)["stats"]
+        sample_qc = samples.sample_qc(key)
+        assert stats["qc_status"] == sample_qc["overall_status"]
+        assert stats["qc_summary"] == sample_qc["stats"][0]["sub"]
+    # The demo's QC page flags a region, so its overview can no longer claim "Pass".
+    assert samples.overview("MT-0417-P2")["stats"]["qc_status"] == "Review"
+    assert samples.overview("HG002")["stats"]["qc_status"] == "Pass"
+
+
+def test_qc_caller_comes_from_the_sample_registry(monkeypatch):
+    with_bam = dict(samples.SAMPLES["HG002"], caller="mitorsaw 9.9.9-test")
+    vcf_only = {k: v for k, v in with_bam.items() if k != "bam_qc"}
+    monkeypatch.setitem(samples.SAMPLES, "TEST-BAM", with_bam)
+    monkeypatch.setitem(samples.SAMPLES, "TEST-VCF", vcf_only)
+    for key in ("TEST-BAM", "TEST-VCF"):
+        instrument = {i["label"]: i["value"] for i in samples.sample_qc(key)["instrument"]}
+        assert instrument["Caller"] == "mitorsaw 9.9.9-test"
+
+
+def test_qc_caller_is_not_recorded_rather_than_guessed():
+    instrument = {i["label"]: i["value"] for i in qc.build_vcf_qc(samples.variants("HG002"))["instrument"]}
+    assert instrument["Caller"] == "Not recorded"

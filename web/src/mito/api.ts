@@ -117,6 +117,7 @@ export interface OverviewResponse extends MitoMeta {
     pathogenic_findings: number
     haplogroup: string
     qc_status: string
+    qc_summary: string
     mtdna_mean_coverage: number | null
     mtdna_coverage_source: string | null
   }

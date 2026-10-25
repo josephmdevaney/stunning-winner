@@ -51,7 +51,7 @@ SAMPLES: dict[str, dict] = {
         # (never committed). Unlike CDS27601, no mosdepth summary was
         # supplied for this sample -- "mosdepth" key is intentionally
         # omitted rather than pointed at a nonexistent file; coverage/sex
-        # inference falls back accordingly (see sex_for_sample in roh.py).
+        # inference falls back accordingly (see sex_for_sample in roh/analysis.py).
         "vcf": "/Users/joedevaney/hackathon_cds48001/CDS48001.GRCh38.mitorsaw.vcf.gz",
         "caller": "mitorsaw 0.2.7-8ee9b5b",
         "instrument_line": "PacBio HiFi · GRCh38 chrM",
@@ -70,7 +70,7 @@ SAMPLES: dict[str, dict] = {
         # scripts/real_data/build_mito_bam_qc.py) -- falls back to
         # VCF-derived QC automatically, same as MT-0417-P2. Real whole-genome
         # chrM coverage is available from mosdepth, though (see
-        # repeatscope/sex_inference.py's own use of this same file for chrX/Y).
+        # roh/sex_inference.py's own use of this same file for chrX/Y).
         "mosdepth": "/Users/joedevaney/hackathon_cds2760x/CDS27601.GRCh38.mosdepth.summary.txt",
         "caller": "mitorsaw 0.2.7-8ee9b5b",
         "instrument_line": "PacBio HiFi · GRCh38 chrM",
@@ -206,13 +206,15 @@ def overview(sample: str) -> dict:
     haplo = _haplogroup(sample)
     pathogenic = [v for v in vs if v["status"] == "Pathogenic"]
     coverage = _mtdna_coverage(sample)
+    qc_result = sample_qc(sample)
     return {
         **meta(sample),
         "stats": {
             "variants_called": len(vs),
             "pathogenic_findings": len(pathogenic),
             "haplogroup": haplo["name"],
-            "qc_status": "Pass",
+            "qc_status": qc_result["overall_status"],
+            "qc_summary": qc_result["stats"][0]["sub"],
             "mtdna_mean_coverage": coverage["mean_coverage"],
             "mtdna_coverage_source": coverage["source"],
         },
@@ -267,9 +269,10 @@ def variant_detail(sample: str, variant_id: str) -> Optional[dict]:
 
 
 def sample_qc(sample: str) -> dict:
+    caller = SAMPLES[sample]["caller"]
     bam = _bam_qc(sample)
     if bam is not None:
-        return {**meta(sample), **qc.build_bam_qc(bam)}
+        return {**meta(sample), **qc.build_bam_qc(bam, caller=caller)}
     if SAMPLES[sample]["source"] == "vcf":
-        return {**meta(sample), **qc.build_vcf_qc(variants(sample))}
+        return {**meta(sample), **qc.build_vcf_qc(variants(sample), caller=caller)}
     return {**meta(sample), **qc.build_qc()}

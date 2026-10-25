@@ -60,6 +60,7 @@ from ..paraphase import (
     load_sawfish_calls,
 )
 from ..rexprt import RexprtScore, load_rexprt_scores
+from ..strchive import STATUS_INTERMEDIATE, STATUS_PATHOGENIC
 from ..trgt import TrgtIndex, sample_names, trgt_version
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -706,6 +707,121 @@ def get_run_qc(mode: Optional[str] = None, sample: Optional[str] = None):
                 "reason": "Requires the aligner's own stats or a BAM/CRAM QC tool; not in a TRGT VCF.",
             },
         ],
+    }
+
+
+# --- Cohort analysis -----------------------------------------------------------
+# Aggregates every sample in a mode (Carrier / PureTarget V2) into one cohort view:
+# general metrics plus the per-sample reportable findings. Built from the same
+# per-sample panel + non-repeat rows the Overview screen uses, so the two never disagree.
+
+COHORT_MODES = ("carrier", "puretarget_v2")
+# A non-repeat (Paraphase/sawfish) carrier-panel finding is reportable when pathogenic, or
+# when it shows a heterozygous carrier state (e.g. SMN1 with one copy), which the
+# non-repeat classifier reports as "Intermediate".
+_cohort_cache: dict[str, dict] = {}
+
+
+def _run_id(vcf_path: str, sample: str) -> str:
+    """Sequencing run of a sample: the movie/run prefix of its VCF file name
+    (m84036_..._s4.bc2097.trgt.vcf -> m84036_..._s4); the whole sample name if it has no barcode suffix."""
+    name = Path(vcf_path).name
+    return name.split(".bc")[0] if ".bc" in name else sample
+
+
+def _cohort_sample_row(m: str, s: str) -> dict:
+    panel = _get_panel(m, s)
+    min_depth = _min_locus_depth(m)
+    genotyped = [l for l in panel if l.genotyped]
+    depths = [l.depth for l in genotyped if l.depth is not None]
+    low_depth = [l for l in genotyped if (l.depth or 0) < min_depth]
+
+    reportable = [
+        {"gene": l.gene, "locus_id": l.id, "disease": l.disease, "status": l.status,
+         "genotype": f"{l.a1} / {l.a2}" if l.a1 is not None else None, "zygosity": l.zygosity,
+         "source": "TRGT", "clickable": True}
+        for l in panel if l.status == STATUS_PATHOGENIC
+    ]
+    paraphase_calls, f8_inv_calls, havanno, sawfish_calls = _get_paraphase(m, s)
+    for t in _modes[m]["non_repeat_targets"]:
+        finding = _gene_finding(t, paraphase_calls, f8_inv_calls, havanno, sawfish_calls)
+        if finding and finding.status in (STATUS_PATHOGENIC_VARIANT, STATUS_INTERMEDIATE):
+            reportable.append({
+                "gene": t["gene"], "locus_id": None, "disease": t["disease"],
+                "status": "Carrier" if finding.status == STATUS_INTERMEDIATE else finding.status,
+                "genotype": finding.note, "zygosity": finding.zygosity, "source": t["tool"], "clickable": False,
+            })
+
+    vcf_path = _modes[m]["sample_paths"][s]
+    return {
+        "sample": s,
+        "run": _run_id(vcf_path, s),
+        "sex": _modes[m]["sample_sex"].get(s),
+        "loci_genotyped": len(genotyped),
+        "loci_total": len(panel),
+        "no_calls": len(panel) - len(genotyped),
+        "mean_depth": round(sum(depths) / len(depths), 1) if depths else None,
+        "low_depth_loci": len(low_depth),
+        "qc": "Pass" if genotyped and not low_depth else ("No data" if not genotyped else "Low depth"),
+        "reportable": reportable,
+    }
+
+
+def _median(xs: list[float]) -> Optional[float]:
+    xs = sorted(xs)
+    if not xs:
+        return None
+    mid = len(xs) // 2
+    return xs[mid] if len(xs) % 2 else round((xs[mid - 1] + xs[mid]) / 2, 1)
+
+
+@app.get("/api/cohort")
+def get_cohort(mode: Optional[str] = None):
+    m = _resolve_mode(mode)
+    if m not in COHORT_MODES:
+        raise HTTPException(status_code=404, detail=f"cohort analysis is not available for mode {m!r}")
+    if m not in _cohort_cache:
+        rows = [_cohort_sample_row(m, s) for s in sorted(_modes[m]["sample_paths"])]
+        _cohort_cache[m] = {"mode": m, "label": _modes[m]["label"], "samples": rows}
+    rows = _cohort_cache[m]["samples"]
+    min_depth = _min_locus_depth(m)
+
+    depths = [r["mean_depth"] for r in rows if r["mean_depth"] is not None]
+    bins = [0, 10, 20, 50, 100, 200, 300, 400, 500, 750, 10**6]
+    depth_hist = [
+        {"label": f"{lo}-{hi}x" if hi < 10**6 else f"{lo}x+", "lo": lo,
+         "count": sum(1 for d in depths if lo <= d < hi)}
+        for lo, hi in zip(bins, bins[1:])
+    ]
+    runs: dict[str, int] = {}
+    sexes: dict[str, int] = {}
+    genes: dict[str, dict] = {}
+    for r in rows:
+        runs[r["run"]] = runs.get(r["run"], 0) + 1
+        sexes[r["sex"] or "Unknown"] = sexes.get(r["sex"] or "Unknown", 0) + 1
+        for f in r["reportable"]:
+            g = genes.setdefault(f["gene"], {"gene": f["gene"], "disease": f["disease"], "samples": 0})
+            g["samples"] += 1
+    n = len(rows)
+    with_findings = [r for r in rows if r["reportable"]]
+    return {
+        "mode": m,
+        "label": _cohort_cache[m]["label"],
+        "min_locus_depth": min_depth,
+        "stats": {
+            "samples": n,
+            "qc_pass": sum(1 for r in rows if r["qc"] == "Pass"),
+            "qc_fail": sum(1 for r in rows if r["qc"] != "Pass"),
+            "mean_depth": round(sum(depths) / len(depths), 1) if depths else None,
+            "median_depth": _median(depths),
+            "samples_with_reportable": len(with_findings),
+            "reportable_findings": sum(len(r["reportable"]) for r in rows),
+        },
+        "depth_histogram": depth_hist,
+        "sex": [{"label": k, "count": v} for k, v in sorted(sexes.items())],
+        "runs": [{"run": k, "count": v} for k, v in sorted(runs.items())],
+        "genes": sorted(genes.values(), key=lambda g: (-g["samples"], g["gene"])),
+        "samples": rows,
     }
 
 

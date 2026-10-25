@@ -6,6 +6,7 @@ import MitoApp from './mito/MitoApp'
 import ParaphaseApp from './paraphase/ParaphaseApp'
 import KivviApp from './kivvi/KivviApp'
 import ROHApp from './roh/ROHApp'
+import CohortApp from './cohort/CohortApp'
 import type { Product } from './components/ProductSwitcher'
 
 // The suite ships seven separate tools behind one deployable, combined into a
@@ -26,6 +27,8 @@ export default function App() {
       return <KivviApp product={product} onSwitchProduct={setProduct} />
     case 'roh':
       return <ROHApp product={product} onSwitchProduct={setProduct} />
+    case 'cohort':
+      return <CohortApp product={product} onSwitchProduct={setProduct} />
     case 'puretarget_v2':
       return <PureTargetV2App product={product} onSwitchProduct={setProduct} />
     case 'carrier':

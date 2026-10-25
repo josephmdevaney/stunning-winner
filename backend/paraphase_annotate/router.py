@@ -12,7 +12,7 @@ from typing import Optional
 
 from fastapi import APIRouter, HTTPException
 
-from . import parser, runner, samples
+from . import parser, regions, runner, samples
 
 router = APIRouter(prefix="/api/paraphase", tags=["paraphase"])
 
@@ -38,16 +38,27 @@ def post_run(sample: Optional[str] = None):
     return runner.start_run(_resolve(sample))
 
 
+@router.get("/run-info")
+def get_run_info(sample: Optional[str] = None):
+    """How this sample's annotation run was set up: the vendored script release,
+    the Python it ran on, whether the JSON was adapted, and which Paraphase
+    produced the data. `run` is null until a run has been started."""
+    s = _resolve(sample)
+    return {"sample": s, "script": runner.vendor_info(), "run": runner.run_meta(s)}
+
+
 @router.get("/overview")
 def get_overview(sample: Optional[str] = None):
     s = _resolve(sample)
     st = runner.status(s)
     if st["state"] != "done":
-        return {"sample": s, **st, "regions": []}
+        return {"sample": s, **st, "regions": [], "run": runner.run_meta(s), "script": runner.vendor_info()}
     return {
         "sample": s,
         "state": "done",
         "regions": parser.parse_summary(runner.summary_csv(s)),
+        "run": runner.run_meta(s),
+        "script": runner.vendor_info(),
     }
 
 
@@ -63,3 +74,32 @@ def get_region(sample: Optional[str] = None, region: Optional[str] = None):
         "state": "done",
         "haplotypes": parser.parse_detailed(runner.detailed_csv(s), region),
     }
+
+
+# --- Paraphase's own JSON, instantly (no annotation run needed) ---------------
+
+@router.get("/json")
+def get_json_table(sample: Optional[str] = None):
+    """Every region in the sample's Paraphase JSON with its copy numbers, depth,
+    haplotype counts and flags. Reads the file directly: no network, no wait."""
+    s = _resolve(sample)
+    if not samples.json_path(s).exists():
+        raise HTTPException(status_code=404, detail=f"Paraphase JSON not found for {s!r}")
+    try:
+        return regions.table(s)
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+
+@router.get("/json/region")
+def get_json_region(sample: Optional[str] = None, region: Optional[str] = None):
+    s = _resolve(sample)
+    if not samples.json_path(s).exists():
+        raise HTTPException(status_code=404, detail=f"Paraphase JSON not found for {s!r}")
+    try:
+        detail = regions.detail(s, region or "")
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    if detail is None:
+        raise HTTPException(status_code=404, detail=f"region {region!r} not in {s!r}'s Paraphase JSON")
+    return detail

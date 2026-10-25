@@ -21,4 +21,7 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-include = ["repeatscope*", "mitolr*", "paraphase_annotate*", "kivvi*"]
+include = ["repeatscope*", "mitolr*", "paraphase_annotate*", "kivvi*", "pacbio_tools*"]
+
+[tool.setuptools.package-data]
+pacbio_tools = ["releases_snapshot.json"]

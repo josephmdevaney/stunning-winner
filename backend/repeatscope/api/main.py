@@ -136,6 +136,14 @@ from kivvi.router import router as kivvi_router  # noqa: E402
 
 app.include_router(kivvi_router)
 
+# PacBio tool versions: which release of Paraphase, TRGT, sawfish, MitoRSaw, ...
+# produced the data loaded above, against each tool's newest GitHub release.
+# Reads the loaded data's own version headers, so it needs the per-mode state
+# below (looked up lazily at request time) -- served under /api/tools.
+from pacbio_tools.router import router as pacbio_tools_router  # noqa: E402
+
+app.include_router(pacbio_tools_router)
+
 # Per-mode state: {mode_key: {label, sample_paths: {sample: vcf_path}, locus_ids: set|None}}
 _modes: dict[str, dict] = {}
 _default_mode: str = ""

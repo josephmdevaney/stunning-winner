@@ -4,12 +4,18 @@ import { ParaphaseTopBar } from './ParaphaseTopBar'
 import type { Product } from '../components/ProductSwitcher'
 import { colors } from '../theme'
 import { paraphaseApi } from './api'
+import { ParaphaseCallsScreen } from './screens/ParaphaseCallsScreen'
 import { ParaphaseOverviewScreen } from './screens/ParaphaseOverviewScreen'
 import { ParaphaseRegionScreen } from './screens/ParaphaseRegionScreen'
+import { ParaphaseRegionsScreen } from './screens/ParaphaseRegionsScreen'
+import { ParaphaseVersionsScreen } from './screens/ParaphaseVersionsScreen'
 
 const TITLES: Record<ParaphaseScreen, string> = {
+  regions: 'Paraphase Regions',
+  calls: 'Region Calls',
   overview: 'Paraphase Annotation Overview',
-  region: 'Region Detail',
+  region: 'Annotation Detail',
+  versions: 'PacBio Tool Versions',
 }
 
 export default function ParaphaseApp({
@@ -19,7 +25,8 @@ export default function ParaphaseApp({
   product: Product
   onSwitchProduct: (p: Product) => void
 }) {
-  const [screen, setScreen] = useState<ParaphaseScreen>('overview')
+  const [screen, setScreen] = useState<ParaphaseScreen>('regions')
+  const [selectedCall, setSelectedCall] = useState('')
   const [selectedRegion, setSelectedRegion] = useState('')
 
   const [samples, setSamples] = useState<string[]>([])
@@ -34,8 +41,14 @@ export default function ParaphaseApp({
 
   const onSelectSample = (s: string) => {
     setSample(s)
+    setSelectedCall('')
     setSelectedRegion('')
-    setScreen('overview')
+    setScreen(screen === 'versions' ? 'versions' : 'regions')
+  }
+
+  const goToCall = (region: string) => {
+    setSelectedCall(region)
+    setScreen('calls')
   }
 
   const goToRegion = (region: string) => {
@@ -50,6 +63,7 @@ export default function ParaphaseApp({
         onSwitchProduct={onSwitchProduct}
         screen={screen}
         onNavigate={setScreen}
+        callSelected={!!selectedCall}
         regionSelected={!!selectedRegion}
         samples={samples}
         sample={sample}
@@ -57,14 +71,24 @@ export default function ParaphaseApp({
       />
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        <ParaphaseTopBar title={TITLES[screen]} sample={sample} />
+        <ParaphaseTopBar
+          title={TITLES[screen]}
+          subtitle={
+            screen === 'versions'
+              ? 'Which release of each PacBio tool made your data, against the newest on GitHub'
+              : `Sample ${sample} · ${screen === 'regions' || screen === 'calls' ? "Paraphase's own JSON" : 'interpret_paraphase.py annotation'} · GRCh38`
+          }
+        />
 
         <div style={{ flex: 1, overflowY: 'auto' }}>
-          {!sample && (
+          {!sample && screen !== 'versions' && (
             <div style={{ padding: 28, color: colors.textSecondary, fontSize: 13.5 }}>
               No samples with a Paraphase JSON on file yet.
             </div>
           )}
+          {screen === 'versions' && <ParaphaseVersionsScreen />}
+          {sample && screen === 'regions' && <ParaphaseRegionsScreen sample={sample} onSelectRegion={goToCall} />}
+          {sample && screen === 'calls' && selectedCall && <ParaphaseCallsScreen sample={sample} region={selectedCall} />}
           {sample && screen === 'overview' && <ParaphaseOverviewScreen sample={sample} onSelectRegion={goToRegion} />}
           {sample && screen === 'region' && selectedRegion && <ParaphaseRegionScreen sample={sample} region={selectedRegion} />}
         </div>

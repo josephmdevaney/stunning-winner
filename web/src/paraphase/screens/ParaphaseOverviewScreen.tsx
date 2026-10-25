@@ -54,6 +54,7 @@ export function ParaphaseOverviewScreen({
   return (
     <div style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 20 }}>
       <StatusBanner data={data} onRun={runAnnotation} />
+      {data.state === 'done' && <ProvenanceNote data={data} onRerun={runAnnotation} />}
 
       {data.state === 'done' && (
         <div style={{ background: 'white', border: `1px solid ${colors.border}`, borderRadius: 12, overflow: 'hidden' }}>
@@ -130,6 +131,74 @@ export function ParaphaseOverviewScreen({
               </div>
             )
           })}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Which interpret_paraphase.py produced these results, and whether a newer one
+// is now vendored. Results from before version tracking have no recorded run, but
+// that script is known: it was the v3.5.0 this project originally pinned.
+function ProvenanceNote({ data, onRerun }: { data: OverviewResponse; onRerun: () => void }) {
+  const current = data.script?.paraphase_tag ?? null
+  const used = data.run?.script_tag ?? 'v3.5.0'
+  const outdated = current != null && current !== used
+  const when = data.run?.finished_at ? new Date(data.run.finished_at).toLocaleString() : null
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 14,
+        padding: '10px 16px',
+        borderRadius: 10,
+        background: outdated ? colors.interpBg.intermediate : 'white',
+        border: `1px solid ${outdated ? colors.statusIntermediate : colors.border}`,
+        fontSize: 12,
+        color: colors.textSecondary,
+        lineHeight: 1.5,
+      }}
+    >
+      <div style={{ flex: 1 }}>
+        {data.run ? (
+          <>
+            Annotated with <b style={{ fontFamily: mono }}>interpret_paraphase.py {used}</b>
+            {when && <> · finished {when}</>}
+            {data.run.data_paraphase_version && <> · data from Paraphase {data.run.data_paraphase_version}</>}
+            {data.run.adapted_json && <> · JSON adapted to the layout this script reads</>}.
+          </>
+        ) : (
+          <>
+            Run details weren't recorded for this result — it predates version tracking and was produced by the
+            originally pinned <b style={{ fontFamily: mono }}>interpret_paraphase.py {used}</b>.
+          </>
+        )}
+        {outdated && (
+          <>
+            {' '}
+            <b style={{ color: colors.textPrimary }}>{current} is now vendored.</b> Re-running annotates with it
+            (live Ensembl and ClinVar lookups, so it can take a long while); these results are kept in an archive
+            folder, not overwritten.
+          </>
+        )}
+      </div>
+      {outdated && (
+        <div
+          onClick={onRerun}
+          style={{
+            padding: '6px 14px',
+            borderRadius: 20,
+            fontSize: 11.5,
+            fontWeight: 600,
+            cursor: 'pointer',
+            background: colors.accentButtonBg,
+            color: 'white',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          Re-run with {current}
         </div>
       )}
     </div>

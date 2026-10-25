@@ -1,11 +1,19 @@
 import { colors, mono } from '../theme'
 import { ProductSwitcher, type Product } from '../components/ProductSwitcher'
 
-export type ParaphaseScreen = 'overview' | 'region'
+export type ParaphaseScreen = 'regions' | 'calls' | 'overview' | 'region' | 'versions'
 
-const NAV_ITEMS: { screen: ParaphaseScreen; label: string }[] = [
-  { screen: 'overview', label: 'Overview' },
-  { screen: 'region', label: 'Region Detail' },
+// Regions / Region Calls read Paraphase's own JSON (instant). Annotation /
+// Annotation Detail are the slower interpret_paraphase.py run (Ensembl VEP +
+// ClinVar). Tool Versions isn't about one sample.
+const SAMPLE_NAV: { screen: ParaphaseScreen; label: string }[] = [
+  { screen: 'regions', label: 'Regions' },
+  { screen: 'calls', label: 'Region Calls' },
+  { screen: 'overview', label: 'Annotation' },
+  { screen: 'region', label: 'Annotation Detail' },
+]
+const TOOLS_NAV: { screen: ParaphaseScreen; label: string }[] = [
+  { screen: 'versions', label: 'Tool Versions' },
 ]
 
 export function ParaphaseSidebar({
@@ -13,6 +21,7 @@ export function ParaphaseSidebar({
   onSwitchProduct,
   screen,
   onNavigate,
+  callSelected,
   regionSelected,
   samples,
   sample,
@@ -22,6 +31,7 @@ export function ParaphaseSidebar({
   onSwitchProduct: (p: Product) => void
   screen: ParaphaseScreen
   onNavigate: (s: ParaphaseScreen) => void
+  callSelected: boolean
   regionSelected: boolean
   samples: string[]
   sample: string
@@ -67,12 +77,34 @@ export function ParaphaseSidebar({
         Sample
       </div>
 
-      {NAV_ITEMS.map((item) => (
+      {SAMPLE_NAV.map((item) => (
         <NavRow
           key={item.screen}
           active={screen === item.screen}
           label={item.label}
-          disabled={item.screen === 'region' && !regionSelected}
+          disabled={(item.screen === 'region' && !regionSelected) || (item.screen === 'calls' && !callSelected)}
+          onClick={() => onNavigate(item.screen)}
+        />
+      ))}
+
+      <div
+        style={{
+          color: colors.sidebarTextMuted,
+          fontSize: 11,
+          fontWeight: 600,
+          letterSpacing: '0.08em',
+          textTransform: 'uppercase',
+          padding: '16px 10px 6px',
+        }}
+      >
+        PacBio tools
+      </div>
+
+      {TOOLS_NAV.map((item) => (
+        <NavRow
+          key={item.screen}
+          active={screen === item.screen}
+          label={item.label}
           onClick={() => onNavigate(item.screen)}
         />
       ))}
@@ -108,7 +140,7 @@ export function ParaphaseSidebar({
           <div style={{ color: 'white', fontSize: 13.5, fontWeight: 600, marginTop: 4 }}>{sample || '—'}</div>
         )}
         <div style={{ color: colors.sidebarTextSub, fontSize: 11.5, fontFamily: mono, marginTop: 6 }}>
-          interpret_paraphase.py · 14 medical regions
+          Paraphase JSON · annotation · versions
         </div>
       </div>
     </div>

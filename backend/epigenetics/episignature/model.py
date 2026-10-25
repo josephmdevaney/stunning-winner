@@ -21,7 +21,7 @@ from dataclasses import dataclass
 from functools import lru_cache
 from typing import Optional
 
-from . import vendor
+from . import fetched
 
 MIN_PROBABILITY = 1e-7      # libsvm clamps the Platt probability away from 0 and 1
 
@@ -156,15 +156,15 @@ def _read_training(path) -> tuple[list[str], list[dict]]:
 def training(key: str) -> dict:
     """The model's training cohort as `{features, rows: [{group, DMR_x: fraction, ...}]}` (group 1 = case).
     Sample ids are dropped: only the distributions are used."""
-    label = vendor.CATALOG[key][0]
-    columns, rows = _read_training(vendor.model_files(label)["training"])
+    label = fetched.CATALOG[key][0]
+    columns, rows = _read_training(fetched.model_files(label)["training"])
     return {"features": columns, "rows": rows}
 
 
 @lru_cache(maxsize=None)
 def loo_scores(key: str) -> list[dict]:
     """The authors' leave-one-out case probabilities for their own training samples: `{group, score}`."""
-    path = vendor.model_files(vendor.CATALOG[key][0])["loo"]
+    path = fetched.model_files(fetched.CATALOG[key][0])["loo"]
     with open(path, newline="") as f:
         return [{"group": int(float(r["true_label"])), "score": float(r["loo_prob_case"])} for r in csv.DictReader(f)]
 
@@ -172,8 +172,8 @@ def loo_scores(key: str) -> list[dict]:
 @lru_cache(maxsize=None)
 def load(key: str) -> EpiModel:
     """The converted model joined to its feature names. Raises ValueError if the pieces do not agree."""
-    label = vendor.CATALOG[key][0]
-    files = vendor.model_files(label)
+    label = fetched.CATALOG[key][0]
+    files = fetched.model_files(label)
     converted = json.loads(files["converted"].read_text())
     metadata = json.loads(files["metadata"].read_text())
     features = training(key)["features"]

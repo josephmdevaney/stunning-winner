@@ -14,7 +14,7 @@ from typing import Optional
 from .. import cpg
 from ..samples import Sample
 from . import model as models
-from . import regions, vendor
+from . import fetched, regions
 
 # EpiSignaLR derives the models from count-mode pileups at reference CpG sites.
 EXPECTED_PILEUP_MODE = "count"
@@ -27,7 +27,7 @@ _cache: dict[tuple, dict] = {}
 
 @lru_cache(maxsize=None)
 def _panel(key: str) -> dict[str, regions.Dmr]:
-    return regions.parse_panel(vendor.model_files(vendor.CATALOG[key][0])["dmrs"])
+    return regions.parse_panel(fetched.model_files(fetched.CATALOG[key][0])["dmrs"])
 
 
 def _provenance_warnings(provenance: dict) -> list[dict]:
@@ -91,7 +91,7 @@ def _one(key: str, combined, provenance: dict) -> dict:
     cohort_meta = m.metadata["training_cohort"]
     lo, hi = m.indeterminate_zone
     return {
-        "id": key, "name": vendor.CATALOG[key][1], "gene": vendor.CATALOG[key][2],
+        "id": key, "name": fetched.CATALOG[key][1], "gene": fetched.CATALOG[key][2],
         "probability": None if withheld else score.probability,
         "decision": score.decision, "intercept": score.intercept,
         "call": band,
@@ -119,9 +119,9 @@ def overview(sample: Sample) -> dict:
     provenance = cpg.header(combined)
     out = {
         "sample": sample.key, "label": sample.label,
-        "source": {k: vendor.info()[k] for k in ("repo", "commit", "fetched_at", "source", "licence")},
+        "source": {k: fetched.info()[k] for k in ("repo", "commit", "fetched_at", "source", "licence")},
         "provenance": provenance,
-        "models": [_one(key, combined, provenance) for key in vendor.CATALOG],
+        "models": [_one(key, combined, provenance) for key in fetched.CATALOG],
     }
     _cache[stamp] = out
     return out

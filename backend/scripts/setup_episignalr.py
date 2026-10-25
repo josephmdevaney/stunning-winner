@@ -38,7 +38,7 @@ from pathlib import Path
 BACKEND = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(BACKEND))
 
-from epigenetics.episignature import vendor  # noqa: E402
+from epigenetics.episignature import fetched  # noqa: E402
 
 COMMIT = "870e45be06d558d519ebf8e5acd5bf8092d4ff0c"      # main, 2026-10-21 ("Removed mention of R...")
 
@@ -68,11 +68,11 @@ SHA256 = {
 }
 
 CONVERT = BACKEND / "epigenetics" / "episignature" / "convert.py"
-CONVERT_VENV = vendor.VENDOR_DIR / ".convert-venv"
+CONVERT_VENV = fetched.VENDOR_DIR / ".convert-venv"
 
 
 def download(label: str, name: str) -> bytes:
-    url = f"https://raw.githubusercontent.com/{vendor.REPO}/{COMMIT}/data/{label}_enet_svm_model/{name}"
+    url = f"https://raw.githubusercontent.com/{fetched.REPO}/{COMMIT}/data/{label}_enet_svm_model/{name}"
     print(f"Downloading {label}/{name} ...")
     with urllib.request.urlopen(url, timeout=60) as resp:
         data = resp.read()
@@ -97,16 +97,16 @@ def converter_python() -> str:
 
 
 def convert(python: str, label: str) -> None:
-    files = vendor.model_files(label)
+    files = fetched.model_files(label)
     files["converted"].parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as cwd:      # not the data folder: -I keeps the cwd off the import path anyway
-        subprocess.run([python, "-I", str(CONVERT), str(vendor.RAW_DIR / label / "enet_svm_model.joblib"), str(files["converted"])],
+        subprocess.run([python, "-I", str(CONVERT), str(fetched.RAW_DIR / label / "enet_svm_model.joblib"), str(files["converted"])],
                        check=True, cwd=cwd)
 
 
 def complete() -> bool:
-    info = vendor.info()
-    return bool(info) and info.get("commit") == COMMIT and vendor.installed()
+    info = fetched.info()
+    return bool(info) and info.get("commit") == COMMIT and fetched.installed()
 
 
 def main() -> int:
@@ -120,7 +120,7 @@ def main() -> int:
 
     for label, files in SHA256.items():
         for name in files:
-            dest = vendor.RAW_DIR / label / name
+            dest = fetched.RAW_DIR / label / name
             dest.parent.mkdir(parents=True, exist_ok=True)
             dest.write_bytes(download(label, name))
 
@@ -130,15 +130,15 @@ def main() -> int:
 
     from epigenetics.episignature import model  # loads each model and cross-checks it against its metadata
     model.load.cache_clear()
-    for key in vendor.CATALOG:
+    for key in fetched.CATALOG:
         m = model.load(key)
         print(f"{m.label}: {len(m.features)} DMRs, {len(m.selected)} selected; weights match the published metadata.")
 
-    vendor.VERSION_FILE.write_text(json.dumps({
-        "repo": vendor.REPO,
+    fetched.VERSION_FILE.write_text(json.dumps({
+        "repo": fetched.REPO,
         "commit": COMMIT,
         "fetched_at": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
-        "source": f"https://github.com/{vendor.REPO}/tree/{COMMIT}",
+        "source": f"https://github.com/{fetched.REPO}/tree/{COMMIT}",
         "licence": "none published in the repository; files are fetched for local use and never committed",
         "sha256": {f"{label}/{name}": digest for label, files in SHA256.items() for name, digest in files.items()},
     }, indent=2) + "\n")

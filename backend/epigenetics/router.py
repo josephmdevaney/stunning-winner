@@ -13,7 +13,7 @@ from . import samples, service
 from .analysis import Thresholds
 from .cpg import TabixError
 from .episignature import service as episignature_service
-from .episignature import vendor as episignature_vendor
+from .episignature import fetched as episignature_fetched
 
 router = APIRouter(prefix="/api/epigenetics", tags=["epigenetics"])
 
@@ -90,10 +90,10 @@ def get_episignatures(sample: Optional[str] = None):
     """EpiSignaLR episignature scores for a genome. The models are fetched at setup, so until they are there this
     answers `installed: false` with the command to run instead of an error."""
     s = _sample(sample)
-    if not episignature_vendor.installed():
+    if not episignature_fetched.installed():
         return {
-            "installed": False, "setup_command": episignature_vendor.SETUP_COMMAND, "repo": episignature_vendor.REPO,
-            "available": [{"id": k, "name": v[1], "gene": v[2]} for k, v in episignature_vendor.CATALOG.items()],
+            "installed": False, "setup_command": episignature_fetched.SETUP_COMMAND, "repo": episignature_fetched.REPO,
+            "available": [{"id": k, "name": v[1], "gene": v[2]} for k, v in episignature_fetched.CATALOG.items()],
             "sample": s.key, "label": s.label, "models": [],
         }
     try:

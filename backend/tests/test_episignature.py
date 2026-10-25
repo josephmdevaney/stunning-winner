@@ -14,9 +14,9 @@ from fastapi.testclient import TestClient
 
 from epigenetics import cpg, router, samples
 from epigenetics.cpg import CpG
-from epigenetics.episignature import model, regions, service, vendor
+from epigenetics.episignature import fetched, model, regions, service
 
-needs_vendor = pytest.mark.skipif(not vendor.installed(), reason="EpiSignaLR files not fetched (backend/scripts/setup_episignalr.py)")
+needs_vendor = pytest.mark.skipif(not fetched.installed(), reason="EpiSignaLR files not fetched (backend/scripts/setup_episignalr.py)")
 
 KABUKI_A, KABUKI_B = -2.852093863675567, 0.25868962896184056
 
@@ -124,14 +124,14 @@ def test_a_dmr_without_a_covered_cpg_has_no_value(monkeypatch, tmp_path):
 # ---- the converter: reads a pickle without trusting it ----------------------------------------------------------
 
 def _python_with_numpy_and_joblib():
-    for py in (sys.executable, str(vendor.VENDOR_DIR / ".convert-venv" / "bin" / "python")):
+    for py in (sys.executable, str(fetched.VENDOR_DIR / ".convert-venv" / "bin" / "python")):
         if os.path.exists(py) and subprocess.run([py, "-I", "-c", "import numpy, joblib"], capture_output=True).returncode == 0:
             return py
     return None
 
 
 needs_converter_python = pytest.mark.skipif(_python_with_numpy_and_joblib() is None, reason="no Python with numpy and joblib")
-CONVERT = vendor.VENDOR_DIR.parent / "convert.py"
+CONVERT = fetched.VENDOR_DIR.parent / "convert.py"
 
 WRITE_FAKE_MODEL = '''
 import sys, types, numpy as np, joblib
@@ -200,7 +200,7 @@ SKLEARN_TRAINING_ROWS = {
 
 
 @needs_vendor
-@pytest.mark.parametrize("key", list(vendor.CATALOG))
+@pytest.mark.parametrize("key", list(fetched.CATALOG))
 def test_fetched_model_scores_its_training_rows_as_scikit_learn_does(key):
     m = model.load(key)
     rows = model.training(key)["rows"]
@@ -209,10 +209,10 @@ def test_fetched_model_scores_its_training_rows_as_scikit_learn_does(key):
 
 
 @needs_vendor
-@pytest.mark.parametrize("key", list(vendor.CATALOG))
+@pytest.mark.parametrize("key", list(fetched.CATALOG))
 def test_fetched_model_is_consistent_with_its_panel_and_metadata(key):
     m = model.load(key)
-    panel = regions.parse_panel(vendor.model_files(vendor.CATALOG[key][0])["dmrs"])
+    panel = regions.parse_panel(fetched.model_files(fetched.CATALOG[key][0])["dmrs"])
     assert set(m.features) == set(panel) and len(m.selected) == m.metadata["final_model"]["n_features"]
     assert len(model.loo_scores(key)) == m.metadata["training_cohort"]["n_samples"]
     assert m.threshold == 0.5 and m.indeterminate_zone == (0.4, 0.6)
@@ -240,7 +240,7 @@ def pileup_sample(tmp_path):
 def test_service_reports_each_model_with_its_evidence(monkeypatch, pileup_sample):
     _fake_pileup(monkeypatch)
     out = service.overview(pileup_sample)
-    assert [m["id"] for m in out["models"]] == list(vendor.CATALOG)
+    assert [m["id"] for m in out["models"]] == list(fetched.CATALOG)
     assert out["source"]["commit"] and out["provenance"]["pileup_mode"] == "count"
     kabuki = next(m for m in out["models"] if m["id"] == "kabuki")
     ref = model.load("kabuki")
@@ -299,7 +299,7 @@ def client(tmp_path, monkeypatch):
 
 
 def test_route_says_how_to_install_when_the_models_are_not_fetched(client, monkeypatch):
-    monkeypatch.setattr(router.episignature_vendor, "installed", lambda: False)
+    monkeypatch.setattr(router.episignature_fetched, "installed", lambda: False)
     body = client.get("/api/epigenetics/episignatures").json()
     assert body["installed"] is False and body["models"] == []
     assert body["setup_command"] == "python backend/scripts/setup_episignalr.py"
@@ -307,7 +307,7 @@ def test_route_says_how_to_install_when_the_models_are_not_fetched(client, monke
 
 
 def test_route_returns_the_service_result(client, monkeypatch):
-    monkeypatch.setattr(router.episignature_vendor, "installed", lambda: True)
+    monkeypatch.setattr(router.episignature_fetched, "installed", lambda: True)
     monkeypatch.setattr(router.episignature_service, "overview", lambda s: {"sample": s.key, "models": [{"id": "kabuki"}]})
     body = client.get("/api/epigenetics/episignatures", params={"sample": "SYN"}).json()
     assert body == {"installed": True, "sample": "SYN", "models": [{"id": "kabuki"}]}
@@ -315,7 +315,7 @@ def test_route_returns_the_service_result(client, monkeypatch):
 
 
 def test_route_reports_a_missing_tabix_and_inconsistent_files_as_unavailable(client, monkeypatch):
-    monkeypatch.setattr(router.episignature_vendor, "installed", lambda: True)
+    monkeypatch.setattr(router.episignature_fetched, "installed", lambda: True)
 
     def broken(error):
         def overview(s):

@@ -34,3 +34,6 @@ backend/HG002_PacBio-HiFi-Revio_20231031_48x_GRCh38-GIABv3.bam.bai
 # outside the repo) -- see backend/config/modes.local.json.example. Never
 # committed since it typically contains machine-specific absolute paths.
 backend/config/modes.local.json
+
+# Local epigenetics sample registry (machine-specific genome paths) -- see backend/config/epigenetics.local.json.example.
+backend/config/epigenetics.local.json

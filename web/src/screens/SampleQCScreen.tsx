@@ -16,6 +16,7 @@ export function SampleQCScreen({ mode, sample }: { mode: string; sample: string 
   if (!data) return <div style={{ padding: 28 }}>Loading…</div>
 
   const flagged = data.rows.filter((r) => r.flag !== 'Pass').length
+  const minRequired = data.rows[0]?.min_required
 
   return (
     <div style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -36,7 +37,7 @@ export function SampleQCScreen({ mode, sample }: { mode: string; sample: string 
         <StatCard
           label="Flagged loci"
           value={String(flagged)}
-          sub={flagged ? 'Below 10x minimum or no call' : 'None'}
+          sub={flagged ? (minRequired != null ? `Below ${minRequired}x minimum or no call` : 'Below the depth minimum or no call') : 'None'}
           dotColor={flagged ? colors.statusIntermediate : colors.statusNormal}
         />
       </StatGrid>

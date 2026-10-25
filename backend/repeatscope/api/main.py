@@ -115,6 +115,18 @@ def _caller_label(vcf_path: str) -> str:
     return f"TRGT v{version}" if version else "TRGT"
 
 
+# Minimum depth (x) a locus needs to pass Sample QC. PureTarget data -- the PureTarget repeat
+# expansion panel and the PureTarget carrier panel -- uses PacBio's specified minimum target coverage
+# of 20x per sample. Whole-genome data keeps 10x: PacBio's figure is an enrichment-panel spec and
+# doesn't describe whole-genome coverage.
+PURETARGET_MIN_LOCUS_DEPTH = 20
+DEFAULT_MIN_LOCUS_DEPTH = 10
+
+
+def _min_locus_depth(mode: str) -> int:
+    return PURETARGET_MIN_LOCUS_DEPTH if mode in ("puretarget_v2", "carrier") else DEFAULT_MIN_LOCUS_DEPTH
+
+
 VCF_EXTENSIONS = (".vcf", ".vcf.gz")
 # Non-panel VCFs that legitimately sit alongside a sample's TRGT VCF in some modes'
 # (flat-layout) vcf_dir -- e.g. Carrier's f8inversion caller and sawfish output --
@@ -505,7 +517,8 @@ def get_overview(mode: Optional[str] = None, sample: Optional[str] = None):
     pathogenic = [l for l in panel if l.status == "Full expansion"]
     depths = [l.depth for l in genotyped if l.depth is not None]
     mean_depth = round(sum(depths) / len(depths)) if depths else None
-    under_covered = [l for l in genotyped if (l.depth or 0) < 10]
+    min_depth = _min_locus_depth(m)
+    under_covered = [l for l in genotyped if (l.depth or 0) < min_depth]
 
     non_repeat_targets = _modes[m]["non_repeat_targets"]
     paraphase_calls, f8_inv_calls, havanno_annotations, sawfish_calls = _get_paraphase(m, s)
@@ -527,7 +540,7 @@ def get_overview(mode: Optional[str] = None, sample: Optional[str] = None):
             "loci_genotyped": loci_genotyped,
             "pathogenic_findings": pathogenic_findings,
             "mean_read_depth": mean_depth,
-            "qc_status": "Pass" if not under_covered else f"{len(under_covered)} loci below 10x",
+            "qc_status": "Pass" if not under_covered else f"{len(under_covered)} loci below {min_depth}x",
         },
         "loci": loci,
     }
@@ -599,15 +612,16 @@ def get_sample_qc(mode: Optional[str] = None, sample: Optional[str] = None):
     m = _resolve_mode(mode)
     s = _resolve_sample(m, sample)
     panel = _get_panel(m, s)
+    min_depth = _min_locus_depth(m)
     rows = []
     for l in panel:
         if not l.genotyped:
             flag = "No call"
-        elif (l.depth or 0) >= 10:
+        elif (l.depth or 0) >= min_depth:
             flag = "Pass"
         else:
             flag = "Low depth"
-        rows.append({"gene": l.gene, "id": l.id, "depth": l.depth, "min_required": 10, "flag": flag})
+        rows.append({"gene": l.gene, "id": l.id, "depth": l.depth, "min_required": min_depth, "flag": flag})
 
     genotyped_depths = [l.depth for l in panel if l.depth is not None]
     passing = sum(1 for r in rows if r["flag"] == "Pass")

@@ -281,6 +281,18 @@ class TrgtCall:
         return sum(vals) if vals else None
 
 
+def trgt_version(path: str | Path) -> str | None:
+    """The TRGT version recorded in a VCF's own header (`##trgtVersion=5.1.0-ec66463` -> "5.1.0"),
+    or None when the header has no such line. Never guessed: callers show plain "TRGT" for None."""
+    with _open_text(path) as fh:
+        for line in fh:
+            if not line.startswith("##"):
+                break
+            if line.startswith("##trgtVersion="):
+                return line.split("=", 1)[1].strip().split("-")[0] or None
+    return None
+
+
 def sample_names(path: str | Path) -> list[str]:
     with _open_text(path) as f:
         for line in f:

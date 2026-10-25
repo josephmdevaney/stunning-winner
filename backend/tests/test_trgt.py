@@ -187,3 +187,29 @@ def test_dominant_motifs_real_rfc1_call():
 
     units1, units2 = call.repeat_units()
     assert (units1, units2) == (11, 90)
+
+
+# --- TRGT version comes from the VCF's own header ---------------------------------------------
+
+def test_trgt_version_is_read_from_the_header(tmp_path):
+    import gzip
+
+    from repeatscope.trgt import trgt_version
+
+    plain = tmp_path / "with_version.vcf"
+    plain.write_text("##fileformat=VCFv4.2\n##trgtVersion=5.1.0-ec66463\n#CHROM\tPOS\n")
+    assert trgt_version(plain) == "5.1.0"  # the commit suffix is dropped
+
+    zipped = tmp_path / "with_version.vcf.gz"
+    with gzip.open(zipped, "wt") as f:
+        f.write("##fileformat=VCFv4.2\n##trgtVersion=3.0.0-d49a4dd\n#CHROM\tPOS\n")
+    assert trgt_version(zipped) == "3.0.0"
+
+
+def test_trgt_version_is_none_when_the_header_has_none(tmp_path):
+    from repeatscope.trgt import trgt_version
+
+    vcf = tmp_path / "no_version.vcf"
+    vcf.write_text("##fileformat=VCFv4.2\n#CHROM\tPOS\n##trgtVersion=9.9.9\n")  # after #CHROM: not a header line
+    assert trgt_version(vcf) is None
+    assert trgt_version(FIXTURE) is None  # the synthetic fixture claims no version

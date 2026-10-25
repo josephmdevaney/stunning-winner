@@ -58,3 +58,16 @@ def test_gene_finding_unknown_gene_404s():
             params={"gene": "NOT_A_REAL_GENE", "mode": "carrier", "sample": "m84036_250809_035451_s4.bc2108"},
         )
     assert resp.status_code == 404
+
+
+def test_gene_finding_caller_is_the_genes_own_tool_not_trgt():
+    """Non-repeat genes never pass through TRGT, so the finding must not carry a TRGT label."""
+    with TestClient(app) as client:
+        resp = client.get(
+            "/api/gene-finding",
+            params={"gene": "GBA", "mode": "carrier", "sample": "m84036_250809_035451_s4.bc2108"},
+        )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["caller"] == data["tool"]
+    assert "TRGT" not in data["caller"]

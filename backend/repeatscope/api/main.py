@@ -34,6 +34,7 @@ from __future__ import annotations
 import dataclasses
 import json
 import os
+from functools import lru_cache
 from pathlib import Path
 from typing import Optional
 
@@ -59,7 +60,7 @@ from ..paraphase import (
     load_sawfish_calls,
 )
 from ..rexprt import RexprtScore, load_rexprt_scores
-from ..trgt import TrgtIndex, sample_names
+from ..trgt import TrgtIndex, sample_names, trgt_version
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 BACKEND_ROOT = REPO_ROOT / "backend"
@@ -104,7 +105,16 @@ def _get_catalog_index() -> CatalogIndex:
         _catalog_index = CatalogIndex.from_bed(CATALOG_BED)
     return _catalog_index
 
-CALLER_LABEL = "TRGT v5.1.0"
+
+
+@lru_cache(maxsize=None)
+def _caller_label(vcf_path: str) -> str:
+    """"TRGT v<version>" read from the sample VCF's own header, or plain "TRGT" when the header
+    records none -- never a guessed version number."""
+    version = trgt_version(vcf_path)
+    return f"TRGT v{version}" if version else "TRGT"
+
+
 VCF_EXTENSIONS = (".vcf", ".vcf.gz")
 # Non-panel VCFs that legitimately sit alongside a sample's TRGT VCF in some modes'
 # (flat-layout) vcf_dir -- e.g. Carrier's f8inversion caller and sawfish output --
@@ -481,7 +491,7 @@ def get_meta(mode: Optional[str] = None, sample: Optional[str] = None):
         "sample": s,
         "mode": m,
         "source_vcf": _modes[m]["sample_paths"][s],
-        "caller": CALLER_LABEL,
+        "caller": _caller_label(_modes[m]["sample_paths"][s]),
         "sex": _modes[m]["sample_sex"].get(s),
     }
 
@@ -511,7 +521,7 @@ def get_overview(mode: Optional[str] = None, sample: Optional[str] = None):
     return {
         "sample": s,
         "mode": m,
-        "caller": CALLER_LABEL,
+        "caller": _caller_label(_modes[m]["sample_paths"][s]),
         "stats": {
             "loci_analyzed": len(panel) + len(non_repeat_targets),
             "loci_genotyped": loci_genotyped,
@@ -548,7 +558,7 @@ def get_locus(locus_id: str, mode: Optional[str] = None, sample: Optional[str] =
         if l.genotyped
         else "unavailable"
     )
-    d["caller"] = CALLER_LABEL
+    d["caller"] = _caller_label(_modes[m]["sample_paths"][s])
     return d
 
 
@@ -579,7 +589,8 @@ def get_gene_finding(gene: str, mode: Optional[str] = None, sample: Optional[str
         "variants": list(finding.variants) if finding else [],
         "raw_fields": finding.raw_fields if finding else {},
         "genotyped": finding is not None,
-        "caller": CALLER_LABEL,
+        # The row's own tool (Paraphase, sawfish, ...): these genes never pass through TRGT.
+        "caller": target["tool"],
     }
 
 

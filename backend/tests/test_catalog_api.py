@@ -67,3 +67,12 @@ def test_c9orf72_is_absent_a_real_consequence_of_the_rescoping_not_a_bug():
         resp = client.get("/api/catalog", params={"mode": "genome_wide", "chrom": "chr9", "page_size": 5000})
     data = resp.json()
     assert not any(r["start"] == 27_573_523 and r["stop"] == 27_573_546 for r in data["rows"])
+
+
+def test_meta_caller_is_each_samples_own_trgt_version():
+    # The real GV panel VCFs were genotyped with TRGT 3.0.0; the HG002 run used 5.1.0.
+    with TestClient(app) as client:
+        panel = client.get("/api/meta", params={"mode": "puretarget_v2", "sample": "GV-01"}).json()
+        genome = client.get("/api/meta", params={"mode": "genome_wide"}).json()
+    assert panel["caller"] == "TRGT v3.0.0"
+    assert genome["caller"] == "TRGT v5.1.0"

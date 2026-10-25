@@ -59,7 +59,7 @@ export function TopBar({
         <div style={{ fontSize: 19, fontWeight: 600 }}>{title}</div>
         <div style={{ fontSize: 12.5, color: colors.textSecondary, marginTop: 2 }}>
           {modeLabel ? `${modeLabel} · ` : ''}Sample {sample}
-          {sex ? ` · Sex ${sex}` : ''} · Run 2026-06-29 · GRCh38
+          {sex ? ` · Sex ${sex}` : ''} · GRCh38
         </div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>

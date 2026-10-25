@@ -144,32 +144,22 @@ def test_load_sawfish_calls_bc2192_finds_real_hba_deletion():
     assert d["svlen"] == 321 and d["gt"] == "0/1"
 
 
-def test_classify_cyp21_bc2192_real_pathogenic_named_variants():
+# CYP21A2/GBA have a same-size pseudogene, so havanno's named-variant pattern-match is not trusted
+# for them (see classify_gene) -- this real sample no longer yields a Pathogenic finding from it.
+def test_classify_cyp21_bc2192_real_named_variants_not_trusted():
     """Real bc2192 data: 3 of 8 haplotype-phase calls (cyp21_hap2/hap5/hap7) all
-    carry the same 9 named CAH-associated pathogenic variants -- a real finding
-    the havanno annotation itself asserts, not re-derived here."""
+    carry the same 9 havanno-flagged CAH variants; ambiguous with the pseudogene copy."""
     calls, f8_calls, havanno, sawfish_calls = _load_bc2192()
     finding = classify_gene("CYP21A2", calls, f8_calls, havanno, sawfish_calls)
-    assert finding.status == "Pathogenic"
-    assert "1 distinct variant set" in finding.note
-    assert "9 variant(s)" in finding.note
-    assert "CYP21A2_p.Gln319Ter_p.Gln319Ter_c.955C>T" in finding.note
-    # 3 of 8 total physical copies at this locus carry the variant set (Paraphase
-    # itself couldn't phase this complex locus into 2 chromosomes for this
-    # sample -- alleles_final/haplotype_links are empty -- so "Heterozygous" here
-    # means "some but not all copies", not a classic single-gene het/hom call).
-    assert finding.zygosity == "Heterozygous"
+    assert finding is None or finding.status != "Pathogenic"
 
 
-def test_classify_gba_bc2192_real_pathogenic_named_variants():
+def test_classify_gba_bc2192_real_named_variants_not_trusted():
     """Real bc2192 data: 4 of 7 haplotype-phase calls carry overlapping sets of
     named Gaucher-associated pathogenic variants (13 or 14 variants each)."""
     calls, f8_calls, havanno, sawfish_calls = _load_bc2192()
     finding = classify_gene("GBA", calls, f8_calls, havanno, sawfish_calls)
-    assert finding.status == "Pathogenic"
-    assert "4 of 7 haplotype-phase calls" in finding.note
-    assert "Gauchian_Exon9-11_1" in finding.note
-    assert finding.zygosity == "Heterozygous"
+    assert finding is None or finding.status != "Pathogenic"
 
 
 def test_classify_hba_bc2192_uncertain_with_real_sawfish_deletion():
@@ -217,38 +207,34 @@ def test_classify_hba_prefers_named_havanno_variant_over_genotype():
 
 
 def test_havanno_zygosity_homozygous_when_all_copies_affected():
-    calls = {"cyp21": {"total_cn": 2, "two_copy_haplotypes": []}}
+    calls = {"hbb": {"total_cn": 2, "two_copy_haplotypes": []}}
     havanno = {
-        "cyp21": {
-            "cyp21_hap1": {"num_pathogenic_variants": 1, "variants": {"pathogenic": ["V1"]}},
-            "cyp21_hap2": {"num_pathogenic_variants": 1, "variants": {"pathogenic": ["V1"]}},
+        "hbb": {
+            "hbb_hap1": {"num_pathogenic_variants": 1, "variants": {"pathogenic": ["V1"]}},
+            "hbb_hap2": {"num_pathogenic_variants": 1, "variants": {"pathogenic": ["V1"]}},
         }
     }
-    finding = classify_gene("CYP21A2", calls, {}, havanno, [])
+    finding = classify_gene("HBB", calls, {}, havanno, [])
     assert finding.status == "Pathogenic"
     assert finding.zygosity == "Homozygous"
 
 
-def test_classify_cyp21_bc2108_real_heterozygous_carrier_normal_copy_number():
+def test_classify_cyp21_bc2108_real_named_variants_not_trusted():
     """Real bc2108 data: unlike bc2192's atypical elevated total_cn=8, this sample
     has a completely normal total_cn=4 at this locus, with 2 of 4 haplotype-phase
-    calls carrying the same 9 named CAH-associated pathogenic variants -- a clean
-    textbook heterozygous carrier finding."""
+    calls carrying the same 9 havanno-flagged CAH variants -- which looks like a carrier but
+    is the pseudogene's own differentiating-site sequence, so it is not trusted."""
     calls, f8_calls, havanno = _load_bc2108()
     finding = classify_gene("CYP21A2", calls, f8_calls, havanno)
-    assert finding.status == "Pathogenic"
-    assert finding.zygosity == "Heterozygous"
-    assert "2 of 4 haplotype-phase calls" in finding.note
+    assert finding is None or finding.status != "Pathogenic"
 
 
-def test_classify_gba_bc2108_real_heterozygous_carrier_normal_copy_number():
+def test_classify_gba_bc2108_real_named_variants_not_trusted():
     """Real bc2108 data: total_cn=4 (normal), 2 of 4 haplotype-phase calls carry
     the same 14 named Gaucher-associated pathogenic variants."""
     calls, f8_calls, havanno = _load_bc2108()
     finding = classify_gene("GBA", calls, f8_calls, havanno)
-    assert finding.status == "Pathogenic"
-    assert finding.zygosity == "Heterozygous"
-    assert "2 of 4 haplotype-phase calls" in finding.note
+    assert finding is None or finding.status != "Pathogenic"
 
 
 def test_classify_hba_bc2108_real_alpha_thalassemia_genotype_not_overclaimed():
@@ -276,22 +262,19 @@ def test_classify_smn1_bc2108_real_normal():
     assert finding.status == "Normal"
 
 
-def test_classify_cyp21_bc2100_real_single_haplotype_carrier():
+def test_classify_cyp21_bc2100_real_named_variants_not_trusted():
     """Real bc2100 data: unlike bc2108's 2-of-4 pattern, only 1 of 4 haplotype-phase
     calls carries the 9-variant CAH set here -- still resolves to Heterozygous
     since normal total_cn=4 means "not all copies affected" either way."""
     calls, f8_calls, havanno = _load_sample(SAMPLE_4)
     finding = classify_gene("CYP21A2", calls, f8_calls, havanno)
-    assert finding.status == "Pathogenic"
-    assert finding.zygosity == "Heterozygous"
-    assert "1 of 4 haplotype-phase calls" in finding.note
+    assert finding is None or finding.status != "Pathogenic"
 
 
-def test_classify_gba_bc2100_real_heterozygous_carrier():
+def test_classify_gba_bc2100_real_named_variants_not_trusted():
     calls, f8_calls, havanno = _load_sample(SAMPLE_4)
     finding = classify_gene("GBA", calls, f8_calls, havanno)
-    assert finding.status == "Pathogenic"
-    assert finding.zygosity == "Heterozygous"
+    assert finding is None or finding.status != "Pathogenic"
 
 
 def test_classify_hba_bc2100_real_normal_aa_aa():
@@ -303,18 +286,16 @@ def test_classify_hba_bc2100_real_normal_aa_aa():
     assert finding.zygosity == "Homozygous"
 
 
-def test_classify_cyp21_bc2103_real_single_haplotype_carrier():
+def test_classify_cyp21_bc2103_real_named_variants_not_trusted():
     calls, f8_calls, havanno = _load_sample(SAMPLE_5)
     finding = classify_gene("CYP21A2", calls, f8_calls, havanno)
-    assert finding.status == "Pathogenic"
-    assert finding.zygosity == "Heterozygous"
+    assert finding is None or finding.status != "Pathogenic"
 
 
-def test_classify_gba_bc2103_real_heterozygous_carrier():
+def test_classify_gba_bc2103_real_named_variants_not_trusted():
     calls, f8_calls, havanno = _load_sample(SAMPLE_5)
     finding = classify_gene("GBA", calls, f8_calls, havanno)
-    assert finding.status == "Pathogenic"
-    assert finding.zygosity == "Heterozygous"
+    assert finding is None or finding.status != "Pathogenic"
 
 
 def test_classify_hba_bc2103_real_normal_aa_aa():
@@ -322,3 +303,30 @@ def test_classify_hba_bc2103_real_normal_aa_aa():
     finding = classify_gene("HBA1/2", calls, f8_calls, havanno)
     assert finding.status == "Normal"
     assert finding.zygosity == "Homozygous"
+
+
+def test_pseudogene_pair_genes_ignore_havanno_named_variant_pattern_match():
+    # CYP21A2/GBA's same-size pseudogene makes havanno's per-haplotype pattern-match flag
+    # the pseudogene's own normal sequence as pathogenic -- it must not produce a finding.
+    from repeatscope.paraphase import classify_gene
+
+    call = {"total_cn": 4, "fusions_called": None}
+    havanno = {"gba": {"gba_hap1": {"num_pathogenic_variants": 2, "variants": {"pathogenic": ["GBA_c.1448T>C"]}}}}
+    finding = classify_gene("GBA", {"gba": call}, None, havanno)
+    assert finding is not None and finding.status != "Pathogenic"
+
+
+def test_havanno_named_variants_are_ignored_for_pseudogene_pair_genes_but_trusted_for_the_rest():
+    """GBA and CYP21A2 each have a same-size pseudogene pair, so havanno's named-variant
+    pattern-match can't tell a real variant from the pseudogene's own sequence (trusting it flagged
+    half of a real 96-sample cohort). Genes without a pseudogene pair are still taken at its word."""
+    def havanno(key):
+        return {key: {f"{key}_hap1": {"num_pathogenic_variants": 1, "variants": {"pathogenic": ["V1"]}}}}
+
+    for gene, key in (("GBA", "gba"), ("CYP21A2", "cyp21")):
+        calls = {key: {"total_cn": 4, "two_copy_haplotypes": [], "fusions_called": {}}}
+        finding = classify_gene(gene, calls, {}, havanno(key), [])
+        assert finding is None or finding.status != "Pathogenic", gene
+
+    calls = {"hbb": {"total_cn": 2, "two_copy_haplotypes": []}}
+    assert classify_gene("HBB", calls, {}, havanno("hbb"), []).status == "Pathogenic"

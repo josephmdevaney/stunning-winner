@@ -139,3 +139,22 @@ def test_routes(env):
         assert d.status_code == 200 and d.json()["summary"]["headline"] == "genotype aa/aa"
         assert client.get("/api/paraphase/json/region", params={"sample": SAMPLE, "region": "zzz"}).status_code == 404
         assert client.get("/api/paraphase/json", params={"sample": "unknown"}).status_code == 404
+
+
+def test_local_config_adds_samples_whose_json_exists_and_is_named_for_the_key(tmp_path, caplog):
+    good = tmp_path / "S9.paraphase.json"
+    good.write_text("{}")
+    misnamed = tmp_path / "other.paraphase.json"
+    misnamed.write_text("{}")
+    config = tmp_path / "local.json"
+    config.write_text(json.dumps({"samples": {"S9": str(good), "S8": str(misnamed), "S7": str(tmp_path / "S7.paraphase.json")}}))
+    with caplog.at_level("WARNING"):
+        assert samples._local_samples(config) == {"S9": str(good)}
+    assert "S8" in caplog.text and "S7" in caplog.text            # skipped ones are reported, not silently dropped
+
+
+def test_a_missing_or_unreadable_local_config_adds_nothing(tmp_path):
+    assert samples._local_samples(tmp_path / "missing.json") == {}
+    bad = tmp_path / "bad.json"
+    bad.write_text("not json")
+    assert samples._local_samples(bad) == {}

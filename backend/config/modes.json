@@ -4,7 +4,10 @@
     "vcf_dir": "fixtures/hg002_real",
     "panel_bed": null,
     "sample_sex": "fixtures/hg002_real/sample_sex.json",
-    "catalog_vcf_dir": "fixtures/hg002_real_genomewide"
+    "catalog_vcf_dir": "fixtures/hg002_real_genomewide",
+    "catalog_vcf_dirs": {
+      "pangenome": "fixtures/hg002_real_pangenome"
+    }
   },
   "puretarget_v2": {
     "label": "PureTarget V2",

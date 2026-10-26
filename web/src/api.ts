@@ -189,13 +189,31 @@ export interface RexprtPathogenicity {
   hg19_end: number
 }
 
+export interface CatalogInfo {
+  id: string
+  label: string
+  description: string
+}
+
+export interface CatalogsResponse {
+  default: string
+  catalogs: (CatalogInfo & { total: number })[]
+}
+
 export interface CatalogResponse {
+  catalog: CatalogInfo
+  // False when this sample has no TRGT genotypes against this catalog's loci -- every row's
+  // A1/A2/depth is then empty because nothing was genotyped, not because nothing was found.
+  genotypes_available: boolean
   total_all: number
   total_matching: number
   unique_motifs: number
   chromosomes: string[]
   n_rexprt_evaluated: number
   n_rexprt_predicted_pathogenic: number
+  // The same two counts over just this catalog's loci.
+  n_catalog_rexprt_evaluated: number
+  n_catalog_rexprt_predicted_pathogenic: number
   page: number
   page_size: number
   rows: CatalogRow[]
@@ -248,11 +266,13 @@ export const api = {
     getJSON<SampleQCResponse>(withModeSample('/api/qc/sample', { mode, sample })),
   runQC: (mode?: string, sample?: string) =>
     getJSON<RunQCResponse>(withModeSample('/api/qc/run', { mode, sample })),
+  catalogs: () => getJSON<CatalogsResponse>('/api/catalogs'),
   catalog: (params: {
-    mode?: string; sample?: string; chrom?: string; motif?: string; minLen?: number
+    mode?: string; sample?: string; catalog?: string; chrom?: string; motif?: string; minLen?: number
     rexprtPathogenicOnly?: boolean; page?: number; pageSize?: number
   }) => {
     const q = new URLSearchParams()
+    if (params.catalog) q.set('catalog', params.catalog)
     if (params.chrom) q.set('chrom', params.chrom)
     if (params.motif) q.set('motif', params.motif)
     if (params.minLen) q.set('min_len', String(params.minLen))

@@ -73,17 +73,44 @@ STRCHIVE_JSON = os.environ.get(
 CATALOG_BED = os.environ.get(
     "REPEATSCOPE_CATALOG_BED", str(REPO_ROOT / "project" / "uploads" / "repeat_catalog.hg38.bed")
 )
+PANGENOME_CATALOG_BED = os.environ.get(
+    "REPEATSCOPE_PANGENOME_CATALOG_BED", str(REPO_ROOT / "project" / "uploads" / "pangenome_repeat_catalog.hg38.bed")
+)
 GENES_BED = os.environ.get("REPEATSCOPE_GENES_BED", str(REPO_ROOT / "project" / "uploads" / "genes.hg38.bed"))
 REXPRT_SCORES_TSV = os.environ.get(
     "REPEATSCOPE_REXPRT_SCORES", str(REPO_ROOT / "project" / "uploads" / "rexprt_scores.hg38.tsv")
 )
 
-# Genomic gene-body positions, RExPRT scores, and the raw genome-wide catalog
-# itself don't depend on mode/sample, unlike everything else cached below --
-# load once, lazily, the first time the catalog actually needs them.
+# The selectable catalogs on the Repeat Catalog screen. Run QC and everything else that
+# says "the catalog" uses DEFAULT_CATALOG.
+DEFAULT_CATALOG = "repeat_catalog"
+CATALOGS: dict[str, dict] = {
+    DEFAULT_CATALOG: {
+        "label": "Repeat Catalog",
+        "bed": CATALOG_BED,
+        "description": (
+            "TRExplorer v2.0 variation-cluster loci that RExPRT predicts pathogenic -- the genome-wide "
+            "candidate set, scoped down from the full 5.3M-locus catalog."
+        ),
+    },
+    "pangenome": {
+        "label": "Pangenome Repeat Catalog",
+        "bed": PANGENOME_CATALOG_BED,
+        "description": (
+            "TRExplorer v2.0 variation-cluster loci found for the pangenome paper's Supplementary "
+            "Table 3 (Lin et al. 2026): the polymorphic, known-pathogenic and variable tandem repeats "
+            "it reports."
+        ),
+    },
+}
+
+# Genomic gene-body positions, RExPRT scores, and the raw genome-wide catalogs
+# themselves don't depend on mode/sample, unlike everything else cached below --
+# load once, lazily, the first time a catalog actually needs them.
 _gene_index: Optional[GeneIndex] = None
 _rexprt_scores: Optional[dict] = None
-_catalog_index: Optional[CatalogIndex] = None
+_catalog_indexes: dict[str, CatalogIndex] = {}
+_catalog_rexprt_counts: dict[str, tuple[int, int]] = {}
 
 
 def _get_gene_index() -> Optional[GeneIndex]:
@@ -100,11 +127,19 @@ def _get_rexprt_scores() -> Optional[dict]:
     return _rexprt_scores
 
 
-def _get_catalog_index() -> CatalogIndex:
-    global _catalog_index
-    if _catalog_index is None:
-        _catalog_index = CatalogIndex.from_bed(CATALOG_BED)
-    return _catalog_index
+def _catalog_rexprt_count(catalog: str) -> tuple[int, int]:
+    """(this catalog's loci RExPRT evaluated, of those the ones it predicts pathogenic)."""
+    if catalog not in _catalog_rexprt_counts:
+        scores = _get_rexprt_scores() or {}
+        found = [s for r in _get_catalog_index(catalog).all if (s := scores.get((r.chrom, r.start, r.stop)))]
+        _catalog_rexprt_counts[catalog] = (len(found), sum(1 for s in found if s.ensemble_binary))
+    return _catalog_rexprt_counts[catalog]
+
+
+def _get_catalog_index(catalog: str = DEFAULT_CATALOG) -> CatalogIndex:
+    if catalog not in _catalog_indexes:
+        _catalog_indexes[catalog] = CatalogIndex.from_bed(CATALOGS[catalog]["bed"])
+    return _catalog_indexes[catalog]
 
 
 
@@ -181,10 +216,10 @@ _default_mode: str = ""
 _panels: dict[tuple[str, str], list[AnnotatedLocus]] = {}
 _panel_by_id: dict[tuple[str, str], dict[str, AnnotatedLocus]] = {}
 _catalog_caches: dict[tuple[str, str], list[dict]] = {}
-# The sample's own genotype index against the genome-wide catalog VCF -- built
-# once per (mode, sample), independent of the (mode-independent) raw catalog
-# index above, and shared between the full-scan path (_get_catalog, for Run QC)
-# and the paginated /api/catalog route so neither re-parses that VCF twice.
+# The sample's own genotype index against a genome-wide catalog VCF -- built once per
+# (VCF, sample), independent of the (mode-independent) raw catalog indexes above, and shared
+# between the full-scan path (_get_catalog, for Run QC), the paginated /api/catalog route and
+# any catalogs genotyped from the same VCF, so none re-parses that VCF twice.
 _trgt_indexes: dict[tuple[str, str], TrgtIndex] = {}
 _paraphase_caches: dict[tuple[str, str], tuple[dict, dict, dict, list]] = {}
 
@@ -232,6 +267,15 @@ def _load_modes() -> None:
         if catalog_vcf_dir and Path(catalog_vcf_dir).is_dir():
             catalog_sample_paths = _discover_samples_in_dir(catalog_vcf_dir)
 
+        # Genotype VCFs for the other catalogs, one directory per catalog: a VCF made against
+        # one catalog's loci only genotypes those, and two VCFs of one sample can't share a
+        # directory (the sample would be found twice).
+        extra_catalog_sample_paths: dict[str, dict[str, str]] = {}
+        for catalog, dir_config in (cfg.get("catalog_vcf_dirs") or {}).items():
+            extra_dir = _resolve_config_path(dir_config)
+            if catalog in CATALOGS and extra_dir and Path(extra_dir).is_dir():
+                extra_catalog_sample_paths[catalog] = _discover_samples_in_dir(extra_dir)
+
         panel_bed = _resolve_config_path(cfg.get("panel_bed"))
         locus_ids: Optional[set] = None
         if panel_bed and Path(panel_bed).exists():
@@ -257,6 +301,7 @@ def _load_modes() -> None:
             "label": cfg.get("label", key),
             "sample_paths": sample_paths,
             "catalog_sample_paths": catalog_sample_paths,
+            "extra_catalog_sample_paths": extra_catalog_sample_paths,
             "locus_ids": locus_ids,
             "non_repeat_targets": non_repeat_targets,
             "paraphase_dir": paraphase_dir,
@@ -298,11 +343,22 @@ def _get_panel(mode: str, sample: str) -> list[AnnotatedLocus]:
     return _panels[key]
 
 
-def _get_trgt_index(mode: str, sample: str) -> TrgtIndex:
-    key = (mode, sample)
+def _catalog_vcf_path(mode: str, sample: str, catalog: str) -> Optional[str]:
+    m = _modes[mode]
+    if catalog == DEFAULT_CATALOG:
+        return m["catalog_sample_paths"].get(sample) or m["sample_paths"][sample]
+    # Another catalog: its own VCF for this mode when one is configured, else the mode's
+    # genome-wide VCF (a full run genotypes every catalog locus). Never the disease-panel VCF,
+    # which holds nothing of it. No VCF at all means no genotypes, not made-up ones.
+    return m["extra_catalog_sample_paths"].get(catalog, {}).get(sample) or m["catalog_sample_paths"].get(sample)
+
+
+def _get_trgt_index(mode: str, sample: str, catalog: str = DEFAULT_CATALOG) -> Optional[TrgtIndex]:
+    vcf_path = _catalog_vcf_path(mode, sample, catalog)
+    if vcf_path is None:
+        return None
+    key = (vcf_path, sample)
     if key not in _trgt_indexes:
-        m = _modes[mode]
-        vcf_path = m["catalog_sample_paths"].get(sample) or m["sample_paths"][sample]
         _trgt_indexes[key] = TrgtIndex.from_vcf(vcf_path, sample=sample)
     return _trgt_indexes[key]
 
@@ -357,12 +413,20 @@ def _serialize_catalog_region(r: AnnotatedCatalogRegion) -> dict:
     }
 
 
-def _annotate_catalog_regions(regions, trgt_index: TrgtIndex) -> list[dict]:
+def _annotate_catalog_regions(regions, trgt_index: Optional[TrgtIndex], trid_only: bool = False) -> list[dict]:
+    """trgt_index None means no genotypes are available for this sample against this catalog.
+    trid_only: take a call only when TRGT genotyped that very locus -- not a different locus
+    that happens to overlap it, which is the fallback the default catalog allows."""
     gene_index = _get_gene_index()
     rexprt_scores = _get_rexprt_scores()
     rows = []
     for region in regions:
-        call = trgt_index.by_trid.get(region.id) or trgt_index.find_overlap(region.chrom, region.start, region.stop)
+        if trgt_index is None:
+            call = None
+        elif trid_only:
+            call = trgt_index.by_trid.get(region.id)
+        else:
+            call = trgt_index.by_trid.get(region.id) or trgt_index.find_overlap(region.chrom, region.start, region.stop)
         annotated = annotate_catalog_region(region, call, gene_index, rexprt_scores)
         rows.append(_serialize_catalog_region(annotated))
     return rows
@@ -825,9 +889,32 @@ def get_cohort(mode: Optional[str] = None):
     }
 
 
+def _resolve_catalog(catalog: Optional[str]) -> str:
+    if catalog is None:
+        return DEFAULT_CATALOG
+    if catalog not in CATALOGS:
+        raise HTTPException(status_code=404, detail=f"unknown catalog {catalog!r}")
+    return catalog
+
+
+@app.get("/api/catalogs")
+def get_catalogs():
+    """The catalogs the Repeat Catalog screen can show, default first. One whose BED isn't on
+    this machine (an env override pointing nowhere, a pruned checkout) is left out."""
+    return {
+        "default": DEFAULT_CATALOG,
+        "catalogs": [
+            {"id": key, "label": spec["label"], "description": spec["description"], "total": _get_catalog_index(key).total}
+            for key, spec in CATALOGS.items()
+            if key == DEFAULT_CATALOG or Path(spec["bed"]).exists()
+        ],
+    }
+
+
 @app.get("/api/catalog")
 def get_catalog(
     mode: Optional[str] = None, sample: Optional[str] = None,
+    catalog: Optional[str] = None,
     chrom: str = "all", motif: str = "", min_len: int = 0,
     rexprt_pathogenic_only: bool = False,
     page: int = 0, page_size: int = 50,
@@ -840,7 +927,10 @@ def get_catalog(
     several minutes and 15GB+ RAM that way, vs. sub-second filtering here."""
     m = _resolve_mode(mode)
     s = _resolve_sample(m, sample)
-    index = _get_catalog_index()
+    c = _resolve_catalog(catalog)
+    if not Path(CATALOGS[c]["bed"]).exists():
+        raise HTTPException(status_code=404, detail=f"catalog {c!r} is not installed on this machine")
+    index = _get_catalog_index(c)
     rexprt_scores = _get_rexprt_scores() or {}
 
     filtered = index.filter(chrom=chrom, motif=motif, min_len=min_len)
@@ -853,18 +943,25 @@ def get_catalog(
     total = len(filtered)
     start = page * page_size
     page_regions = filtered[start : start + page_size]
-    trgt_index = _get_trgt_index(m, s)
-    page_rows = _annotate_catalog_regions(page_regions, trgt_index)
+    trgt_index = _get_trgt_index(m, s, c)
+    page_rows = _annotate_catalog_regions(page_regions, trgt_index, trid_only=c != DEFAULT_CATALOG)
 
     n_predicted_pathogenic = sum(1 for score in rexprt_scores.values() if score.ensemble_binary)
+    catalog_evaluated, catalog_predicted_pathogenic = _catalog_rexprt_count(c)
 
     return {
+        "catalog": {"id": c, "label": CATALOGS[c]["label"], "description": CATALOGS[c]["description"]},
+        "genotypes_available": trgt_index is not None,
         "total_all": index.total,
         "total_matching": total,
         "unique_motifs": index.unique_motifs,
         "chromosomes": ["all"] + index.chromosomes,
+        # Over RExPRT's whole reference table, whatever the catalog...
         "n_rexprt_evaluated": len(rexprt_scores),
         "n_rexprt_predicted_pathogenic": n_predicted_pathogenic,
+        # ...and over just this catalog's loci.
+        "n_catalog_rexprt_evaluated": catalog_evaluated,
+        "n_catalog_rexprt_predicted_pathogenic": catalog_predicted_pathogenic,
         "page": page,
         "page_size": page_size,
         "rows": page_rows,

@@ -35,5 +35,11 @@ backend/HG002_PacBio-HiFi-Revio_20231031_48x_GRCh38-GIABv3.bam.bai
 # committed since it typically contains machine-specific absolute paths.
 backend/config/modes.local.json
 
+# Local epigenetics sample registry (machine-specific genome paths) -- see backend/config/epigenetics.local.json.example.
+backend/config/epigenetics.local.json
+
+# EpiSignaLR episignature models fetched at setup (the repository publishes no licence, so none of it is
+# committed) -- see backend/scripts/setup_episignalr.py.
+backend/epigenetics/episignature/vendor/
 # Local Paraphase sample registry (machine-specific paths) -- see backend/config/paraphase.local.json.example.
 backend/config/paraphase.local.json

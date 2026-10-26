@@ -1,0 +1,10 @@
+{
+  "samples": {
+    "HG002": {
+      "label": "HG002 (PacBio Revio)",
+      "dir": "/path/to/analysis_folder",
+      "prefix": "HG002.GRCh38.cpg_pileup",
+      "note": "pb-CpG-tools output: <prefix>.combined.bed.gz, .hap1.bed.gz and .hap2.bed.gz with their .tbi indexes."
+    }
+  }
+}

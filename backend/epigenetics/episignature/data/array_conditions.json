@@ -1,0 +1,141 @@
+{
+ "source": "Supplemental Table 4 of the EpiSignaLR preprint (Conditions scored by the array-derived classifiers); the conditions and genes are those of Geysens et al. (2025), built from Aref-Eshghi et al. (2020).",
+ "conditions": {
+  "HMA": {
+   "name": "Hunter McAlpine syndrome",
+   "genes": "17q23.1-q24.2 duplication involving NSD1"
+  },
+  "HVDAS_T": {
+   "name": "ADNP syndrome—central",
+   "genes": "ADNP (c.2000-2340)"
+  },
+  "HVDAS_C": {
+   "name": "ADNP syndrome—5′ and 3′ terminal ends",
+   "genes": "ADNP (outside c.2000-2340)"
+  },
+  "BAFopathy": {
+   "name": "Coffin-Siris 1–4 (CSS1–4) and Nicolaides-Baraitser (NCBRS) syndromes",
+   "genes": "ARID1A, ARID1B, SMARCB1, SMARCA4, SMARCA2"
+  },
+  "ATRX": {
+   "name": "Alpha-thalassemia mental retardation syndrome",
+   "genes": "ATRX"
+  },
+  "MRX93": {
+   "name": "Mental retardation, X-linked 93",
+   "genes": "BRWD3"
+  },
+  "ICF2_3_4": {
+   "name": "Immunodeficiency-centromeric instability-facial anomalies syndrome 2–4",
+   "genes": "CDCA7, ZBTB24, HELLS"
+  },
+  "EEOC": {
+   "name": "Epileptic encephalopathy, childhood-onset",
+   "genes": "CHD2"
+  },
+  "CHARGE": {
+   "name": "CHARGE",
+   "genes": "CHD7"
+  },
+  "AUTS18": {
+   "name": "Autism, susceptibility to, 18",
+   "genes": "CHD8"
+  },
+  "Down": {
+   "name": "Down Syndrome",
+   "genes": "Chr21 trisomy"
+  },
+  "Williams": {
+   "name": "Williams syndrome",
+   "genes": "Chr7q11.23 deletion"
+  },
+  "Dup7": {
+   "name": "Chr7q11.23 duplication syndrome",
+   "genes": "Chr7q11.23 duplication"
+  },
+  "RSTS": {
+   "name": "Rubinstein-Taybi syndrome 1 and 2",
+   "genes": "CREBBP, EP300"
+  },
+  "ADCADN": {
+   "name": "Cerebellar ataxia, deafness, and narcolepsy, autosomal dominant",
+   "genes": "DNMT1"
+  },
+  "TBRS": {
+   "name": "Tatton-Brown-Rahman syndrome",
+   "genes": "DNMT3A"
+  },
+  "ICF1": {
+   "name": "Immunodeficiency-centromeric instability-facial anomalies syndrome 1",
+   "genes": "DNMT3B"
+  },
+  "Kleefstra": {
+   "name": "Kleefstra syndrome 1",
+   "genes": "EHMT1"
+  },
+  "RMNS": {
+   "name": "Rahman syndrome",
+   "genes": "HIST1H1E"
+  },
+  "KDVS": {
+   "name": "Koolen de Vreis syndrome",
+   "genes": "KANSL1"
+  },
+  "GTPTS": {
+   "name": "Genitopatellar syndrome",
+   "genes": "KAT6B"
+  },
+  "SBBYSS": {
+   "name": "SBBYSS syndrome",
+   "genes": "KAT6B"
+  },
+  "MRXCJS": {
+   "name": "Claes-Jensen type of X-linked syndromic intellectual developmental disorder",
+   "genes": "KDM5C"
+  },
+  "WDSTS": {
+   "name": "Wiedemann-Steiner syndrome",
+   "genes": "KMT2A"
+  },
+  "Kabuki": {
+   "name": "Kabuki syndrome 1 and 2",
+   "genes": "KMT2D, KDM6A"
+  },
+  "MRD51": {
+   "name": "Mental retardation, autosomal dominant 51",
+   "genes": "KMT5B"
+  },
+  "CdLS": {
+   "name": "Cornelia de Lange syndrome 1–4",
+   "genes": "NIPBL, RAD21, SMC3, SMC1A"
+  },
+  "Sotos": {
+   "name": "Sotos syndrome",
+   "genes": "NSD1"
+  },
+  "BFLS": {
+   "name": "Börjeson-Forssman-Lehmann syndrome",
+   "genes": "PHF6"
+  },
+  "SETD1B": {
+   "name": "SETD1B-related syndrome",
+   "genes": "SETD1B"
+  },
+  "MRXSSR": {
+   "name": "Mental retardation, X-linked, Snyder-Robinson type",
+   "genes": "SMS"
+  },
+  "FLHS": {
+   "name": "Floating-Harbor syndrome",
+   "genes": "SRCAP"
+  },
+  "MRXSN": {
+   "name": "Mental retardation, X-linked syndromic, Nascimento-type",
+   "genes": "UBE2A"
+  },
+  "MRX97": {
+   "name": "Mental retardation, X-linked 97",
+   "genes": "ZNF711"
+  }
+ }
+}

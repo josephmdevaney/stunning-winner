@@ -172,6 +172,12 @@ from pacbio_tools.router import router as pacbio_tools_router  # noqa: E402
 
 app.include_router(pacbio_tools_router)
 
+# Epigenetics (imprinting disorders from genome methylation) is another sibling product, served under
+# /api/epigenetics. Self-contained: reads pb-CpG-tools beds listed in a local config (epigenetics/samples.py).
+from epigenetics.router import router as epigenetics_router  # noqa: E402
+
+app.include_router(epigenetics_router)
+
 # Per-mode state: {mode_key: {label, sample_paths: {sample: vcf_path}, locus_ids: set|None}}
 _modes: dict[str, dict] = {}
 _default_mode: str = ""

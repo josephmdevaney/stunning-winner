@@ -50,6 +50,8 @@ python backend/scripts/setup_paraphase_annotate.py --ref v3.5.0 --force
 
 **Re-runs keep the old results.** A run can take over an hour of rate-limited lookups, so starting a new one moves the previous results to `<results>/<sample>/archive/<UTC timestamp>/` instead of deleting them.
 
+**Hung requests.** PacBio's script looks each variant up on Ensembl and ClinVar through `requests` with no timeout, so a connection that goes quiet half way is waited on forever (a real run sat on one for 17 hours, using two seconds of CPU). The runner therefore starts the script through `paraphase_annotate/launch.py`, which gives every request that has no timeout of its own a 15-second connect and a 90-second read timeout (`PARAPHASE_REQUEST_CONNECT_TIMEOUT` and `PARAPHASE_REQUEST_READ_TIMEOUT` change them). The script's own retry logic then sees a timeout like any other failed request, so a bad connection is retried and, if it stays bad, the run fails and says so in its log. The values used are recorded in `run_meta.json`. `socket.setdefaulttimeout` does not do this: `requests` passes urllib3 an explicit `timeout=None`, which overrides it.
+
 ## Tool Versions
 
 `pacbio_tools/` compares, for each PacBio tool, the version found in the data against the newest GitHub release.

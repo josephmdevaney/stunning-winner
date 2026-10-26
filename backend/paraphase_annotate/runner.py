@@ -28,11 +28,13 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Optional
 
-from . import calls, samples
+from . import calls, launch, samples
 
 BACKEND_ROOT = Path(__file__).resolve().parents[1]
 VENDOR_DIR = Path(__file__).resolve().parent / "vendor"
 VENDOR_SCRIPT = VENDOR_DIR / "interpret_paraphase.py"
+# Runs the script with a timeout on its HTTP requests (see launch.py); the script sets none of its own.
+LAUNCHER = Path(__file__).resolve().parent / "launch.py"
 VENDOR_CONFIG = VENDOR_DIR / "data" / "config_grch38.yaml"
 # Pinned to the Paraphase v3.5.0 tag (see setup_paraphase_annotate.py), not
 # main -- main's interpret_paraphase.py reads region-specific JSON fields
@@ -254,7 +256,7 @@ def start_run(sample: str) -> dict:
     log_file = open(log_path(sample), "w")
     proc = subprocess.Popen(
         [
-            python, str(VENDOR_SCRIPT),
+            python, str(LAUNCHER), str(VENDOR_SCRIPT),
             "--input", str(input_json),
             "--out", str(out_dir),
             "--region", ",".join(MEDICAL_REGIONS),
@@ -317,6 +319,7 @@ def prepare_input(sample: str) -> Path:
         "script_schema": script_schema,
         "adapted_json": source_schema != script_schema,
         "data_paraphase_version": calls.vcf_provenance(samples.vcfs_dir(sample))["paraphase_version"],
+        "request_timeouts": {"connect": launch.CONNECT_TIMEOUT, "read": launch.READ_TIMEOUT},
         "regions_requested": MEDICAL_REGIONS,
         # The script skips (with a warning) any region absent from the JSON.
         "regions_missing_from_json": [r for r in MEDICAL_REGIONS if r.lower() not in present],

@@ -41,3 +41,5 @@ backend/config/epigenetics.local.json
 # EpiSignaLR episignature models fetched at setup (the repository publishes no licence, so none of it is
 # committed) -- see backend/scripts/setup_episignalr.py.
 backend/epigenetics/episignature/vendor/
+# Local Paraphase sample registry (machine-specific paths) -- see backend/config/paraphase.local.json.example.
+backend/config/paraphase.local.json

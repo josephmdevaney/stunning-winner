@@ -8,7 +8,7 @@ import time
 
 import pytest
 
-from paraphase_annotate import runner, samples
+from paraphase_annotate import launch, runner, samples
 
 SAMPLE = "S1"
 
@@ -29,7 +29,12 @@ ap.add_argument("--input"); ap.add_argument("--out"); ap.add_argument("--region"
 a = ap.parse_args()
 sid = os.path.basename(a.input).split(".paraphase.json")[0]
 vcfs = os.path.join(os.path.dirname(a.input), sid + "_paraphase_vcfs")
-json.dump({"argv": sys.argv[1:], "vcfs_exists": os.path.isdir(vcfs),
+try:
+    from requests.adapters import HTTPAdapter
+    patched = HTTPAdapter.send.__name__ == "send_with_default_timeout"
+except ImportError:
+    patched = None
+json.dump({"argv": sys.argv[1:], "argv0": sys.argv[0], "timeout_patched": patched, "vcfs_exists": os.path.isdir(vcfs),
            "json_keys": sorted(json.load(open(a.input))["smn1"])}, open(os.path.join(a.out, "seen.json"), "w"))
 open(os.path.join(a.out, sid + "_summary.csv"), "w").write("Region\\nsmn1\\n")
 open(os.path.join(a.out, sid + "_detailed.csv"), "w").write("Region\\nsmn1\\n")
@@ -93,6 +98,15 @@ def test_run_adapts_v3_json_for_the_v4_script_and_records_provenance(env):
     assert "finished_at" in meta  # set once the run is done
     # the default medical regions that the JSON doesn't have are reported, not hidden
     assert "rccx" in meta["regions_missing_from_json"] and "smn1" not in meta["regions_missing_from_json"]
+
+
+def test_the_script_is_started_through_the_launcher_that_times_out_requests(env):
+    runner.start_run(SAMPLE)
+    _wait_done(SAMPLE)
+    seen = json.loads((runner.results_dir(SAMPLE) / "seen.json").read_text())
+    assert seen["argv0"] == str(runner.VENDOR_SCRIPT)            # the script still sees its own path
+    assert seen["timeout_patched"] in (True, None)               # None only where `requests` is not installed
+    assert runner.run_meta(SAMPLE)["request_timeouts"] == {"connect": launch.CONNECT_TIMEOUT, "read": launch.READ_TIMEOUT}
 
 
 def test_the_original_sample_directory_is_never_modified(env):

@@ -5,20 +5,24 @@
     python backend/scripts/setup_episignalr.py --force    # fetch and convert again
 
 EpiSignaLR (https://github.com/millerlaboratory/EpiSignaLR, Miller laboratory) scores a long-read genome
-against three condition-specific methylation signatures: SETD1B-related disorder, Kleefstra syndrome and
-Kabuki syndrome. Its repository publishes no licence, so nothing from it is committed here: each machine
+against three condition-specific methylation signatures (SETD1B-related disorder, Kleefstra syndrome, Kabuki
+syndrome) and against 34 array-derived classifiers adapted from NSBEpi. Its repository publishes no licence, so nothing from it is committed here: each machine
 fetches its own copy into `epigenetics/episignature/vendor/` (gitignored), like the Paraphase annotation
 script (see setup_paraphase_annotate.py).
 
 What happens:
   1. Each file is downloaded from one pinned commit and its SHA-256 must match the value pinned below,
      so what is converted and scored is exactly what was reviewed.
-  2. The models are pickles, and a pickle can run code when it is loaded. They are never unpickled in the
-     API process: `convert.py` reads each one in a separate `python -I` process that allows only numpy's
-     array reconstruction and stands in for every scikit-learn class, and writes plain JSON. That process
-     needs numpy and joblib (not scikit-learn). If the Python running this script lacks them, a small
-     virtualenv with just those two is created inside the vendor folder.
-  3. The converted model is checked against the weights the authors publish in the model's metadata.
+  2. The models and the array-derived reference tables are pickles, and a pickle can run code when it is
+     loaded. They are never unpickled in the API process: `convert.py` and `convert_array.py` read them in a
+     separate `python -I` process that allows only numpy's array reconstruction and stands in for every
+     scikit-learn and pandas class, and write plain JSON.
+  3. The converted models are checked against the weights the authors publish in each model's metadata, and
+     the array reference tables against the CpG coordinates EpiSignaLR intersects a pileup with.
+  4. The array-derived classifiers are retrained for every genome (see array_svm.py), so scoring them needs
+     scikit-learn. The converters and that scorer run in a Python with numpy, joblib and scikit-learn: the one
+     running this script if it has them, otherwise a small virtualenv created inside the vendor folder. Its
+     path is recorded in VERSION.json.
 
 To move to a newer EpiSignaLR, change COMMIT and the hashes after reading the diff.
 """
@@ -66,33 +70,48 @@ SHA256 = {
         "loo_predictions.csv": "703feb13eaad202d274c31b6eb2aeef0113c97bd6cecabe3f451a2630e0427fc",
     },
 }
+# The array-derived classifiers' files, under data/ in the repository.
+ARRAY_SHA256 = {
+    "collapsed_coordinates_sorted.bed": "1a93af15230f2e03caa9293b6b4fb6eb864f25f1e0a0dde2866a406d348194df",
+    "no_strand_all_points_dict.pickle": "1bacef610b69b00c122bb0e8a0d2f1d1058ba5bb69ff0b887074c556856e91e3",
+}
 
-CONVERT = BACKEND / "epigenetics" / "episignature" / "convert.py"
-CONVERT_VENV = fetched.VENDOR_DIR / ".convert-venv"
+EPISIGNATURE = BACKEND / "epigenetics" / "episignature"
+CONVERT = EPISIGNATURE / "convert.py"
+CONVERT_ARRAY = EPISIGNATURE / "convert_array.py"
+ARRAY_SVM = EPISIGNATURE / "array_svm.py"
+VENV = fetched.VENDOR_DIR / ".venv"
+PACKAGES = ("numpy", "joblib", "scikit-learn")
 
 
-def download(label: str, name: str) -> bytes:
-    url = f"https://raw.githubusercontent.com/{fetched.REPO}/{COMMIT}/data/{label}_enet_svm_model/{name}"
-    print(f"Downloading {label}/{name} ...")
+def download(repo_path: str, sha256: str) -> bytes:
+    url = f"https://raw.githubusercontent.com/{fetched.REPO}/{COMMIT}/{repo_path}"
+    print(f"Downloading {repo_path} ...")
     with urllib.request.urlopen(url, timeout=60) as resp:
         data = resp.read()
     got = hashlib.sha256(data).hexdigest()
-    if got != SHA256[label][name]:
-        raise SystemExit(f"{label}/{name}: SHA-256 is {got}, expected {SHA256[label][name]}. "
+    if got != sha256:
+        raise SystemExit(f"{repo_path}: SHA-256 is {got}, expected {sha256}. "
                          "Nothing was written for this file; review the change before updating the pin.")
     return data
 
 
-def converter_python() -> str:
-    """A Python with numpy and joblib: this one if it has them, else a virtualenv made for the purpose."""
-    probe = "import numpy, joblib"
-    if subprocess.run([sys.executable, "-I", "-c", probe], capture_output=True).returncode == 0:
+def can_run(python: str) -> bool:
+    probe = "import numpy, joblib, sklearn"
+    return subprocess.run([python, "-I", "-c", probe], capture_output=True).returncode == 0
+
+
+def tools_python() -> str:
+    """A Python with numpy, joblib and scikit-learn: this one if it has them, else the virtualenv made for the purpose."""
+    if can_run(sys.executable):
         return sys.executable
-    venv_python = CONVERT_VENV / "bin" / "python"
+    venv_python = VENV / "bin" / "python"
     if not venv_python.exists():
-        print(f"Creating {CONVERT_VENV} with numpy and joblib (needed only to read the model pickles) ...")
-        subprocess.run([sys.executable, "-m", "venv", str(CONVERT_VENV)], check=True)
-        subprocess.run([str(venv_python), "-m", "pip", "install", "-q", "numpy", "joblib"], check=True)
+        print(f"Creating {VENV} ...")
+        subprocess.run([sys.executable, "-m", "venv", str(VENV)], check=True)
+    if not can_run(str(venv_python)):
+        print(f"Installing {', '.join(PACKAGES)} into {VENV} ...")
+        subprocess.run([str(venv_python), "-m", "pip", "install", "-q", *PACKAGES], check=True)
     return str(venv_python)
 
 
@@ -104,9 +123,27 @@ def convert(python: str, label: str) -> None:
                        check=True, cwd=cwd)
 
 
+def convert_arrays(python: str) -> None:
+    fetched.ARRAY_FILES["converted"].parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory() as cwd:
+        subprocess.run([python, "-I", str(CONVERT_ARRAY), str(fetched.ARRAY_FILES["pickle"]), str(fetched.ARRAY_FILES["coordinates"]),
+                        str(fetched.ARRAY_FILES["converted"])], check=True, cwd=cwd)
+
+
+def smoke_test_scorer(python: str) -> str:
+    """Score a genome with no values at all, which exercises scikit-learn end to end; returns its version."""
+    done = subprocess.run([python, "-I", str(ARRAY_SVM), str(fetched.ARRAY_FILES["converted"])], input="{}", capture_output=True, text=True)
+    if done.returncode != 0:
+        raise SystemExit(f"the array-derived scorer does not run with {python}:\n{done.stderr}")
+    result = json.loads(done.stdout)
+    if len(result["scores"]) != 34:
+        raise SystemExit(f"the array-derived scorer returned {len(result['scores'])} conditions, expected 34")
+    return result["sklearn"]
+
+
 def complete() -> bool:
     info = fetched.info()
-    return bool(info) and info.get("commit") == COMMIT and fetched.installed()
+    return bool(info) and info.get("commit") == COMMIT and fetched.installed() and fetched.array_installed()
 
 
 def main() -> int:
@@ -119,20 +156,27 @@ def main() -> int:
         return 0
 
     for label, files in SHA256.items():
-        for name in files:
+        for name, digest in files.items():
             dest = fetched.RAW_DIR / label / name
             dest.parent.mkdir(parents=True, exist_ok=True)
-            dest.write_bytes(download(label, name))
+            dest.write_bytes(download(f"data/{label}_enet_svm_model/{name}", digest))
+    for name, digest in ARRAY_SHA256.items():
+        dest = fetched.RAW_DIR / "array" / name
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_bytes(download(f"data/{name}", digest))
 
-    python = converter_python()
+    python = tools_python()
     for label in SHA256:
         convert(python, label)
+    convert_arrays(python)
 
     from epigenetics.episignature import model  # loads each model and cross-checks it against its metadata
     model.load.cache_clear()
     for key in fetched.CATALOG:
         m = model.load(key)
         print(f"{m.label}: {len(m.features)} DMRs, {len(m.selected)} selected; weights match the published metadata.")
+    sklearn_version = smoke_test_scorer(python)
+    print(f"Array-derived classifiers: 34 conditions, scored with scikit-learn {sklearn_version} ({python}).")
 
     fetched.VERSION_FILE.write_text(json.dumps({
         "repo": fetched.REPO,
@@ -140,7 +184,9 @@ def main() -> int:
         "fetched_at": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
         "source": f"https://github.com/{fetched.REPO}/tree/{COMMIT}",
         "licence": "none published in the repository; files are fetched for local use and never committed",
-        "sha256": {f"{label}/{name}": digest for label, files in SHA256.items() for name, digest in files.items()},
+        "python": python,
+        "sha256": {**{f"{label}/{name}": digest for label, files in SHA256.items() for name, digest in files.items()},
+                   **{f"array/{name}": digest for name, digest in ARRAY_SHA256.items()}},
     }, indent=2) + "\n")
     print(f"EpiSignaLR setup complete ({COMMIT[:7]}).")
     return 0

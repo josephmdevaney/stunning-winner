@@ -26,3 +26,4 @@ include = ["repeatscope*", "mitolr*", "paraphase_annotate*", "kivvi*", "roh*", "
 [tool.setuptools.package-data]
 pacbio_tools = ["releases_snapshot.json"]
 epigenetics = ["data/*.json"]
+"epigenetics.episignature" = ["data/*.json"]

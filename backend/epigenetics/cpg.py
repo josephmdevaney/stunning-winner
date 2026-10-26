@@ -11,9 +11,11 @@ mode, minimum coverage); `header()` returns them so a result can always say what
 
 from __future__ import annotations
 
+import os
 import re
 import shutil
 import subprocess
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
@@ -82,6 +84,30 @@ def fetch(bed: Path, chrom: str, start: int, end: int) -> list[CpG]:
             continue
         rows.append(CpG(int(f[1]), float(f[3]), int(f[5]), int(float(f[6])), int(float(f[7]))))
     return rows
+
+
+def fetch_sites(bed: Path, sites: list[tuple[str, int]]) -> dict[tuple[str, int], CpG]:
+    """The CpG at each (chromosome, 0-based start) in `sites`, read in one tabix call (`tabix -R`), for the few
+    thousand positions of a signature. Chromosome names may be given without "chr"; they are matched to the
+    file's own naming. Sites with no row in the pileup are absent from the result."""
+    names = contigs(bed) or []
+    prefix = "chr" if any(n.startswith("chr") for n in names) else ""
+    fd, regions = tempfile.mkstemp(suffix=".bed")      # tabix reads a -R file as BED only from the extension
+    try:
+        with os.fdopen(fd, "w") as f:
+            for chrom, start in sorted(set(sites), key=lambda s: (names.index(prefix + s[0]) if prefix + s[0] in names else len(names), s[1])):
+                f.write(f"{prefix}{chrom}\t{start}\t{start + 1}\n")
+        out = _run(["-R", regions, str(bed)])
+    finally:
+        os.unlink(regions)
+    found: dict[tuple[str, int], CpG] = {}
+    for line in out.splitlines():
+        f = line.split("\t")
+        if len(f) < 8 or line.startswith("#"):
+            continue
+        chrom = f[0][3:] if prefix and f[0].startswith("chr") else f[0]
+        found[(chrom, int(f[1]))] = CpG(int(f[1]), float(f[3]), int(f[5]), int(float(f[6])), int(float(f[7])))
+    return found
 
 
 def contigs(bed: Path) -> Optional[list[str]]:

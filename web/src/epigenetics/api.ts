@@ -171,6 +171,7 @@ export const epigeneticsApi = {
   region: (sample: string, id: string, window: Window, flank = 3000) =>
     getJSON<RegionTrack>(`/api/epigenetics/imprinting/region${query({ sample, id, window, flank })}`),
   episignatures: (sample: string) => getJSON<EpisignatureResponse>(`/api/epigenetics/episignatures${query({ sample })}`),
+  arraySignatures: (sample: string) => getJSON<ArrayResponse>(`/api/epigenetics/episignatures/array${query({ sample })}`),
 }
 
 // ---- Episignatures (EpiSignaLR) -------------------------------------------------------------------------------
@@ -245,3 +246,44 @@ export interface EpisignatureNotInstalled {
 }
 
 export type EpisignatureResponse = EpisignatureOverview | EpisignatureNotInstalled
+
+// ---- Array-derived episignatures (EpiSignaLR's 34 classifiers) ----------------------------------------------
+
+export interface ArrayCondition {
+  id: string
+  name: string
+  genes: string
+  score: number // SVM decision value; at or above the threshold is a match
+  matches: boolean
+  n_cpgs: number
+  n_found: number
+  cpgs: {
+    coords: [string, number][] // chromosome, 1-based position
+    control: (number | null)[] // reference median methylation (0-1) of controls
+    condition: (number | null)[] // reference median methylation of this condition
+    sample: (number | null)[] // this genome, null where the pileup has no row
+  }
+}
+
+export interface ArrayOverview {
+  installed: true
+  sample: string
+  label: string
+  threshold: number
+  call: 'control' | 'one' | 'several'
+  matches: string[]
+  conditions: ArrayCondition[] // highest score first
+  cpgs: { total: number; found: number }
+  scorer: { scikit_learn: string; reference_scikit_learn: string }
+  warnings: EpiWarning[]
+}
+
+export interface ArrayNotInstalled {
+  installed: false
+  setup_command: string
+  sample: string
+  label: string
+  conditions: []
+}
+
+export type ArrayResponse = ArrayOverview | ArrayNotInstalled

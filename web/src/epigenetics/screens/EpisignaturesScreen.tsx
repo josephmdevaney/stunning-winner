@@ -1,16 +1,19 @@
 import { Card, CardHeading } from '../../components/Card'
 import { colors, mono } from '../../theme'
-import type { EpiModel, EpiWarning, EpisignatureResponse } from '../api'
+import type { ArrayResponse, EpiModel, EpiWarning, EpisignatureResponse } from '../api'
 import { CallChip, ModelFacts, ScoreBar, ScoreLegend } from '../episignatureParts'
 import { Callout, Message } from '../ui'
+import { ArraySignatures } from './ArraySignatures'
 
 export function EpisignaturesScreen({
   data,
   error,
+  array,
   onOpenModel,
 }: {
   data: EpisignatureResponse | null
   error: string | null
+  array: { data: ArrayResponse | null; error: string | null }
   onOpenModel: (id: string) => void
 }) {
   if (error && !data) return <Message tone="error">Episignatures could not be scored: {error}</Message>
@@ -60,6 +63,8 @@ export function EpisignaturesScreen({
         ))}
       </div>
       <ScoreLegend />
+
+      <ArraySignatures data={array.data} error={array.error} />
 
       <Card>
         <CardHeading title="About these scores" />

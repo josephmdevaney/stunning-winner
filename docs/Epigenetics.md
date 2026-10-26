@@ -8,7 +8,7 @@ The Epigenetics suite reads CpG methylation from a genome's PacBio pileup and re
 | **Region Detail** | CpG-by-CpG methylation for one DMR, split by haplotype | Built |
 | **Methods** | Thresholds, analysis window, data provenance, how each call is made | Built |
 | **Episignatures / Signature Detail** | Scores for three conditions from EpiSignaLR's sequencing-derived models, and the DMRs behind each score | Built, needs a one-time setup (see [Episignatures](#episignatures-from-episignalr)) |
-| **Array-derived signatures** | EpiSignaLR's 34 array-derived classifiers | Not built (see [Next](#next)) |
+| **Array-derived classifiers** (on Episignatures) | EpiSignaLR's 34 array-derived classifiers, ranked, with each condition's CpGs against the reference profiles | Built, same setup |
 
 Backend: `backend/epigenetics/` (routes under `/api/epigenetics`; episignatures in `backend/epigenetics/episignature/`). Frontend: `web/src/epigenetics/`. Tests: `backend/tests/test_epigenetics.py`, `test_epigenetics_api.py`, `test_episignature.py`.
 
@@ -105,7 +105,7 @@ A bad threshold or window is a 422, an unknown sample or DMR a 404, a missing `t
 
 ## Episignatures from EpiSignaLR
 
-[EpiSignaLR](https://github.com/millerlaboratory/EpiSignaLR) (Miller laboratory; a medRxiv preprint, October 2026) scores a long-read genome against methylation signatures of three conditions: **SETD1B-related disorder**, **Kleefstra syndrome (EHMT1)** and **Kabuki syndrome (KMT2D)**. Each is an ElasticNet-selected set of DMRs and a linear SVM, trained on nanopore genomes of blood DNA from 9 or 10 cases and 10 controls. This suite scores a registered genome with them.
+[EpiSignaLR](https://github.com/millerlaboratory/EpiSignaLR) (Miller laboratory; a medRxiv preprint, October 2026) scores a long-read genome against methylation signatures of three conditions: **SETD1B-related disorder**, **Kleefstra syndrome (EHMT1)** and **Kabuki syndrome (KMT2D)**, and against 34 array-derived classifiers. The three signatures are each an ElasticNet-selected set of DMRs and a linear SVM, trained on nanopore genomes of blood DNA from 9 or 10 cases and 10 controls. This suite scores a registered genome with both.
 
 ### Setup
 
@@ -115,7 +115,7 @@ python backend/scripts/setup_episignalr.py
 
 The EpiSignaLR repository publishes no licence, so none of it is committed. The script fetches each file from one pinned commit into `backend/epigenetics/episignature/vendor/` (gitignored), checks every file against a SHA-256 pinned in the script, and records what it fetched in `vendor/VERSION.json`. Until it has been run, the Episignatures screen says so and shows the command.
 
-The models are pickles, and a pickle can run code when it is loaded, so they are never loaded in the API process. `episignature/convert.py` reads each one in a separate `python -I` process that allows only numpy's array reconstruction, stands in for every scikit-learn class with an empty object that keeps the state it is given, and refuses anything else (`os.system` and the like). It needs only numpy and joblib; if the Python running the setup lacks them, the script makes a small virtualenv for the two inside the vendor folder. The output is plain JSON: the scaler, the selected features, the SVM's weights and the Platt sigmoid's two numbers. The converted weights are checked against the ones the authors publish in each model's metadata.
+The models and the array reference tables are pickles, and a pickle can run code when it is loaded, so they are never loaded in the API process. `episignature/convert.py` reads each model in a separate `python -I` process that allows only numpy's array reconstruction, stands in for every scikit-learn class with an empty object that keeps the state it is given, and refuses anything else (`os.system` and the like). It needs only numpy and joblib; if the Python running the setup lacks them, the script makes a small virtualenv for the two inside the vendor folder. The output is plain JSON: the scaler, the selected features, the SVM's weights and the Platt sigmoid's two numbers. The converted weights are checked against the ones the authors publish in each model's metadata.
 
 ### How a genome is scored
 
@@ -137,8 +137,22 @@ Each model's screen shows the decision value split into its per-DMR terms, and e
 - **Sample type.** The signatures come from blood DNA (the paper notes dried-blood-spot DNA scoring differently). HG002's reference DNA is from a lymphoblastoid cell line, so it is not a like-for-like control. It scores Kleefstra 0.52 (indeterminate); with a cell line, a pileup in another mode and 20 training genomes, that is a reason to doubt the score, not a finding.
 - **Training size.** The cohorts are 19 to 20 people. Kabuki's leave-one-out specificity is 50%: half of its controls were called cases in the authors' own test.
 
+### The 34 array-derived classifiers
+
+EpiSignaLR also scores a genome with 34 classifiers adapted from NSBEpi (Geysens et al.), built from published median array methylation (Aref-Eshghi et al.): one profile per condition and one for controls, over each condition's 69 to 153 signature CpGs (3,642 distinct CpGs). The conditions and genes are in the preprint's Supplemental Table 4 and in `episignature/data/array_conditions.json`.
+
+- **CpG values.** A genome's methylation at each signature CpG is the percent methylated of the pileup row at that position (no coverage filter, as in EpiSignaLR); a CpG with no row is missing. All 3,642 positions are read in one `tabix -R` call.
+- **The SVM is retrained for every genome.** EpiSignaLR adds the genome as an extra row to the condition's reference table, fills every gap (in the reference or the genome) with that CpG's mean over all rows, and fits a linear SVM with the condition's own profile as the single positive example (weighted 10 to 1). A genome's values reach the fit through any reference gap, so the fit cannot be stored once. `episignature/array_svm.py` repeats it and returns each condition's decision value; a score of 0.35 or more is a match, and more than one can match.
+- **Where it runs.** Training needs scikit-learn, so the scorer is a separate process in a Python made by setup (the one running it if it has numpy, joblib and scikit-learn, otherwise a small virtualenv in the vendor folder; its path is recorded in `VERSION.json`). It reads only the converted reference JSON and a genome's values, never a pickle. Setup also converts the reference pickle (a dict of pandas tables) with `episignature/convert_array.py`, which never imports pandas and checks that the tables list their CpGs in the order of EpiSignaLR's coordinate file, the order that pairs a genome's values with the reference rows.
+- **Cut-off.** EpiSignaLR's script and methods use 0.35; the preprint's results text says 0.3. 0.35 is used and echoed in every response.
+
+Validation: on HG002's pileup, the authors' own `run_SVM.py` (scikit-learn 1.8.0) and this scorer (scikit-learn 1.6.1, the newest that supports Python 3.9) give the same score for all 34 conditions, within 10⁻¹³. A synthetic genome's scores from the authors' script are kept as golden numbers in the tests.
+
+How they behaved in the preprint's genomes: the Kleefstra classifier called all 28 genomes of people with Kleefstra syndrome; the Kabuki classifier missed the two individuals with KDM6A variants; the SETD1B classifier called 1 of 3 PacBio genomes. A few controls scored above the cut-off for other conditions. With 34 classifiers an occasional match is expected.
+
+HG002 reaches 1.02 for ICF2_3_4 (immunodeficiency-centromeric instability-facial anomalies syndrome), the only condition above the cut-off. That is not a finding. HG002's reference DNA is a lymphoblastoid cell line, and the genome sits near the ICF reference profile at many of its CpGs, but this was not tested further.
+
 ## Next
 
-- **The 34 array-derived classifiers** (adapted from NSBEpi): a linear SVM per condition, trained at run time on reference profiles, over 3,642 array CpGs. They need the same fetch-and-convert treatment (the reference data is a pickled set of pandas tables) and the SVM weights exported at setup.
 - **A pileup in count mode**, so scores can be compared with the paper's, if a genome's BAM is at hand and `aligned_bam_to_cpg_scores` is installed.
 - **Reference ranges** from a control cohort, so a DMR value can be placed against the same platform's controls rather than the nanopore training set.

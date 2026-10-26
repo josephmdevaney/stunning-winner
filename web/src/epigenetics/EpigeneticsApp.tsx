@@ -9,7 +9,7 @@ import { MethodsScreen } from './screens/MethodsScreen'
 import { EpisignatureScreen } from './screens/EpisignatureScreen'
 import { EpisignaturesScreen } from './screens/EpisignaturesScreen'
 import { RegionScreen } from './screens/RegionScreen'
-import { useEpisignatures, useImprinting } from './useEpigeneticsData'
+import { useArraySignatures, useEpisignatures, useImprinting } from './useEpigeneticsData'
 import { Message } from './ui'
 
 const TITLES: Record<EpigeneticsScreen, string> = {
@@ -45,6 +45,7 @@ export default function EpigeneticsApp({ product, onSwitchProduct }: { product: 
   const { overview, error, loading } = useImprinting(sample, window, overrides)
   const wantsEpisignatures = screen === 'episignatures' || screen === 'signature'
   const episignatures = useEpisignatures(sample, wantsEpisignatures)
+  const arraySignatures = useArraySignatures(sample, screen === 'episignatures')
 
   const openRegion = (id: string) => {
     setRegionId(id)
@@ -94,7 +95,7 @@ export default function EpigeneticsApp({ product, onSwitchProduct }: { product: 
           {overview && screen === 'region' && (
             <RegionScreen sample={sample} window={window} overview={overview} regionId={regionId ?? overview.regions[0].id} onSelectRegion={setRegionId} />
           )}
-          {sample && screen === 'episignatures' && <EpisignaturesScreen data={episignatures.data} error={episignatures.error} onOpenModel={openModel} />}
+          {sample && screen === 'episignatures' && <EpisignaturesScreen data={episignatures.data} error={episignatures.error} array={arraySignatures} onOpenModel={openModel} />}
           {sample && screen === 'signature' && !episignatures.data && !episignatures.error && <Message>Scoring episignatures…</Message>}
           {screen === 'signature' && episignatures.error && !episignatures.data && <Message tone="error">Episignatures could not be scored: {episignatures.error}</Message>}
           {screen === 'signature' && episignatures.data?.installed && (

@@ -12,6 +12,7 @@ from fastapi import APIRouter, HTTPException
 from . import samples, service
 from .analysis import Thresholds
 from .cpg import TabixError
+from .episignature import arrays as episignature_arrays
 from .episignature import service as episignature_service
 from .episignature import fetched as episignature_fetched
 
@@ -102,3 +103,18 @@ def get_episignatures(sample: Optional[str] = None):
         raise HTTPException(status_code=503, detail=str(e))
     except ValueError as e:
         raise HTTPException(status_code=503, detail=f"the fetched EpiSignaLR files are inconsistent: {e}")
+
+
+@router.get("/episignatures/array")
+def get_array_episignatures(sample: Optional[str] = None):
+    """EpiSignaLR's 34 array-derived classifiers for a genome. Like the sequencing-derived models they need the
+    one-time setup, and they also need the Python it makes (with scikit-learn)."""
+    s = _sample(sample)
+    if not episignature_fetched.array_installed():
+        return {"installed": False, "setup_command": episignature_fetched.SETUP_COMMAND, "sample": s.key, "label": s.label, "conditions": []}
+    try:
+        return {"installed": True, **episignature_arrays.overview(s)}
+    except TabixError as e:
+        raise HTTPException(status_code=503, detail=str(e))
+    except (episignature_arrays.ScoringError, ValueError) as e:
+        raise HTTPException(status_code=503, detail=str(e))

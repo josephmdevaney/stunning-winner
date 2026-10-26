@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { epigeneticsApi, type EpisignatureResponse, type ImprintingOverview, type ThresholdOverrides, type Window } from './api'
+import { epigeneticsApi, type ArrayResponse, type EpisignatureResponse, type ImprintingOverview, type ThresholdOverrides, type Window } from './api'
 
 // The overview for one sample. A refetch (new thresholds, other window) keeps the previous result on screen with
 // `loading` set, so the table doesn't flash empty on every change.
@@ -44,6 +44,29 @@ export function useEpisignatures(sample: string, enabled: boolean) {
     setError(null)
     epigeneticsApi
       .episignatures(sample)
+      .then((d) => current && setData(d))
+      .catch((e) => current && setError(String(e.message ?? e)))
+    return () => {
+      current = false
+    }
+  }, [sample, enabled])
+
+  return { data, error }
+}
+
+// EpiSignaLR's array-derived scores, fetched with the other episignature screens. Slower than they are (every
+// genome retrains 34 SVMs), so it has its own state and the sequencing-derived scores do not wait for it.
+export function useArraySignatures(sample: string, enabled: boolean) {
+  const [data, setData] = useState<ArrayResponse | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!sample || !enabled) return
+    let current = true
+    setData(null)
+    setError(null)
+    epigeneticsApi
+      .arraySignatures(sample)
       .then((d) => current && setData(d))
       .catch((e) => current && setError(String(e.message ?? e)))
     return () => {

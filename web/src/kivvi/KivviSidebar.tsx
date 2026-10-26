@@ -2,11 +2,12 @@ import { colors, mono } from './theme'
 import { ProductSwitcher, type Product } from '../components/ProductSwitcher'
 import type { SampleInfo } from './api'
 
-export type KivviScreen = 'overview' | 'd4z4' | 'kiv2' | 'qc'
+export type KivviScreen = 'overview' | 'd4z4' | 'fshd2' | 'kiv2' | 'qc'
 
 const NAV_ITEMS: { screen: KivviScreen; label: string }[] = [
   { screen: 'overview', label: 'Overview' },
   { screen: 'd4z4', label: 'D4Z4 (FSHD)' },
+  { screen: 'fshd2', label: 'FSHD2 evidence' },
   { screen: 'kiv2', label: 'LPA KIV2' },
   { screen: 'qc', label: 'Sample QC' },
 ]

@@ -132,6 +132,64 @@ def test_kiv2_no_alleles():
     assert shaped["alleles"] == [] and shaped["shortest_copy_number"] is None
 
 
+# --- FSHD2 evidence ---------------------------------------------------------
+
+def test_permissive_means_chr4_qa_intact_polya_outside_4a166():
+    assert parse.is_permissive("chr4", "Group1.1", "qAIntactPolyA")
+    assert parse.is_permissive("chr4", None, "qAIntactPolyA")
+    assert not parse.is_permissive("chr4", "Group2.1", "qAIntactPolyA")      # 4A166
+    assert not parse.is_permissive("chr10", "Group1.1", "qAIntactPolyA")
+    assert not parse.is_permissive("chr4", "Group1.1", "qADisruptedPolyA")
+    assert not parse.is_permissive("chr4", "Group1.1", "qB")
+
+
+@pytest.mark.parametrize(
+    "size, lower, expected",
+    [(1, False, "contracted"), (10, False, "contracted"), (11, False, "fshd2_range"), (20, False, "fshd2_range"),
+     (21, False, "above"), (21, True, "above"), (20, True, "unresolved"), (8, True, "unresolved")],
+)
+def test_size_range_boundaries(size, lower, expected):
+    assert parse.size_range(size, lower) == expected
+
+
+def _meth_allele(size, methylation, **kw):
+    info = _allele_info(size, **kw)
+    info["methylation"] = methylation
+    return info
+
+
+def test_fshd2_evidence_lays_out_each_allele_without_making_a_call():
+    data = _d4z4_json([
+        _meth_allele(14, 0.31),                                          # permissive, 11-20 units
+        _meth_allele(9, 0.28),                                           # permissive, contracted
+        _meth_allele(35, 0.40, chromosome="chr4:Group2.1"),             # 4A166: not permissive
+        _meth_allele(">12", 0.35, chromosome="unknown", allele_type="partial", distal="qB"),
+    ])
+    data["additional"]["methylation_all_sites"] = 0.33
+    fshd2 = parse.shape_d4z4(data)["fshd2"]
+    assert fshd2["sample_methylation"] == 0.33
+    assert [(a["index"], a["permissive"], a["size_range"]) for a in fshd2["alleles"]] == [
+        (1, True, "fshd2_range"), (2, True, "contracted"), (3, False, "above"), (4, False, "unresolved"),
+    ]
+    assert fshd2["alleles"][3]["size_label"] == "≥12" and fshd2["alleles"][3]["methylation"] == 0.35
+    assert fshd2["summary"] == {
+        "permissive_alleles": 2, "permissive_contracted": 1, "permissive_fshd2_range": 1,
+        "alleles_with_methylation": 4, "lowest_methylation": 0.28, "highest_methylation": 0.40,
+    }
+    # evidence only: no verdict anywhere in the block, and the FSHD1 summary is unchanged by it
+    assert not {"status", "label", "call"} & set(fshd2) and not {"status", "label", "call"} & set(fshd2["summary"])
+    assert parse.shape_d4z4(data)["summary"]["status"] == "pathogenic"
+
+
+def test_fshd2_evidence_tolerates_alleles_without_methylation_and_no_alleles():
+    info = _allele_info(14)
+    info["methylation"] = None
+    fshd2 = parse.shape_d4z4(_d4z4_json([info]))["fshd2"]
+    assert fshd2["summary"]["alleles_with_methylation"] == 0 and fshd2["summary"]["lowest_methylation"] is None
+    empty = parse.shape_d4z4(_d4z4_json([]))["fshd2"]
+    assert empty["alleles"] == [] and empty["summary"]["permissive_alleles"] == 0
+
+
 # --- VCF --------------------------------------------------------------------
 
 VCF = "\n".join(
@@ -235,3 +293,10 @@ def test_qc_lists_only_targets_with_output(results_root):
     assert qc["target_qc"][0]["alleles_resolved"] == 2
     assert qc["target_qc"][0]["alleles_expected"] == 4
     assert qc["target_qc"][0]["median_read_length"] == 18000.0
+
+
+def test_target_detail_carries_the_fshd2_evidence(results_root):
+    body = client.get("/api/kivvi/target/d4z4", params={"sample": "S1"}).json()
+    assert body["fshd2"]["summary"]["permissive_alleles"] == 2
+    assert body["fshd2"]["sample_methylation"] == 0.8
+    assert [a["size_label"] for a in body["fshd2"]["alleles"]] == ["7", "30"]

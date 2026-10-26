@@ -31,15 +31,22 @@ export function filterColor(filter: string): string {
   return filter === 'PASS' ? 'oklch(0.5 0.14 150)' : 'oklch(0.6 0.15 75)'
 }
 
-// Detail-screen interpretation callout, tinted by status band.
+// Detail-screen interpretation callout, tinted by status. Green is reserved for
+// results that are reassuring (Common variant, Not detected); a VUS and a Rare
+// variant are neither, so each gets its own tint (matching its badge) instead of
+// falling through to green.
+const INTERP_TINT: Record<string, { bg: string; fg: string }> = {
+  Pathogenic: { bg: 'oklch(0.96 0.03 25)', fg: 'oklch(0.5 0.20 25)' },
+  'Low-level heteroplasmy': { bg: 'oklch(0.96 0.03 75)', fg: 'oklch(0.5 0.15 75)' },
+  VUS: { bg: colors.interpBg.uncertain, fg: colors.interpColor.uncertain },
+  'Rare variant': { bg: 'oklch(0.96 0.02 230)', fg: 'oklch(0.5 0.12 230)' },
+}
+const REASSURING_TINT = { bg: 'oklch(0.96 0.03 150)', fg: 'oklch(0.5 0.14 150)' }
+
 export function interpBg(status: string): string {
-  if (status === 'Pathogenic') return 'oklch(0.96 0.03 25)'
-  if (status === 'Low-level heteroplasmy') return 'oklch(0.96 0.03 75)'
-  return 'oklch(0.96 0.03 150)'
+  return (INTERP_TINT[status] ?? REASSURING_TINT).bg
 }
 
 export function interpColor(status: string): string {
-  if (status === 'Pathogenic') return 'oklch(0.5 0.20 25)'
-  if (status === 'Low-level heteroplasmy') return 'oklch(0.5 0.15 75)'
-  return 'oklch(0.5 0.14 150)'
+  return (INTERP_TINT[status] ?? REASSURING_TINT).fg
 }

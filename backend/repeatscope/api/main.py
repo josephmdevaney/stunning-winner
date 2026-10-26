@@ -14,6 +14,15 @@ VCF's own header). `panel_bed` (optional) is a repeat-catalog-format BED (`ID=;M
 STRUC=`) whose IDs scope that mode's Overview/QC to just that assay's loci; omit it (or
 set null) to show STRchive's full 80-locus catalog, e.g. for genome-wide sequencing.
 
+`catalog_vcf_dir` (optional) is a *separate* per-sample VCF directory used only for the
+genome-wide "Repeat Catalog" screen's region genotypes -- e.g. Genome-wide mode's own
+`vcf_dir` holds a small VCF genotyped at just the 82 STRchive loci, while its real,
+much larger genome-wide TRGT run (hundreds of thousands of regions) lives here instead.
+Kept separate from `vcf_dir` rather than dropped in the same directory: both VCFs report
+the same sample name, so auto-discovery would silently let one overwrite the other as
+"the" path for that sample. Falls back to `vcf_dir`'s own sample_paths when a sample
+has no dedicated catalog VCF (e.g. every non-genome-wide mode).
+
 Every screen mirrors what's actually derivable from a repeat-calling VCF. Metrics that
 require aligned-read data (mapq, genome-wide coverage, GC bias, read-length
 histograms, ...) are reported under `unavailable_metrics` with a reason, rather than
@@ -25,6 +34,7 @@ from __future__ import annotations
 import dataclasses
 import json
 import os
+from functools import lru_cache
 from pathlib import Path
 from typing import Optional
 
@@ -32,12 +42,15 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from ..annotate import (
+    AnnotatedCatalogRegion,
     AnnotatedLocus,
+    annotate_catalog_region,
     annotate_strchive_panel,
-    iter_annotated_catalog,
     resolve_panel_locus_ids,
     simulate_pileup_reads,
 )
+from ..catalog import CatalogIndex, chrom_sort_key
+from ..genes import GeneIndex, load_genes
 from ..paraphase import (
     STATUS_PATHOGENIC_VARIANT,
     classify_gene,
@@ -46,8 +59,9 @@ from ..paraphase import (
     load_paraphase_calls,
     load_sawfish_calls,
 )
-from .. import roh
-from ..trgt import sample_names
+from ..rexprt import RexprtScore, load_rexprt_scores
+from ..strchive import STATUS_INTERMEDIATE, STATUS_PATHOGENIC
+from ..trgt import TrgtIndex, sample_names, trgt_version
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 BACKEND_ROOT = REPO_ROOT / "backend"
@@ -59,8 +73,61 @@ STRCHIVE_JSON = os.environ.get(
 CATALOG_BED = os.environ.get(
     "REPEATSCOPE_CATALOG_BED", str(REPO_ROOT / "project" / "uploads" / "repeat_catalog.hg38.bed")
 )
+GENES_BED = os.environ.get("REPEATSCOPE_GENES_BED", str(REPO_ROOT / "project" / "uploads" / "genes.hg38.bed"))
+REXPRT_SCORES_TSV = os.environ.get(
+    "REPEATSCOPE_REXPRT_SCORES", str(REPO_ROOT / "project" / "uploads" / "rexprt_scores.hg38.tsv")
+)
 
-CALLER_LABEL = "TRGT v5.1.0"
+# Genomic gene-body positions, RExPRT scores, and the raw genome-wide catalog
+# itself don't depend on mode/sample, unlike everything else cached below --
+# load once, lazily, the first time the catalog actually needs them.
+_gene_index: Optional[GeneIndex] = None
+_rexprt_scores: Optional[dict] = None
+_catalog_index: Optional[CatalogIndex] = None
+
+
+def _get_gene_index() -> Optional[GeneIndex]:
+    global _gene_index
+    if _gene_index is None and Path(GENES_BED).exists():
+        _gene_index = GeneIndex(load_genes(GENES_BED))
+    return _gene_index
+
+
+def _get_rexprt_scores() -> Optional[dict]:
+    global _rexprt_scores
+    if _rexprt_scores is None and Path(REXPRT_SCORES_TSV).exists():
+        _rexprt_scores = load_rexprt_scores(REXPRT_SCORES_TSV)
+    return _rexprt_scores
+
+
+def _get_catalog_index() -> CatalogIndex:
+    global _catalog_index
+    if _catalog_index is None:
+        _catalog_index = CatalogIndex.from_bed(CATALOG_BED)
+    return _catalog_index
+
+
+
+@lru_cache(maxsize=None)
+def _caller_label(vcf_path: str) -> str:
+    """"TRGT v<version>" read from the sample VCF's own header, or plain "TRGT" when the header
+    records none -- never a guessed version number."""
+    version = trgt_version(vcf_path)
+    return f"TRGT v{version}" if version else "TRGT"
+
+
+# Minimum depth (x) a locus needs to pass Sample QC. PureTarget data -- the PureTarget repeat
+# expansion panel and the PureTarget carrier panel -- uses PacBio's specified minimum target coverage
+# of 20x per sample. Whole-genome data keeps 10x: PacBio's figure is an enrichment-panel spec and
+# doesn't describe whole-genome coverage.
+PURETARGET_MIN_LOCUS_DEPTH = 20
+DEFAULT_MIN_LOCUS_DEPTH = 10
+
+
+def _min_locus_depth(mode: str) -> int:
+    return PURETARGET_MIN_LOCUS_DEPTH if mode in ("puretarget_v2", "carrier") else DEFAULT_MIN_LOCUS_DEPTH
+
+
 VCF_EXTENSIONS = (".vcf", ".vcf.gz")
 # Non-panel VCFs that legitimately sit alongside a sample's TRGT VCF in some modes'
 # (flat-layout) vcf_dir -- e.g. Carrier's f8inversion caller and sawfish output --
@@ -78,6 +145,33 @@ from mitolr.router import router as mito_router  # noqa: E402
 
 app.include_router(mito_router)
 
+# Paraphase Annotation is another sibling product, served under /api/paraphase.
+# Also self-contained -- its own sample registry (paraphase_annotate/samples.py).
+from paraphase_annotate.router import router as paraphase_router  # noqa: E402
+
+app.include_router(paraphase_router)
+
+# Kivvi (LPA KIV2 / D4Z4 large-unit VNTR genotyper) is another sibling product,
+# served under /api/kivvi. Self-contained -- reads Kivvi's own output files from
+# an external results root (kivvi/samples.py).
+from kivvi.router import router as kivvi_router  # noqa: E402
+
+app.include_router(kivvi_router)
+
+# Runs of Homozygosity is another sibling product, served under /api/roh.
+# Self-contained -- its own sample registry and reference data (roh/analysis.py).
+from roh.router import router as roh_router  # noqa: E402
+
+app.include_router(roh_router)
+
+# PacBio tool versions: which release of Paraphase, TRGT, sawfish, MitoRSaw, ...
+# produced the data loaded above, against each tool's newest GitHub release.
+# Reads the loaded data's own version headers, so it needs the per-mode state
+# below (looked up lazily at request time) -- served under /api/tools.
+from pacbio_tools.router import router as pacbio_tools_router  # noqa: E402
+
+app.include_router(pacbio_tools_router)
+
 # Per-mode state: {mode_key: {label, sample_paths: {sample: vcf_path}, locus_ids: set|None}}
 _modes: dict[str, dict] = {}
 _default_mode: str = ""
@@ -87,6 +181,11 @@ _default_mode: str = ""
 _panels: dict[tuple[str, str], list[AnnotatedLocus]] = {}
 _panel_by_id: dict[tuple[str, str], dict[str, AnnotatedLocus]] = {}
 _catalog_caches: dict[tuple[str, str], list[dict]] = {}
+# The sample's own genotype index against the genome-wide catalog VCF -- built
+# once per (mode, sample), independent of the (mode-independent) raw catalog
+# index above, and shared between the full-scan path (_get_catalog, for Run QC)
+# and the paginated /api/catalog route so neither re-parses that VCF twice.
+_trgt_indexes: dict[tuple[str, str], TrgtIndex] = {}
 _paraphase_caches: dict[tuple[str, str], tuple[dict, dict, dict, list]] = {}
 
 
@@ -128,6 +227,11 @@ def _load_modes() -> None:
         if vcf_dir and Path(vcf_dir).is_dir():
             sample_paths = _discover_samples_in_dir(vcf_dir)
 
+        catalog_vcf_dir = _resolve_config_path(cfg.get("catalog_vcf_dir"))
+        catalog_sample_paths: dict[str, str] = {}
+        if catalog_vcf_dir and Path(catalog_vcf_dir).is_dir():
+            catalog_sample_paths = _discover_samples_in_dir(catalog_vcf_dir)
+
         panel_bed = _resolve_config_path(cfg.get("panel_bed"))
         locus_ids: Optional[set] = None
         if panel_bed and Path(panel_bed).exists():
@@ -152,6 +256,7 @@ def _load_modes() -> None:
         modes[key] = {
             "label": cfg.get("label", key),
             "sample_paths": sample_paths,
+            "catalog_sample_paths": catalog_sample_paths,
             "locus_ids": locus_ids,
             "non_repeat_targets": non_repeat_targets,
             "paraphase_dir": paraphase_dir,
@@ -193,19 +298,20 @@ def _get_panel(mode: str, sample: str) -> list[AnnotatedLocus]:
     return _panels[key]
 
 
-def _chrom_sort_key(c: str):
-    order = {f"chr{i}": i for i in range(1, 23)}
-    order["chrX"] = 23
-    order["chrY"] = 24
-    order["chrM"] = 25
-    return order.get(c, 99)
+def _get_trgt_index(mode: str, sample: str) -> TrgtIndex:
+    key = (mode, sample)
+    if key not in _trgt_indexes:
+        m = _modes[mode]
+        vcf_path = m["catalog_sample_paths"].get(sample) or m["sample_paths"][sample]
+        _trgt_indexes[key] = TrgtIndex.from_vcf(vcf_path, sample=sample)
+    return _trgt_indexes[key]
 
 
 def _run_qc_regions(mode: str, sample: str) -> list[dict]:
     """Regions Run QC reports coverage over. For a targeted-panel mode (Carrier,
-    PureTarget V2, ...) the genome-wide 171k-region repeat catalog doesn't scope
-    to this assay's own loci at all (different ID space, and a targeted VCF has
-    no calls outside its own panel), so use the same STRchive-scoped panel Sample
+    PureTarget V2, ...) the genome-wide repeat catalog doesn't scope to this
+    assay's own loci at all (different ID space, and a targeted VCF has no
+    calls outside its own panel), so use the same STRchive-scoped panel Sample
     QC / Overview already use instead of the full genome-wide catalog."""
     locus_ids = _modes[mode]["locus_ids"]
     if locus_ids is None:
@@ -221,19 +327,59 @@ def _run_qc_regions(mode: str, sample: str) -> list[dict]:
     ]
 
 
+def _serialize_pathogenicity(score: Optional[RexprtScore]) -> Optional[dict]:
+    """None means "not evaluated by RExPRT" -- see repeatscope/rexprt.py -- and
+    must never be treated as a "benign" default by callers."""
+    if score is None:
+        return None
+    return {
+        "predicted_pathogenic": score.ensemble_binary,
+        "ensemble_score": score.ensemble_score,
+        "svm": score.svm, "xgb": score.xgb,
+        "region": score.region, "location": score.location, "gene": score.gene,
+        "gerp": score.gerp, "loeuf": score.loeuf, "pli": score.pli,
+        "promoter": score.promoter, "utr_5": score.utr_5, "utr_3": score.utr_3,
+        "tad": score.tad, "estr": score.estr, "open_reg_region": score.open_reg_region,
+        "rad21": score.rad21, "smc3": score.smc3, "ctcf": score.ctcf,
+        "gc_content": score.gc_content, "tissue": score.tissue,
+        "hg19_chrom": score.hg19_chrom, "hg19_start": score.hg19_start, "hg19_end": score.hg19_end,
+    }
+
+
+def _serialize_catalog_region(r: AnnotatedCatalogRegion) -> dict:
+    return {
+        "chrom": r.chrom, "start": r.start, "stop": r.stop, "length": r.length,
+        "motifs": r.motifs, "struc": r.struc, "genotyped": r.genotyped,
+        "a1": r.a1, "a2": r.a2, "depth": r.depth,
+        "genes": list(r.genes), "nearest_gene": r.nearest_gene,
+        "nearest_distance_bp": r.nearest_distance_bp, "nearest_direction": r.nearest_direction,
+        "pathogenicity": _serialize_pathogenicity(r.pathogenicity),
+    }
+
+
+def _annotate_catalog_regions(regions, trgt_index: TrgtIndex) -> list[dict]:
+    gene_index = _get_gene_index()
+    rexprt_scores = _get_rexprt_scores()
+    rows = []
+    for region in regions:
+        call = trgt_index.by_trid.get(region.id) or trgt_index.find_overlap(region.chrom, region.start, region.stop)
+        annotated = annotate_catalog_region(region, call, gene_index, rexprt_scores)
+        rows.append(_serialize_catalog_region(annotated))
+    return rows
+
+
 def _get_catalog(mode: str, sample: str) -> list[dict]:
+    """The full genome-wide catalog, genotype/gene/pathogenicity-annotated for
+    every region -- an inherently O(n) full scan, needed by Run QC's aggregate
+    stats. The interactive /api/catalog route below avoids this cost for the
+    common case (a paginated screen) by annotating only the page it returns;
+    this full-scan path still benefits from sharing the same lazily-cached raw
+    catalog index and TrgtIndex, so it doesn't re-parse either from scratch."""
     key = (mode, sample)
     if key not in _catalog_caches:
-        vcf_path = _modes[mode]["sample_paths"][sample]
-        regions = iter_annotated_catalog(CATALOG_BED, vcf_path, sample=sample)
-        _catalog_caches[key] = [
-            {
-                "chrom": r.chrom, "start": r.start, "stop": r.stop, "length": r.length,
-                "motifs": r.motifs, "struc": r.struc, "genotyped": r.genotyped,
-                "a1": r.a1, "a2": r.a2, "depth": r.depth,
-            }
-            for r in regions
-        ]
+        index = _get_catalog_index()
+        trgt_index = _get_trgt_index(mode, sample)
+        _catalog_caches[key] = _annotate_catalog_regions(index.all, trgt_index)
     return _catalog_caches[key]
 
 
@@ -358,7 +504,7 @@ def get_meta(mode: Optional[str] = None, sample: Optional[str] = None):
         "sample": s,
         "mode": m,
         "source_vcf": _modes[m]["sample_paths"][s],
-        "caller": CALLER_LABEL,
+        "caller": _caller_label(_modes[m]["sample_paths"][s]),
         "sex": _modes[m]["sample_sex"].get(s),
     }
 
@@ -372,7 +518,8 @@ def get_overview(mode: Optional[str] = None, sample: Optional[str] = None):
     pathogenic = [l for l in panel if l.status == "Full expansion"]
     depths = [l.depth for l in genotyped if l.depth is not None]
     mean_depth = round(sum(depths) / len(depths)) if depths else None
-    under_covered = [l for l in genotyped if (l.depth or 0) < 10]
+    min_depth = _min_locus_depth(m)
+    under_covered = [l for l in genotyped if (l.depth or 0) < min_depth]
 
     non_repeat_targets = _modes[m]["non_repeat_targets"]
     paraphase_calls, f8_inv_calls, havanno_annotations, sawfish_calls = _get_paraphase(m, s)
@@ -388,13 +535,13 @@ def get_overview(mode: Optional[str] = None, sample: Optional[str] = None):
     return {
         "sample": s,
         "mode": m,
-        "caller": CALLER_LABEL,
+        "caller": _caller_label(_modes[m]["sample_paths"][s]),
         "stats": {
             "loci_analyzed": len(panel) + len(non_repeat_targets),
             "loci_genotyped": loci_genotyped,
             "pathogenic_findings": pathogenic_findings,
             "mean_read_depth": mean_depth,
-            "qc_status": "Pass" if not under_covered else f"{len(under_covered)} loci below 10x",
+            "qc_status": "Pass" if not under_covered else f"{len(under_covered)} loci below {min_depth}x",
         },
         "loci": loci,
     }
@@ -425,7 +572,7 @@ def get_locus(locus_id: str, mode: Optional[str] = None, sample: Optional[str] =
         if l.genotyped
         else "unavailable"
     )
-    d["caller"] = CALLER_LABEL
+    d["caller"] = _caller_label(_modes[m]["sample_paths"][s])
     return d
 
 
@@ -456,7 +603,8 @@ def get_gene_finding(gene: str, mode: Optional[str] = None, sample: Optional[str
         "variants": list(finding.variants) if finding else [],
         "raw_fields": finding.raw_fields if finding else {},
         "genotyped": finding is not None,
-        "caller": CALLER_LABEL,
+        # The row's own tool (Paraphase, sawfish, ...): these genes never pass through TRGT.
+        "caller": target["tool"],
     }
 
 
@@ -465,15 +613,16 @@ def get_sample_qc(mode: Optional[str] = None, sample: Optional[str] = None):
     m = _resolve_mode(mode)
     s = _resolve_sample(m, sample)
     panel = _get_panel(m, s)
+    min_depth = _min_locus_depth(m)
     rows = []
     for l in panel:
         if not l.genotyped:
             flag = "No call"
-        elif (l.depth or 0) >= 10:
+        elif (l.depth or 0) >= min_depth:
             flag = "Pass"
         else:
             flag = "Low depth"
-        rows.append({"gene": l.gene, "id": l.id, "depth": l.depth, "min_required": 10, "flag": flag})
+        rows.append({"gene": l.gene, "id": l.id, "depth": l.depth, "min_required": min_depth, "flag": flag})
 
     genotyped_depths = [l.depth for l in panel if l.depth is not None]
     passing = sum(1 for r in rows if r["flag"] == "Pass")
@@ -506,7 +655,7 @@ def get_run_qc(mode: Optional[str] = None, sample: Optional[str] = None):
     for r in catalog:
         by_chrom.setdefault(r["chrom"], []).append(r)
     chrom_depth = []
-    for chrom in sorted(by_chrom, key=_chrom_sort_key):
+    for chrom in sorted(by_chrom, key=chrom_sort_key):
         regions = by_chrom[chrom]
         ds = [r["depth"] for r in regions if r["depth"] is not None]
         chrom_depth.append(
@@ -561,34 +710,161 @@ def get_run_qc(mode: Optional[str] = None, sample: Optional[str] = None):
     }
 
 
+# --- Cohort analysis -----------------------------------------------------------
+# Aggregates every sample in a mode (Carrier / PureTarget V2) into one cohort view:
+# general metrics plus the per-sample reportable findings. Built from the same
+# per-sample panel + non-repeat rows the Overview screen uses, so the two never disagree.
+
+COHORT_MODES = ("carrier", "puretarget_v2")
+# A non-repeat (Paraphase/sawfish) carrier-panel finding is reportable when pathogenic, or
+# when it shows a heterozygous carrier state (e.g. SMN1 with one copy), which the
+# non-repeat classifier reports as "Intermediate".
+_cohort_cache: dict[str, dict] = {}
+
+
+def _run_id(vcf_path: str, sample: str) -> str:
+    """Sequencing run of a sample: the movie/run prefix of its VCF file name
+    (m84036_..._s4.bc2097.trgt.vcf -> m84036_..._s4); the whole sample name if it has no barcode suffix."""
+    name = Path(vcf_path).name
+    return name.split(".bc")[0] if ".bc" in name else sample
+
+
+def _cohort_sample_row(m: str, s: str) -> dict:
+    panel = _get_panel(m, s)
+    min_depth = _min_locus_depth(m)
+    genotyped = [l for l in panel if l.genotyped]
+    depths = [l.depth for l in genotyped if l.depth is not None]
+    low_depth = [l for l in genotyped if (l.depth or 0) < min_depth]
+
+    reportable = [
+        {"gene": l.gene, "locus_id": l.id, "disease": l.disease, "status": l.status,
+         "genotype": f"{l.a1} / {l.a2}" if l.a1 is not None else None, "zygosity": l.zygosity,
+         "source": "TRGT", "clickable": True}
+        for l in panel if l.status == STATUS_PATHOGENIC
+    ]
+    paraphase_calls, f8_inv_calls, havanno, sawfish_calls = _get_paraphase(m, s)
+    for t in _modes[m]["non_repeat_targets"]:
+        finding = _gene_finding(t, paraphase_calls, f8_inv_calls, havanno, sawfish_calls)
+        if finding and finding.status in (STATUS_PATHOGENIC_VARIANT, STATUS_INTERMEDIATE):
+            reportable.append({
+                "gene": t["gene"], "locus_id": None, "disease": t["disease"],
+                "status": "Carrier" if finding.status == STATUS_INTERMEDIATE else finding.status,
+                "genotype": finding.note, "zygosity": finding.zygosity, "source": t["tool"], "clickable": False,
+            })
+
+    vcf_path = _modes[m]["sample_paths"][s]
+    return {
+        "sample": s,
+        "run": _run_id(vcf_path, s),
+        "sex": _modes[m]["sample_sex"].get(s),
+        "loci_genotyped": len(genotyped),
+        "loci_total": len(panel),
+        "no_calls": len(panel) - len(genotyped),
+        "mean_depth": round(sum(depths) / len(depths), 1) if depths else None,
+        "low_depth_loci": len(low_depth),
+        "qc": "Pass" if genotyped and not low_depth else ("No data" if not genotyped else "Low depth"),
+        "reportable": reportable,
+    }
+
+
+def _median(xs: list[float]) -> Optional[float]:
+    xs = sorted(xs)
+    if not xs:
+        return None
+    mid = len(xs) // 2
+    return xs[mid] if len(xs) % 2 else round((xs[mid - 1] + xs[mid]) / 2, 1)
+
+
+@app.get("/api/cohort")
+def get_cohort(mode: Optional[str] = None):
+    m = _resolve_mode(mode)
+    if m not in COHORT_MODES:
+        raise HTTPException(status_code=404, detail=f"cohort analysis is not available for mode {m!r}")
+    if m not in _cohort_cache:
+        rows = [_cohort_sample_row(m, s) for s in sorted(_modes[m]["sample_paths"])]
+        _cohort_cache[m] = {"mode": m, "label": _modes[m]["label"], "samples": rows}
+    rows = _cohort_cache[m]["samples"]
+    min_depth = _min_locus_depth(m)
+
+    depths = [r["mean_depth"] for r in rows if r["mean_depth"] is not None]
+    bins = [0, 10, 20, 50, 100, 200, 300, 400, 500, 750, 10**6]
+    depth_hist = [
+        {"label": f"{lo}-{hi}x" if hi < 10**6 else f"{lo}x+", "lo": lo,
+         "count": sum(1 for d in depths if lo <= d < hi)}
+        for lo, hi in zip(bins, bins[1:])
+    ]
+    runs: dict[str, int] = {}
+    sexes: dict[str, int] = {}
+    genes: dict[str, dict] = {}
+    for r in rows:
+        runs[r["run"]] = runs.get(r["run"], 0) + 1
+        sexes[r["sex"] or "Unknown"] = sexes.get(r["sex"] or "Unknown", 0) + 1
+        for f in r["reportable"]:
+            g = genes.setdefault(f["gene"], {"gene": f["gene"], "disease": f["disease"], "samples": 0})
+            g["samples"] += 1
+    n = len(rows)
+    with_findings = [r for r in rows if r["reportable"]]
+    return {
+        "mode": m,
+        "label": _cohort_cache[m]["label"],
+        "min_locus_depth": min_depth,
+        "stats": {
+            "samples": n,
+            "qc_pass": sum(1 for r in rows if r["qc"] == "Pass"),
+            "qc_fail": sum(1 for r in rows if r["qc"] != "Pass"),
+            "mean_depth": round(sum(depths) / len(depths), 1) if depths else None,
+            "median_depth": _median(depths),
+            "samples_with_reportable": len(with_findings),
+            "reportable_findings": sum(len(r["reportable"]) for r in rows),
+        },
+        "depth_histogram": depth_hist,
+        "sex": [{"label": k, "count": v} for k, v in sorted(sexes.items())],
+        "runs": [{"run": k, "count": v} for k, v in sorted(runs.items())],
+        "genes": sorted(genes.values(), key=lambda g: (-g["samples"], g["gene"])),
+        "samples": rows,
+    }
+
+
 @app.get("/api/catalog")
 def get_catalog(
     mode: Optional[str] = None, sample: Optional[str] = None,
     chrom: str = "all", motif: str = "", min_len: int = 0,
+    rexprt_pathogenic_only: bool = False,
     page: int = 0, page_size: int = 50,
 ):
+    """Filters/paginates against the raw (unannotated) catalog index first --
+    fast even at multi-million-row scale, since it never touches genotype/gene/
+    RExPRT data -- and only annotates the page of rows actually being returned.
+    Annotating the *entire* catalog on every request (the previous approach)
+    doesn't scale: TRExplorer v2.0's 5,599,658-region catalog measured at
+    several minutes and 15GB+ RAM that way, vs. sub-second filtering here."""
     m = _resolve_mode(mode)
     s = _resolve_sample(m, sample)
-    all_regions = _get_catalog(m, s)
-    filtered = all_regions
-    if chrom != "all":
-        filtered = [r for r in filtered if r["chrom"] == chrom]
-    if motif:
-        needle = motif.upper()
-        filtered = [r for r in filtered if needle in r["motifs"].upper()]
-    if min_len:
-        filtered = [r for r in filtered if r["length"] >= min_len]
+    index = _get_catalog_index()
+    rexprt_scores = _get_rexprt_scores() or {}
+
+    filtered = index.filter(chrom=chrom, motif=motif, min_len=min_len)
+    if rexprt_pathogenic_only:
+        filtered = [
+            r for r in filtered
+            if (score := rexprt_scores.get((r.chrom, r.start, r.stop))) and score.ensemble_binary
+        ]
 
     total = len(filtered)
     start = page * page_size
-    page_rows = filtered[start : start + page_size]
-    chroms = sorted({r["chrom"] for r in all_regions}, key=_chrom_sort_key)
+    page_regions = filtered[start : start + page_size]
+    trgt_index = _get_trgt_index(m, s)
+    page_rows = _annotate_catalog_regions(page_regions, trgt_index)
+
+    n_predicted_pathogenic = sum(1 for score in rexprt_scores.values() if score.ensemble_binary)
 
     return {
-        "total_all": len(all_regions),
+        "total_all": index.total,
         "total_matching": total,
-        "unique_motifs": len({r["motifs"] for r in all_regions}),
-        "chromosomes": ["all"] + chroms,
+        "unique_motifs": index.unique_motifs,
+        "chromosomes": ["all"] + index.chromosomes,
+        "n_rexprt_evaluated": len(rexprt_scores),
+        "n_rexprt_predicted_pathogenic": n_predicted_pathogenic,
         "page": page,
         "page_size": page_size,
         "rows": page_rows,
@@ -596,42 +872,4 @@ def get_catalog(
 
 
 # --- Runs of Homozygosity (ROH) ------------------------------------------------
-# Self-contained: real `bcftools roh` output for one sample (HG002), independent
-# of the mode/panel-scoped repeat-genotyping data above. Not scoped by `mode`
-# since ROH doesn't depend on a repeat panel at all -- it's keyed by `sample`
-# only, and only samples in roh.ROH_SAMPLES have a real ROH run.
 
-
-def _resolve_roh_sample(sample: Optional[str]) -> str:
-    if sample is None:
-        keys = roh.sample_keys()
-        if not keys:
-            raise HTTPException(status_code=404, detail="no ROH samples available")
-        return keys[0]
-    if sample not in roh.ROH_SAMPLES:
-        raise HTTPException(status_code=404, detail=f"no ROH run for sample {sample!r}")
-    return sample
-
-
-@app.get("/api/roh/samples")
-def get_roh_samples():
-    keys = roh.sample_keys()
-    return {"samples": keys, "default": keys[0] if keys else ""}
-
-
-@app.get("/api/roh/overview")
-def get_roh_overview(sample: Optional[str] = None):
-    s = _resolve_roh_sample(sample)
-    return roh.overview_for_sample(s)
-
-
-@app.get("/api/roh/regions")
-def get_roh_regions(
-    sample: Optional[str] = None,
-    chrom: str = "all",
-    min_len_mb: float = 0,
-    page: int = 0,
-    page_size: int = 100,
-):
-    s = _resolve_roh_sample(sample)
-    return roh.query_regions(s, chrom=chrom, min_len_mb=min_len_mb, page=page, page_size=page_size)

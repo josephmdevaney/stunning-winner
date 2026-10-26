@@ -16,6 +16,7 @@ import math
 import re
 from typing import Callable
 
+from .annotate import classify_pathogenic_heteroplasmy
 from .reference import (
     GENE_MAP,
     GENOME_LENGTH,
@@ -27,7 +28,8 @@ from .reference import (
 # Narrative overrides so the sample tells a clear clinical story. Every other
 # curated variant gets a plausible low / undetected heteroplasmy.
 _OVERRIDES = {
-    "m3243AG": 38.0,       # MELAS/MIDD -- clinically significant
+    "m3243AG": 58.0,       # MELAS -- within the real 50-70% MELAS heteroplasmy band
+                           # (McCormick et al. 2020); see annotate._classify_m3243
     "m1555AG": 97.0,       # aminoglycoside deafness risk allele -- homoplasmic
     "kss_common_del": 11.0,  # low-level common deletion, below significance
 }
@@ -58,26 +60,14 @@ def _round1(x: float) -> float:
     return _js_round(x * 10) / 10
 
 
-def _classify_pathogenic(het: float, disease: str) -> tuple[str, str, str]:
-    if het >= 30:
-        return (
-            "Pathogenic",
-            STATUS_COLORS["Pathogenic"],
-            f"Elevated heteroplasmy ({het}%) above the clinical significance threshold (>30%); "
-            f"consistent with {disease}.",
-        )
-    if het >= 5:
-        return (
-            "Low-level heteroplasmy",
-            STATUS_COLORS["Low-level heteroplasmy"],
-            f"Low-level heteroplasmy detected ({het}%); below typical clinical significance "
-            f"threshold but may warrant follow-up.",
-        )
-    return (
-        "Not detected",
-        STATUS_COLORS["Not detected"],
-        "Below reporting threshold (<5%); no evidence of pathogenic heteroplasmy at this position.",
-    )
+def _classify_pathogenic(het: float, disease: str, variant_id: str) -> tuple[str, str, str]:
+    """Thin wrapper around annotate.classify_pathogenic_heteroplasmy() so the demo
+    sample and the real-VCF path (annotate.classify()) apply -- and disclose -- the
+    identical classification (real per-variant threshold where the literature
+    gives one, generic band convention otherwise) rather than two copies that
+    could silently drift apart."""
+    status, note = classify_pathogenic_heteroplasmy(variant_id, het, disease)
+    return status, STATUS_COLORS[status], note
 
 
 def build_pathogenic_panel() -> list[dict]:
@@ -88,7 +78,7 @@ def build_pathogenic_panel() -> list[dict]:
         if v["id"] in _OVERRIDES:
             het = _OVERRIDES[v["id"]]
 
-        status, status_color, note = _classify_pathogenic(het, v.get("disease", ""))
+        status, status_color, note = _classify_pathogenic(het, v.get("disease", ""), v["id"])
         m = _CHANGE_RE.search(v["position"])
         if m:
             change = f"{m.group(2)}>{m.group(3)}"

@@ -1,14 +1,20 @@
 import { colors } from '../theme'
 
-export type Product = 'repeatscope' | 'mitolr'
+export type Product = 'genome_wide' | 'puretarget_v2' | 'carrier' | 'mitolr' | 'paraphase' | 'kivvi' | 'roh' | 'cohort'
 
 const PRODUCTS: { key: Product; label: string }[] = [
-  { key: 'repeatscope', label: 'RepeatScope' },
+  { key: 'genome_wide', label: 'RepeatScope' },
+  { key: 'puretarget_v2', label: 'PureTarget V2' },
+  { key: 'carrier', label: 'Carrier' },
   { key: 'mitolr', label: 'MitoLR' },
+  { key: 'paraphase', label: 'Paraphase' },
+  { key: 'kivvi', label: 'Kivvi' },
+  { key: 'roh', label: 'ROH' },
+  { key: 'cohort', label: 'Cohort' },
 ]
 
-// Segmented control pinned to the top of either product's sidebar. The two tools
-// share one deployable and one visual system; this is how you move between them.
+// Top-level section switcher pinned to every sidebar. All sections share
+// one deployable and one visual system; this is how you move between them.
 export function ProductSwitcher({ product, onChange }: { product: Product; onChange: (p: Product) => void }) {
   return (
     <div style={{ padding: '0 8px 12px' }}>
@@ -24,18 +30,18 @@ export function ProductSwitcher({ product, onChange }: { product: Product; onCha
       >
         Suite
       </div>
-      <div style={{ display: 'flex', gap: 4, padding: 4, background: colors.sidebarPanelBg, borderRadius: 8 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: 4, background: colors.sidebarPanelBg, borderRadius: 8 }}>
         {PRODUCTS.map((p) => (
           <button
             key={p.key}
             onClick={() => onChange(p.key)}
             style={{
-              flex: 1,
-              padding: '6px 4px',
+              padding: '7px 10px',
               borderRadius: 6,
               border: 'none',
               cursor: 'pointer',
-              fontSize: 12,
+              textAlign: 'left',
+              fontSize: 12.5,
               fontWeight: 600,
               fontFamily: "'IBM Plex Sans', sans-serif",
               background: product === p.key ? colors.accentButtonBg : 'transparent',

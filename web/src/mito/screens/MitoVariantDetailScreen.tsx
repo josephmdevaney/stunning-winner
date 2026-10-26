@@ -243,19 +243,20 @@ function PopulationConstraint({ v }: { v: Variant }) {
         {v.constraint ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             {v.constraint.gene_rows.map((r) => (
-              <div key={r.consequence} style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-                <span style={{ color: colors.textSecondary }}>{r.consequence}</span>
+              <div key={`${r.symbol}:${r.consequence}`} style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                <span style={{ color: colors.textSecondary }}>
+                  {r.symbol} · {r.consequence}
+                </span>
                 <span style={{ fontFamily: mono }}>
                   {r.obs_exp.toFixed(3)} obs:exp
                 </span>
               </div>
             ))}
-            {v.constraint.regional && (
-              <div style={{ fontSize: 12, color: colors.statusUncertain, marginTop: 4 }}>
-                Falls within a flagged regional constraint hotspot ({v.constraint.regional.start}–{v.constraint.regional.end}, obs:exp{' '}
-                {v.constraint.regional.obs_exp.toFixed(3)}).
+            {v.constraint.regional.map((r) => (
+              <div key={`${r.symbol}:${r.start}`} style={{ fontSize: 12, color: colors.statusUncertain, marginTop: 4 }}>
+                Falls within {r.symbol}'s flagged regional constraint hotspot ({r.start}–{r.end}, obs:exp {r.obs_exp.toFixed(3)}).
               </div>
-            )}
+            ))}
           </div>
         ) : (
           <div style={{ fontSize: 12.5, color: colors.textTertiary }}>

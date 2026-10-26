@@ -4,7 +4,7 @@ API routes -- all against the real HG002 fixture."""
 
 from fastapi.testclient import TestClient
 
-from repeatscope import roh
+from roh import analysis as roh
 from repeatscope.api.main import app
 
 client = TestClient(app)
@@ -85,7 +85,7 @@ def test_overview_stats_are_internally_consistent():
 
 
 def roh_reference_autosomal_length():
-    from repeatscope import roh_reference as ref
+    from roh import reference as ref
     return ref.AUTOSOMAL_GENOME_LENGTH
 
 
@@ -101,10 +101,21 @@ def test_overview_finds_the_real_chr9_upd_flag():
 
 def test_ar_candidate_genes_excludes_small_background_roh():
     # TJP2 (chr9) is overlapped by a real but tiny (~49 kb) ROH -- far below the
-    # 3 Mb F-value-eligible floor, so it must not be surfaced as a candidate.
+    # 1 Mb AR-candidate floor (AR_CANDIDATE_MIN_LENGTH_BP), so it must not be
+    # surfaced as a candidate.
     ov = roh.build_overview("HG002", HG002_ROH)
     symbols = {g["symbol"] for g in ov["ar_candidate_genes"]}
     assert "TJP2" not in symbols
+
+
+def test_ar_candidate_min_length_is_separate_from_f_value_floor():
+    # AR candidate genes use a deliberately lower, separate floor (1 Mb) than
+    # the F-value's own IBD-informative floor (3 Mb) -- a real AR
+    # disease-causing variant can sit in a smaller genuinely-autozygous ROH
+    # than the F-value estimate's stricter requirement.
+    ov = roh.build_overview("HG002", HG002_ROH)
+    assert ov["stats"]["ar_candidate_min_length_mb"] == 1
+    assert ov["stats"]["f_value_min_length_mb"] == 3
 
 
 def test_relationship_f_values_present_and_ordered_by_closeness():
@@ -146,7 +157,8 @@ def test_query_regions_paginates():
 
 def test_roh_samples_endpoint():
     body = client.get("/api/roh/samples").json()
-    assert body == {"samples": ["HG002"], "default": "HG002"}
+    assert body["default"] == "HG002"
+    assert set(body["samples"]) == {"HG002", "CDS27601", "CDS48001", "CDS57401"}
 
 
 def test_roh_overview_endpoint_defaults_to_hg002():

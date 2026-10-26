@@ -89,13 +89,16 @@ ACMG_PM2_SUPPORTING_THRESHOLD = 0.00002
 
 def acmg_frequency_evidence(hit: Optional[GnomadHit]) -> list[dict]:
     """BA1 (stand-alone benign) / BS1 (strong benign) / PM2_supporting (supporting
-    pathogenic) against gnomAD's real mtDNA callset. Total population frequency is
-    AF_hom + AF_het -- the variant's real occurrence at any heteroplasmy level
-    >=10%, not just the homoplasmic slice -- since McCormick et al. specify a plain
-    "allele frequency" without splitting by heteroplasmy band.
+    pathogenic) against gnomAD's real mtDNA callset. McCormick et al. validated these
+    thresholds against homoplasmic allele frequency (AF_hom) alone -- the paper
+    states plainly that no equivalent heteroplasmic-frequency (AF_het) threshold has
+    been established, so AF_het is never summed into AF_hom here (summing would let a
+    variant that's never been observed homoplasmic, but is common heteroplasmically,
+    wrongly qualify for BA1/BS1 "benign" evidence built for homoplasmic frequency).
 
-    Only one code (or none, in the gaps between thresholds) is ever returned, since
-    the three ranges are mutually exclusive by construction."""
+    Only one code (or none, in the gaps between thresholds, or when AF_hom-based
+    evidence doesn't apply -- see below) is ever returned, since the three ranges
+    are mutually exclusive by construction."""
     if hit is None:
         return [
             {
@@ -104,30 +107,47 @@ def acmg_frequency_evidence(hit: Optional[GnomadHit]) -> list[dict]:
                 "note": f"Absent from {SOURCE_LABEL} (n={COHORT_SIZE:,}); frequency below the 0.002% threshold.",
             }
         ]
-    af = hit["af_hom"] + hit["af_het"]
-    if af > ACMG_BA1_THRESHOLD:
+    af_hom = hit["af_hom"]
+    if af_hom > ACMG_BA1_THRESHOLD:
         return [
             {
                 "code": "BA1",
                 "strength": "Stand-alone (benign)",
-                "note": f"Frequency {af:.2%} in {SOURCE_LABEL} exceeds the 1% stand-alone benign threshold.",
+                "note": f"Homoplasmic frequency {af_hom:.2%} in {SOURCE_LABEL} exceeds the 1% stand-alone benign threshold.",
             }
         ]
     lo, hi = ACMG_BS1_RANGE
-    if lo <= af <= hi:
+    if lo <= af_hom <= hi:
         return [
             {
                 "code": "BS1",
                 "strength": "Strong (benign)",
-                "note": f"Frequency {af:.2%} in {SOURCE_LABEL} falls in the 0.5-0.99% strong-benign range.",
+                "note": f"Homoplasmic frequency {af_hom:.2%} in {SOURCE_LABEL} falls in the 0.5-0.99% strong-benign range.",
             }
         ]
-    if af < ACMG_PM2_SUPPORTING_THRESHOLD:
+    if af_hom < ACMG_PM2_SUPPORTING_THRESHOLD:
+        # A variant that's essentially never homoplasmic but is meaningfully present
+        # heteroplasmically isn't "rare" in the sense PM2_supporting is meant to
+        # capture -- and McCormick et al. give no AF_het threshold to fall back on,
+        # so no ACMG frequency code is asserted rather than misapplying PM2 here.
+        if hit["af_het"] >= ACMG_PM2_SUPPORTING_THRESHOLD:
+            return [
+                {
+                    "code": "—",
+                    "strength": "No frequency evidence code",
+                    "note": (
+                        f"Never observed homoplasmic in {SOURCE_LABEL}, but present heteroplasmic at "
+                        f"{hit['af_het']:.2%} (n={hit['an']:,}). McCormick et al. validated PM2_supporting "
+                        "against homoplasmic frequency only and specify no equivalent heteroplasmic-frequency "
+                        "threshold, so no ACMG frequency evidence code applies."
+                    ),
+                }
+            ]
         return [
             {
                 "code": "PM2_supporting",
                 "strength": "Supporting (pathogenic)",
-                "note": f"Frequency {af:.4%} in {SOURCE_LABEL} is below the 0.002% supporting-pathogenic threshold.",
+                "note": f"Homoplasmic frequency {af_hom:.4%} in {SOURCE_LABEL} is below the 0.002% supporting-pathogenic threshold.",
             }
         ]
     return []

@@ -40,6 +40,19 @@ export const colors = {
   cluster1: 'oklch(0.6 0.14 220)',
   cluster2: 'oklch(0.6 0.18 25)',
 
+  // ROH length-band scale, lifted from project/Runs of Homozygosity.dc.html's buildIdeogram/legendA.
+  rohBand5mb: 'oklch(0.62 0.16 70)',
+  rohBand3to5mb: 'oklch(0.55 0.14 220)',
+  rohBand1to3mb: 'oklch(0.68 0.10 220)',
+  rohBandUnder1mb: 'oklch(0.8 0.05 220)',
+  rohCentromere: 'oklch(0.78 0.02 260)',
+  rohImprinted: 'oklch(0.55 0.18 300)',
+  rohUpdOutline: 'oklch(0.55 0.20 25)',
+  // Neutral (not a length-band color) for chrX/chrY regions in a male sample --
+  // hemizygous, not autozygous, so it must read as visually distinct from ROH.
+  rohHemizygous: 'oklch(0.7 0.01 90)',
+  rohHemizygousStroke: 'oklch(0.55 0.01 90)',
+
   methylated: 'oklch(0.55 0.18 300)',
   unmethylated: 'oklch(0.8 0.01 90)',
   trackBg: 'oklch(0.93 0.01 90)',
@@ -83,4 +96,11 @@ export function interpColor(status: string): string {
   if (status === 'Uncertain significance') return colors.interpColor.uncertain
   if (status === 'Intermediate') return colors.interpColor.intermediate
   return colors.interpColor.normal
+}
+
+export function rohBandColor(lengthBand: string): string {
+  if (lengthBand === '≥5 Mb') return colors.rohBand5mb
+  if (lengthBand === '3–5 Mb') return colors.rohBand3to5mb
+  if (lengthBand === '1–3 Mb') return colors.rohBand1to3mb
+  return colors.rohBandUnder1mb
 }

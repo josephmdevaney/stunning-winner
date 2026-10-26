@@ -43,8 +43,13 @@ export function MitoOverviewScreen({ sample, onSelectVariant }: { sample: string
 
   return (
     <div style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 22 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 16 }}>
         <MitoStat label="Variants called" value={String(data.stats.variants_called)} sub="Genome-wide, vs rCRS" />
+        <MitoStat
+          label="mtDNA coverage"
+          value={data.stats.mtdna_mean_coverage != null ? `${data.stats.mtdna_mean_coverage.toLocaleString()}x` : '—'}
+          sub={data.stats.mtdna_coverage_source ?? 'Not available for this sample'}
+        />
         <MitoStat
           label="Pathogenic findings"
           value={String(pathoCount)}
@@ -57,7 +62,12 @@ export function MitoOverviewScreen({ sample, onSelectVariant }: { sample: string
           sub={data.haplogroup.confidence != null ? `${data.haplogroup.confidence}% confidence` : 'Requires classifier'}
           valueMono
         />
-        <MitoStat label="Sample QC" value={data.stats.qc_status} sub="Genome-wide coverage sufficient" valueColor={colors.statusNormal} />
+        <MitoStat
+          label="Sample QC"
+          value={data.stats.qc_status}
+          sub={data.stats.qc_summary}
+          valueColor={data.stats.qc_status === 'Pass' ? colors.statusNormal : colors.statusIntermediate}
+        />
       </div>
 
       <div style={{ background: 'white', border: `1px solid ${colors.border}`, borderRadius: 12, overflow: 'hidden' }}>

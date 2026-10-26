@@ -388,7 +388,13 @@ def classify_gene(
     if key == "smn1":
         return _classify_smn1(call)
 
-    if havanno_annotations:
+    # GBA and CYP21A2 each have a same-size pseudogene pair: havanno's per-haplotype named-variant
+    # pattern-match can't tell a real pathogenic variant on the functional gene copy from the
+    # pseudogene's own normal sequence (which carries many of the same "differentiating site"
+    # alleles its curated list treats as pathogenic). Trusting it flagged ~50% of the real carrier
+    # cohort, against a true carrier frequency of a few percent -- so skip it for those genes and
+    # fall through to the more conservative copy-number/fusion reasoning in _classify_generic.
+    if havanno_annotations and not _HAS_PSEUDOGENE_PAIR.get(key):
         havanno_finding = _classify_havanno_gene(havanno_annotations.get(key, {}), call)
         if havanno_finding is not None:
             return havanno_finding

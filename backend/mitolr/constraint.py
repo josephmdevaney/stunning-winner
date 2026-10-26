@@ -142,14 +142,19 @@ def regional_constraint_for(pos: int, gene: str) -> Optional[RegionalConstraintR
     return None
 
 
-def constraint_for_variant(pos: int, gene: str) -> Optional[dict]:
-    """Constraint context for a called variant's locus, or None if the gene
-    isn't covered by the constraint table (e.g. D-loop / intergenic)."""
-    gene_rows = gene_constraint_for(gene)
+def constraint_for_variant(pos: int, genes: list[str]) -> Optional[dict]:
+    """Constraint context for a called variant's locus/loci. Usually one gene;
+    both, for a position inside one of mtDNA's genuinely overlapping reading
+    frames (MT-ATP8/MT-ATP6, MT-ND4L/MT-ND4 -- see reference.features_for_pos),
+    so a variant there doesn't silently lose one gene's constraint context to
+    whichever gene happened to be listed first. None if none of the genes are
+    covered by the constraint table (e.g. D-loop / intergenic)."""
+    gene_rows = [row for gene in genes for row in gene_constraint_for(gene)]
     if not gene_rows:
         return None
+    regional = [r for gene in genes if (r := regional_constraint_for(pos, gene)) is not None]
     return {
         "source": SOURCE_LABEL,
         "gene_rows": gene_rows,
-        "regional": regional_constraint_for(pos, gene),
+        "regional": regional,
     }

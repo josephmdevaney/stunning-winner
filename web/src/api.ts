@@ -1,5 +1,11 @@
 // Typed client for the RepeatScope FastAPI backend (backend/repeatscope/api/main.py).
 
+// LocusSummary.id prefix for gene findings (non-repeat variants, e.g. Paraphase/
+// sawfish calls) -- see backend/repeatscope/api/main.py. Distinguishes them from
+// repeat-locus ids so callers know to route to GeneFindingScreen instead of
+// LocusDetailScreen (see OverviewScreen and TopBar's search).
+export const NON_REPEAT_ID_PREFIX = '__non_repeat__'
+
 export interface Meta {
   sample: string
   source_vcf: string
@@ -140,6 +146,47 @@ export interface CatalogRow {
   a1: number | null
   a2: number | null
   depth: number | null
+  // Real gene(s) this region falls inside (rare but real for overlapping/
+  // antisense transcripts), or -- if intergenic -- the nearest gene and its
+  // distance/side. genes is empty and nearest_gene is null only if no gene
+  // reference data was available server-side, not a fabricated "no gene" claim.
+  genes: string[]
+  nearest_gene: string | null
+  nearest_distance_bp: number | null
+  nearest_direction: 'upstream' | 'downstream' | null
+  // Real RExPRT (Danzi et al. 2024, PMC10832122) genome-wide pathogenicity
+  // prediction for this exact region -- null means "not evaluated by RExPRT"
+  // (e.g. motif length outside its 3-8bp trained range), never a fabricated
+  // "benign" default. See project/uploads/README.md for full provenance and a
+  // verified real false-negative example (C9orf72) this score is known to miss.
+  pathogenicity: RexprtPathogenicity | null
+}
+
+export interface RexprtPathogenicity {
+  predicted_pathogenic: boolean
+  ensemble_score: number
+  svm: number
+  xgb: number
+  region: string
+  location: string
+  gene: string
+  gerp: number
+  loeuf: number
+  pli: number
+  promoter: boolean
+  utr_5: boolean
+  utr_3: boolean
+  tad: boolean
+  estr: boolean
+  open_reg_region: boolean
+  rad21: boolean
+  smc3: boolean
+  ctcf: boolean
+  gc_content: number
+  tissue: string
+  hg19_chrom: string
+  hg19_start: number
+  hg19_end: number
 }
 
 export interface CatalogResponse {
@@ -147,98 +194,11 @@ export interface CatalogResponse {
   total_matching: number
   unique_motifs: number
   chromosomes: string[]
+  n_rexprt_evaluated: number
+  n_rexprt_predicted_pathogenic: number
   page: number
   page_size: number
   rows: CatalogRow[]
-}
-
-export interface RohGeneHit {
-  symbol: string
-  inheritance: string
-  disease: string
-  omim: string
-}
-
-export interface RohRegion {
-  sample: string
-  chrom: string
-  start: number
-  end: number
-  length_bp: number
-  length_mb: number
-  n_markers: number
-  quality: number
-  position: string | null
-  length_band: string
-  imprinted_chrom: boolean
-  genes: RohGeneHit[]
-  upd_flag: string | null
-  autosomal: boolean
-  f_value_eligible: boolean
-}
-
-export interface RohByChromosome {
-  chrom: string
-  chrom_length_bp: number | null
-  n_regions: number
-  total_length_bp: number
-  imprinted: boolean
-}
-
-export interface RohArCandidateGene {
-  symbol: string
-  disease: string
-  omim: string
-  chrom: string
-  roh_length_mb: number
-}
-
-export interface RohRelationshipFValue {
-  relationship: string
-  f_value: number
-  f_value_pct: number
-}
-
-export interface RohOverviewResponse {
-  sample: string
-  genome_build: string
-  caller: string
-  by_chromosome: RohByChromosome[]
-  stats: {
-    n_regions_total: number
-    n_regions_autosomal: number
-    n_regions_chrX: number
-    n_regions_chrY: number
-    n_regions_chrM: number
-    n_regions_f_eligible: number
-    total_autosomal_roh_bp: number
-    total_f_eligible_roh_bp: number
-    f_value_min_length_mb: number
-    autosomal_genome_length_bp: number
-    f_value: number
-    f_value_pct: number
-    n_upd_flags: number
-    n_ar_candidate_genes: number
-  }
-  upd_flags: RohRegion[]
-  ar_candidate_genes: RohArCandidateGene[]
-  relationship_f_values: RohRelationshipFValue[]
-  non_autosomal_note: string
-  upd_methodology_note: string
-}
-
-export interface RohRegionsResponse {
-  total_all: number
-  total_matching: number
-  chromosomes: string[]
-  page: number
-  page_size: number
-  rows: RohRegion[]
-}
-
-export interface RohSamplesResponse {
-  samples: string[]
-  default: string
 }
 
 async function getJSON<T>(path: string): Promise<T> {
@@ -289,32 +249,16 @@ export const api = {
   runQC: (mode?: string, sample?: string) =>
     getJSON<RunQCResponse>(withModeSample('/api/qc/run', { mode, sample })),
   catalog: (params: {
-    mode?: string; sample?: string; chrom?: string; motif?: string; minLen?: number; page?: number; pageSize?: number
+    mode?: string; sample?: string; chrom?: string; motif?: string; minLen?: number
+    rexprtPathogenicOnly?: boolean; page?: number; pageSize?: number
   }) => {
     const q = new URLSearchParams()
     if (params.chrom) q.set('chrom', params.chrom)
     if (params.motif) q.set('motif', params.motif)
     if (params.minLen) q.set('min_len', String(params.minLen))
+    if (params.rexprtPathogenicOnly) q.set('rexprt_pathogenic_only', 'true')
     q.set('page', String(params.page ?? 0))
     q.set('page_size', String(params.pageSize ?? 50))
     return getJSON<CatalogResponse>(withModeSample('/api/catalog', { mode: params.mode, sample: params.sample }, q))
   },
 }
-
-// ROH is self-contained: keyed by `sample` only, independent of RepeatScope's
-// assay `mode`/panel system (bcftools roh doesn't depend on a repeat panel).
-export const rohApi = {
-  samples: () => getJSON<RohSamplesResponse>('/api/roh/samples'),
-  overview: (sample?: string) =>
-    getJSON<RohOverviewResponse>(sample ? `/api/roh/overview?sample=${encodeURIComponent(sample)}` : '/api/roh/overview'),
-  regions: (params: { sample?: string; chrom?: string; minLenMb?: number; page?: number; pageSize?: number }) => {
-    const q = new URLSearchParams()
-    if (params.sample) q.set('sample', params.sample)
-    if (params.chrom) q.set('chrom', params.chrom)
-    if (params.minLenMb) q.set('min_len_mb', String(params.minLenMb))
-    q.set('page', String(params.page ?? 0))
-    q.set('page_size', String(params.pageSize ?? 100))
-    return getJSON<RohRegionsResponse>(`/api/roh/regions?${q.toString()}`)
-  },
-}
-

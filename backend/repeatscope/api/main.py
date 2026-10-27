@@ -55,7 +55,9 @@ from ..paraphase import (
     STATUS_PATHOGENIC_VARIANT,
     classify_gene,
     load_f8_inversion_calls,
+    load_clinvar_reference,
     load_havanno_annotations,
+    load_named_variant_positions,
     load_paraphase_calls,
     load_sawfish_calls,
 )
@@ -98,6 +100,42 @@ def _get_rexprt_scores() -> Optional[dict]:
     if _rexprt_scores is None and Path(REXPRT_SCORES_TSV).exists():
         _rexprt_scores = load_rexprt_scores(REXPRT_SCORES_TSV)
     return _rexprt_scores
+
+
+# A Carrier-mode finding built from havanno's named pathogenic variants is checked against ClinVar
+# (see paraphase.py's _classify_havanno_gene): PacBio's curated list goes stale, and a name whose
+# position ClinVar now calls Benign is dropped. ClinVar's classification per gene whose havanno
+# findings are used (HBA, HBB, RPGR; GBA and CYP21A2 skip havanno, see classify_gene) comes from
+# scripts/real_data/build_clinvar_reference.py, and the name-to-position map from PacBio's own
+# ptcp variant list. Mode/sample-independent, loaded once, lazily. Neither file present means
+# nothing is dropped, as before.
+CLINVAR_REFERENCE_TSV: dict[str, str] = {
+    gene: os.environ.get(
+        f"REPEATSCOPE_CLINVAR_{gene.upper()}_REFERENCE",
+        str(REPO_ROOT / "project" / "uploads" / f"clinvar_{gene}.hg38.tsv"),
+    )
+    for gene in ("hba", "hbb", "rpgr")
+}
+NAMED_VARIANT_POSITIONS_VCF = os.environ.get(
+    "REPEATSCOPE_NAMED_VARIANT_POSITIONS",
+    str(REPO_ROOT / "project" / "uploads" / "ptcp_variant_list.GRCh38.vcf"),
+)
+_clinvar_references: dict[str, Optional[dict]] = {}
+_named_variant_positions: Optional[dict] = None
+
+
+def _get_clinvar_reference(gene_key: str) -> Optional[dict]:
+    if gene_key not in _clinvar_references:
+        path = CLINVAR_REFERENCE_TSV.get(gene_key)
+        _clinvar_references[gene_key] = load_clinvar_reference(path) if path and Path(path).exists() else None
+    return _clinvar_references[gene_key]
+
+
+def _get_named_variant_positions() -> Optional[dict]:
+    global _named_variant_positions
+    if _named_variant_positions is None and Path(NAMED_VARIANT_POSITIONS_VCF).exists():
+        _named_variant_positions = load_named_variant_positions(NAMED_VARIANT_POSITIONS_VCF)
+    return _named_variant_positions
 
 
 def _get_catalog_index() -> CatalogIndex:
@@ -449,7 +487,11 @@ def _gene_finding(
         c for c in sawfish_calls
         if c["chrom"] == target["chrom"] and c["pos"] <= target["stop"] and c["end"] >= target["start"]
     ]
-    return classify_gene(target["gene"], paraphase_calls, f8_inv_calls, havanno_annotations, target_sawfish_calls)
+    return classify_gene(
+        target["gene"], paraphase_calls, f8_inv_calls, havanno_annotations, target_sawfish_calls,
+        named_variant_positions=_get_named_variant_positions(),
+        clinvar_references={gene: _get_clinvar_reference(gene) for gene in CLINVAR_REFERENCE_TSV},
+    )
 
 
 def _non_repeat_summary(

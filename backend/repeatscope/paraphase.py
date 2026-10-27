@@ -104,10 +104,9 @@ def load_named_variant_positions(vcf_path: str | Path) -> dict[str, tuple[str, i
     havanno's JSON never carries genomic coordinates, only these name strings. This is what lets
     `_classify_havanno_gene` check a flagged "pathogenic" name against ClinVar's current
     classification of the same position, instead of trusting the list's own PATHO flag
-    unconditionally. That matters: against the ClinVar references vendored here, 19 of the list's 379
-    names sit at a position ClinVar classifies Benign or Likely_benign. For the genes this app checks
-    that is RPGR 3, HBB 2 and HBA 1 (GBA and CYP21A2 have more, but their havanno findings aren't
-    used, see `classify_gene`). One of them, RPGR's ORF15 `p.Gly977_Glu983dup` (a repetitive,
+    unconditionally. That matters: against the ClinVar references vendored here, 6 of the list's 379
+    names for the genes this app checks sit at a position ClinVar classifies Benign or Likely_benign
+    (RPGR 3, HBB 2, HBA 1). One of them, RPGR's ORF15 `p.Gly977_Glu983dup` (a repetitive,
     glycine/glutamate-rich exon full of benign repeat-length polymorphisms), is Benign at ClinVar's
     expert-panel tier and flagged 6 of the 32 Atlanta carrier samples as RPGR "Pathogenic"."""
     positions: dict[str, tuple[str, int, str, str]] = {}

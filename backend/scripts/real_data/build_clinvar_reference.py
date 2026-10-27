@@ -50,6 +50,12 @@ Usage:
 
 Requires `bcftools` on PATH (used for the remote indexed region query).
 Re-run this periodically to pick up new ClinVar submissions/reclassifications.
+
+Offline: pass `--variant-summary <variant_summary_YYYY-MM.txt.gz>` (a ClinVar release's tab-delimited
+variant summary, e.g. from a folder of monthly releases) and everything is built from that one file,
+with no bcftools and no download. Its human-readable labels ("Likely benign", "criteria provided,
+single submitter") become the VCF's ("Likely_benign", "criteria_provided,_single_submitter"), so the
+tables come out in the same format either way.
 """
 
 from __future__ import annotations
@@ -159,6 +165,53 @@ def build(region: str) -> list[dict]:
     return rows
 
 
+def _vcf_style(label: str) -> str:
+    """variant_summary's label in the VCF's spelling: multiple values joined by "|", spaces as "_"."""
+    return label.replace("; ", "|").replace(" ", "_")
+
+
+def build_from_variant_summary(region: str, variant_summary_path: Path) -> list[dict]:
+    """Rows for `region` (GRCh38) from a local ClinVar `variant_summary` file, one streamed pass.
+
+    A variant is in the region if its VCF-normalized span [PositionVCF, PositionVCF + len(ref) - 1]
+    overlaps it, as `bcftools view -r` selects. Rows ClinVar gives no classification ("-") are left
+    out, as in the VCF build."""
+    chrom, span = region.split(":", 1)
+    chrom = chrom.removeprefix("chr")
+    start, stop = (int(x) for x in span.replace(",", "").split("-"))
+    rows: dict[tuple, dict] = {}
+    with gzip.open(variant_summary_path, mode="rt", encoding="utf-8", errors="replace") as f:
+        header = next(f).rstrip("\n").split("\t")
+        col = {name: i for i, name in enumerate(header)}
+        for line in f:
+            fields = line.rstrip("\n").split("\t")
+            if fields[col["Assembly"]] != "GRCh38" or fields[col["Chromosome"]] != chrom:
+                continue
+            position = fields[col["PositionVCF"]]
+            if position == "-":
+                continue
+            pos, ref, alt = int(position), fields[col["ReferenceAlleleVCF"]], fields[col["AlternateAlleleVCF"]]
+            if pos > stop or pos + len(ref) - 1 < start:
+                continue
+            clnsig = fields[col["ClinicalSignificance"]]
+            if not clnsig or clnsig == "-":
+                continue
+            key = (f"chr{chrom}", pos, ref, alt)
+            if key in rows:
+                continue
+            rsid = fields[col["RS# (dbSNP)"]]
+            rows[key] = {
+                "chrom": key[0], "pos": pos, "ref": ref, "alt": alt,
+                "clnsig": _vcf_style(clnsig),
+                "clnrevstat": _vcf_style(fields[col["ReviewStatus"]]),
+                "gene": fields[col["GeneSymbol"]].split(";")[0],
+                "condition": _vcf_style(fields[col["PhenotypeList"]]),
+                "rsid": "" if rsid in ("-1", "-", "") else rsid,
+                "hgvs": _format_clinvar_name(fields[col["Name"]]),
+            }
+    return sorted(rows.values(), key=lambda r: r["pos"])
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -171,12 +224,16 @@ def main() -> None:
         "Paraphase's config so the reference never falls short of what the per-haplotype VCF calls against.",
     )
     parser.add_argument("--out", type=Path, default=None)
+    parser.add_argument(
+        "--variant-summary", type=Path, default=None,
+        help="Build from this local ClinVar variant_summary_*.txt.gz instead of querying NCBI.",
+    )
     args = parser.parse_args()
 
     out = args.out or (
         Path(__file__).resolve().parents[3] / "project" / "uploads" / f"clinvar_{args.gene}.hg38.tsv"
     )
-    rows = build(args.region)
+    rows = build_from_variant_summary(args.region, args.variant_summary) if args.variant_summary else build(args.region)
     out.parent.mkdir(parents=True, exist_ok=True)
     fieldnames = ["chrom", "pos", "ref", "alt", "clnsig", "clnrevstat", "gene", "condition", "rsid", "hgvs"]
     with open(out, "w", newline="", encoding="utf-8") as f:

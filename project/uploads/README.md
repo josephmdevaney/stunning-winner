@@ -94,17 +94,29 @@ pathogenic classifications, and names with no ClinVar entry, are kept. A haploty
 variant is read from its copy number, as if havanno had flagged nothing. With either file missing,
 nothing is dropped.
 
-The ClinVar classifications are the per-gene region tables for the genes whose havanno findings are
-used (HBA, HBB, RPGR; GBA and CYP21A2 skip havanno, see `classify_gene`). They are copies of the
-carrier tool's (`puretarget-carrier-screen`) reference files, dated 2026-09-08, built by
-`backend/scripts/real_data/build_clinvar_reference.py` from ClinVar's published VCF and
-`variant_summary.txt` (re-run it per gene to refresh: ClinVar reclassifies, which is the point).
+The ClinVar classifications are per-gene region tables for the genes whose havanno findings are
+used (HBA, HBB, RPGR; GBA and CYP21A2 skip havanno, see `classify_gene`), built from ClinVar's
+**October 2026** release (`variant_summary_2026-10.txt.gz`) with
+`backend/scripts/real_data/build_clinvar_reference.py --variant-summary <file>`, one run per gene:
 
-What it changes, measured: against these files, 19 of the list's 379 names sit at a ClinVar
-Benign/Likely_benign position (RPGR 3, HBB 2, HBA 1, plus GBA 2 and CYP21A2 11). On the 32 Atlanta
-(PhyTest) carrier samples it changes one result: RPGR `p.Gly977_Glu983dup` (c.2919_2939dup, chrX:38,286,059,
-ClinVar Benign, expert panel, last evaluated 2025-09-05) no longer flags 6 samples as "Pathogenic", so
-the Cohort page shows 6 reportable samples instead of 10. The 96-sample fixture set is unchanged.
+    hba   chr16:169800-175500     hbb   chr11:5218300-5229900     rpgr   chrX:38283600-38288800
+
+Each region is the union of the ptcp Paraphase config's `realign_region` and the span of the tables
+this replaced (September 2026 snapshot, from the carrier tool). That covers every curated variant
+Paraphase can flag: it phases RPGR only in chrX:38283684-38288763, HBA in chr16:171800-175500 and HBB
+in chr11:5224586-5229858, and havanno names come from calls inside those regions. 24 of RPGR's 61
+curated names lie outside its phased region, so they are not in the table and can't be flagged with
+this Paraphase configuration anyway; 173 curated names for the three genes have a ClinVar entry in
+the tables. Without `--variant-summary` the script queries NCBI instead. ClinVar reclassifies, which is the point of the check, so re-run it per
+release. Between the September snapshot and October, ClinVar reclassified 7 of HBB's and 43 of
+RPGR's entries (mostly uncertain to conflicting, and pathogenic to pathogenic/likely pathogenic) and
+none of HBA's; the same 6 curated names are ClinVar-benign under both.
+
+What it changes, measured: against these tables, 6 of the list's names for these genes sit at a
+ClinVar Benign/Likely_benign position (RPGR 3, HBB 2, HBA 1). On the 32 Atlanta (PhyTest) carrier
+samples it changes one result: RPGR `p.Gly977_Glu983dup` (c.2919_2939dup, chrX:38,286,059, ClinVar
+Benign, reviewed by expert panel) no longer flags 6 samples as "Pathogenic", so the Cohort page shows
+6 reportable samples instead of 10. The 96-sample fixture set is unchanged.
 
 ## rexprt_scores.hg38.tsv (added 2026-08-01; rebuilt 2026-08-14 for the v2.0 catalog)
 

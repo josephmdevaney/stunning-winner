@@ -83,6 +83,29 @@ was a full 5,339,786-record genome-wide run genotyped directly against the
 full v2.0 catalog -- see git history for that provenance if the full run is
 ever needed again.
 
+## clinvar_{hba,hbb,rpgr}.hg38.tsv and ptcp_variant_list.GRCh38.vcf (added 2026-10-27: Carrier-mode ClinVar cross-check)
+
+PacBio's havanno names "pathogenic" variants from a curated list (the `ptcp` repo's
+`meta/variant_list/variant_list.GRCh38.vcf`, vendored here as `ptcp_variant_list.GRCh38.vcf`, which
+maps each havanno variant name to its genomic position). The list goes stale. In Carrier mode a named
+variant is now dropped when ClinVar currently classifies that exact position Benign or Likely_benign
+(`_classify_havanno_gene` in `backend/repeatscope/paraphase.py`); uncertain, conflicting and
+pathogenic classifications, and names with no ClinVar entry, are kept. A haplotype left with no
+variant is read from its copy number, as if havanno had flagged nothing. With either file missing,
+nothing is dropped.
+
+The ClinVar classifications are the per-gene region tables for the genes whose havanno findings are
+used (HBA, HBB, RPGR; GBA and CYP21A2 skip havanno, see `classify_gene`). They are copies of the
+carrier tool's (`puretarget-carrier-screen`) reference files, dated 2026-09-08, built by
+`backend/scripts/real_data/build_clinvar_reference.py` from ClinVar's published VCF and
+`variant_summary.txt` (re-run it per gene to refresh: ClinVar reclassifies, which is the point).
+
+What it changes, measured: against these files, 19 of the list's 379 names sit at a ClinVar
+Benign/Likely_benign position (RPGR 3, HBB 2, HBA 1, plus GBA 2 and CYP21A2 11). On the 32 Atlanta
+(PhyTest) carrier samples it changes one result: RPGR `p.Gly977_Glu983dup` (c.2919_2939dup, chrX:38,286,059,
+ClinVar Benign, expert panel, last evaluated 2025-09-05) no longer flags 6 samples as "Pathogenic", so
+the Cohort page shows 6 reportable samples instead of 10. The 96-sample fixture set is unchanged.
+
 ## rexprt_scores.hg38.tsv (added 2026-08-01; rebuilt 2026-08-14 for the v2.0 catalog)
 
 Real, published tandem-repeat pathogenicity predictions from **RExPRT**

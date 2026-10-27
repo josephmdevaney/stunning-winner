@@ -17,6 +17,7 @@ unresolved/atypical finding rather than guessed as benign or pathogenic.
 
 from __future__ import annotations
 
+import csv
 import gzip
 import json
 from dataclasses import dataclass, field
@@ -90,6 +91,45 @@ def load_havanno_annotations(json_path: str | Path) -> dict[str, dict]:
     with open(json_path, encoding="utf-8") as f:
         data = json.load(f)
     return data.get("annotations", {})
+
+
+def load_named_variant_positions(vcf_path: str | Path) -> dict[str, tuple[str, int, str, str]]:
+    """Load PacBio's own curated havanno variant list (vendored from
+    https://github.com/PacificBiosciences/ptcp/blob/main/meta/variant_list/variant_list.GRCh38.vcf,
+    the file havanno's own README points to as "the PureTarget variant list used to assess the
+    accuracy of the protocol"), keyed by the variant name exactly as it appears in havanno's
+    `variants.pathogenic` output (the VCF's ID column) -- mapping each name back to the genomic
+    position and allele it refers to.
+
+    havanno's JSON never carries genomic coordinates, only these name strings. This is what lets
+    `_classify_havanno_gene` check a flagged "pathogenic" name against ClinVar's current
+    classification of the same position, instead of trusting the list's own PATHO flag
+    unconditionally. That matters: against the ClinVar references vendored here, 19 of the list's 379
+    names sit at a position ClinVar classifies Benign or Likely_benign. For the genes this app checks
+    that is RPGR 3, HBB 2 and HBA 1 (GBA and CYP21A2 have more, but their havanno findings aren't
+    used, see `classify_gene`). One of them, RPGR's ORF15 `p.Gly977_Glu983dup` (a repetitive,
+    glycine/glutamate-rich exon full of benign repeat-length polymorphisms), is Benign at ClinVar's
+    expert-panel tier and flagged 6 of the 32 Atlanta carrier samples as RPGR "Pathogenic"."""
+    positions: dict[str, tuple[str, int, str, str]] = {}
+    with open(vcf_path, encoding="utf-8") as f:
+        for line in f:
+            if line.startswith("#"):
+                continue
+            fields = line.rstrip("\n").split("\t")
+            chrom, pos, name, ref, alt = fields[0], fields[1], fields[2], fields[3], fields[4]
+            positions[name] = (chrom, int(pos), ref, alt)
+    return positions
+
+
+def load_clinvar_reference(path: str | Path) -> dict[tuple[str, int, str, str], dict]:
+    """Load a derived ClinVar reference for one gene's region (see
+    scripts/real_data/build_clinvar_reference.py): ClinVar's own classification of every variant it
+    has in the region Paraphase realigns that gene against, keyed by exact (chrom, pos, ref, alt)."""
+    ref: dict[tuple[str, int, str, str], dict] = {}
+    with open(path, encoding="utf-8") as f:
+        for row in csv.DictReader(f, delimiter="\t"):
+            ref[(row["chrom"], int(row["pos"]), row["ref"], row["alt"])] = row
+    return ref
 
 
 def load_sawfish_calls(vcf_path: str | Path) -> list[dict]:
@@ -178,8 +218,12 @@ def _classify_hba(
     call: dict,
     havanno_gene_annotations: Optional[dict[str, dict]] = None,
     sawfish_calls: Optional[list[dict]] = None,
+    named_variant_positions: Optional[dict[str, tuple[str, int, str, str]]] = None,
+    clinvar_reference: Optional[dict] = None,
 ) -> ParaphaseFinding:
-    havanno_finding = _classify_havanno_gene(havanno_gene_annotations or {}, call)
+    havanno_finding = _classify_havanno_gene(
+        havanno_gene_annotations or {}, call, named_variant_positions, clinvar_reference,
+    )
     if havanno_finding is not None:
         return havanno_finding
 
@@ -299,7 +343,33 @@ def _havanno_zygosity(entries_with_variants: dict, call: Optional[dict]) -> Opti
     return None
 
 
-def _classify_havanno_gene(gene_annotations: dict[str, dict], call: Optional[dict] = None) -> Optional[ParaphaseFinding]:
+# ClinVar classifications that unambiguously say "not pathogenic". Uncertain significance and conflicting
+# classifications are deliberately not here: those don't contradict a pathogenic flag, they just don't back it.
+_CLINVAR_UNAMBIGUOUS_BENIGN_LABELS = {"Benign", "Likely_benign", "Benign/Likely_benign"}
+
+
+def _havanno_name_is_stale(
+    name: str,
+    named_variant_positions: Optional[dict[str, tuple[str, int, str, str]]],
+    clinvar_reference: Optional[dict],
+) -> bool:
+    """True if this havanno-flagged variant name maps to a genomic position whose current ClinVar
+    classification is unambiguously benign (see `_classify_havanno_gene`)."""
+    if not named_variant_positions or not clinvar_reference:
+        return False
+    position = named_variant_positions.get(name)
+    if position is None:
+        return False
+    entry = clinvar_reference.get(position)
+    return entry is not None and entry["clnsig"] in _CLINVAR_UNAMBIGUOUS_BENIGN_LABELS
+
+
+def _classify_havanno_gene(
+    gene_annotations: dict[str, dict],
+    call: Optional[dict] = None,
+    named_variant_positions: Optional[dict[str, tuple[str, int, str, str]]] = None,
+    clinvar_reference: Optional[dict] = None,
+) -> Optional[ParaphaseFinding]:
     """Build a Pathogenic finding from havanno's named-variant annotations, or
     None if no haplotype-phase call for this gene carries any named pathogenic
     variant (caller should then fall back to the total_cn-based classifier).
@@ -308,12 +378,24 @@ def _classify_havanno_gene(gene_annotations: dict[str, dict], call: Optional[dic
     haplotype-phase calls (e.g. `cyp21_hap2`/`hap5`/`hap7` all carrying the same
     variant list); those are collapsed by reporting the distinct variant sets
     actually seen, not the raw call count.
+
+    When `named_variant_positions` (see `load_named_variant_positions`) and `clinvar_reference` are
+    both given, any flagged name that maps to a position ClinVar currently classifies as
+    unambiguously Benign/Likely_benign is dropped before counting: havanno's own curated PATHO list
+    (PacBio's `ptcp` repo) goes stale. Confirmed case: RPGR's `p.Gly977_Glu983dup`, in the ORF15
+    exon, is ClinVar-Benign at "reviewed_by_expert_panel" confidence yet still curated PATHO, and
+    flagged 6 of the 32 Atlanta carrier samples. A haplotype whose only flagged variants turn out to
+    be stale is treated as if it had none. Without either input nothing is dropped.
     """
     entries_with_variants = {
-        hap_id: tuple(sorted(set(entry.get("variants", {}).get("pathogenic", []))))
+        hap_id: tuple(sorted({
+            name for name in entry.get("variants", {}).get("pathogenic", [])
+            if not _havanno_name_is_stale(name, named_variant_positions, clinvar_reference)
+        }))
         for hap_id, entry in gene_annotations.items()
         if entry.get("num_pathogenic_variants", 0) > 0
     }
+    entries_with_variants = {hap_id: variants for hap_id, variants in entries_with_variants.items() if variants}
     if not entries_with_variants:
         return None
 
@@ -369,10 +451,15 @@ def classify_gene(
     f8_inv_calls: Optional[dict[str, dict]],
     havanno_annotations: Optional[dict[str, dict]] = None,
     sawfish_calls: Optional[list[dict]] = None,
+    named_variant_positions: Optional[dict[str, tuple[str, int, str, str]]] = None,
+    clinvar_references: Optional[dict[str, dict]] = None,
 ) -> Optional[ParaphaseFinding]:
     """Build a finding for one carrier-panel non-repeat gene, or None if no real
     data is available for it (caller should keep the generic "Not applicable"
-    placeholder in that case)."""
+    placeholder in that case). `named_variant_positions` and `clinvar_references` (by Paraphase
+    gene key) let a havanno-flagged variant that ClinVar calls benign be dropped; see
+    `_classify_havanno_gene`."""
+    clinvar_references = clinvar_references or {}
     key = GENE_TO_PARAPHASE_KEY.get(gene)
     if key is None:
         return None
@@ -384,7 +471,10 @@ def classify_gene(
     if call is None:
         return None
     if key == "hba":
-        return _classify_hba(call, (havanno_annotations or {}).get("hba"), sawfish_calls)
+        return _classify_hba(
+            call, (havanno_annotations or {}).get("hba"), sawfish_calls,
+            named_variant_positions, clinvar_references.get("hba"),
+        )
     if key == "smn1":
         return _classify_smn1(call)
 
@@ -395,7 +485,9 @@ def classify_gene(
     # cohort, against a true carrier frequency of a few percent -- so skip it for those genes and
     # fall through to the more conservative copy-number/fusion reasoning in _classify_generic.
     if havanno_annotations and not _HAS_PSEUDOGENE_PAIR.get(key):
-        havanno_finding = _classify_havanno_gene(havanno_annotations.get(key, {}), call)
+        havanno_finding = _classify_havanno_gene(
+            havanno_annotations.get(key, {}), call, named_variant_positions, clinvar_references.get(key),
+        )
         if havanno_finding is not None:
             return havanno_finding
 

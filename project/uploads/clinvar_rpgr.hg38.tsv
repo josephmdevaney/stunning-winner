@@ -1,0 +1,994 @@
+chrom	pos	ref	alt	clnsig	clnrevstat	gene	condition	rsid	hgvs
+chrX	38285307	T	G	Benign	reviewed_by_expert_panel	RPGR	not_provided|RPGR-related_retinopathy	79675956	RPGR c.*233A>C
+chrX	38285414	CT	C	Benign	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy|not_provided	35637775	RPGR c.*125del
+chrX	38285468	T	C	Benign	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy|not_provided	139467624	RPGR c.*72A>G
+chrX	38285541	T	G	Likely_pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy		RPGR c.3458A>C p.Ter1153Ser
+chrX	38285542	A	T	Likely_pathogenic	reviewed_by_expert_panel	RPGR	Retinitis_pigmentosa_3|RPGR-related_retinopathy	2067111489	RPGR c.3457T>A p.Ter1153Lys
+chrX	38285546	C	A	Likely_pathogenic	no_assertion_criteria_provided	RPGR	Macular_dystrophy	1555961220	RPGR c.3453G>T p.Leu1151Phe
+chrX	38285548	A	G	Likely_benign	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy|Primary_ciliary_dyskinesia	2519779445	RPGR c.3451T>C p.Leu1151=
+chrX	38285569	C	G	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.3430G>C p.Val1144Leu
+chrX	38285569	C	T	Benign	reviewed_by_expert_panel	RPGR	not_provided|Primary_ciliary_dyskinesia|not_specified|RPGR-related_retinopathy|Retinal_dystrophy	12688514	RPGR c.3430G>A p.Val1144Ile
+chrX	38285576	C	A	Uncertain_significance	reviewed_by_expert_panel	RPGR	Macular_dystrophy|RPGR-related_retinopathy|Primary_ciliary_dyskinesia	2067111911	RPGR c.3423G>T p.Trp1141Cys
+chrX	38285576	C	G	Uncertain_significance	no_assertion_criteria_provided	RPGR	Retinal_dystrophy		RPGR c.3423G>C p.Trp1141Cys
+chrX	38285576	C	T	Uncertain_significance	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|not_provided	2067111911	RPGR c.3423G>A p.Trp1141Ter
+chrX	38285580	A	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.3419T>A p.Phe1140Tyr
+chrX	38285583	T	G	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	756242105	RPGR c.3416A>C p.Lys1139Thr
+chrX	38285586	T	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	not_provided	1569234937	RPGR c.3413A>G p.Lys1138Arg
+chrX	38285592	C	T	Benign	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy|Primary_ciliary_dyskinesia|not_provided	150960964	RPGR c.3407G>A p.Gly1136Asp
+chrX	38285594	T	A	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519779715	RPGR c.3405A>T p.Ser1135=
+chrX	38285595	G	A	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.3404C>T p.Ser1135Leu
+chrX	38285597	T	G	Benign/Likely_benign	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Primary_ciliary_dyskinesia	199602213	RPGR c.3402A>C p.Pro1134=
+chrX	38285599	GC	G	Likely_pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy		RPGR c.3399del p.Pro1134fs
+chrX	38285602	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	749648072	RPGR c.3397G>A p.Gly1133Arg
+chrX	38285602	CG	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519779790	RPGR c.3396del p.Asn1132fs
+chrX	38285603	G	A	Benign	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinal_dystrophy|not_provided|Primary_ciliary_dyskinesia	12687163	RPGR c.3396C>T p.Asn1132=
+chrX	38285603	G	T	Uncertain_significance	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Primary_ciliary_dyskinesia	12687163	RPGR c.3396C>A p.Asn1132Lys
+chrX	38285603	GT	G	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519779804	RPGR c.3395del p.Asn1132fs
+chrX	38285603	GTT	G	Pathogenic	reviewed_by_expert_panel	RPGR	Primary_ciliary_dyskinesia|RPGR-related_retinopathy		RPGR c.3394_3395del p.Asn1132fs
+chrX	38285607	TTTA	T	Likely_pathogenic	no_assertion_criteria_provided	RPGR	Retinitis_pigmentosa_3		RPGR c.3389_3391del p.Leu1130_Lys1131delinsTer
+chrX	38285609	TA	T	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519779829	RPGR c.3389del p.Leu1129_Leu1130insTer
+chrX	38285615	T	G	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519779837	RPGR c.3384A>C p.Arg1128=
+chrX	38285617	G	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.3382C>T p.Arg1128Ter
+chrX	38285622	G	A	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519779875	RPGR c.3377C>T p.Ser1126Leu
+chrX	38285626	G	A	Likely_pathogenic	reviewed_by_expert_panel	RPGR	Retinal_dystrophy|not_provided|RPGR-related_retinopathy|Retinitis_pigmentosa	1601917052	RPGR c.3373C>T p.Gln1125Ter
+chrX	38285628	A	T	Benign	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy|Primary_ciliary_dyskinesia	201671932	RPGR c.3371T>A p.Val1124Asp
+chrX	38285634	A	AT	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519779932	RPGR c.3364dup p.Met1122fs
+chrX	38285634	AT	A	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinal_dystrophy|X-linked_cone-rod_dystrophy_1		RPGR c.3364del p.Met1122fs
+chrX	38285642	C	A	Uncertain_significance	criteria_provided,_single_submitter	RPGR	not_provided		RPGR c.3357G>T p.Arg1119Ser
+chrX	38285648	C	G	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia|RPGR-related_disorder	199691696	RPGR c.3351G>C p.Glu1117Asp
+chrX	38285650	CT	C	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519780040	RPGR c.3348del p.Glu1117fs
+chrX	38285651	T	C	Benign	reviewed_by_expert_panel	RPGR	not_provided|RPGR-related_retinopathy	138405457	RPGR c.3348A>G p.Lys1116=
+chrX	38285657	A	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519780048	RPGR c.3342T>G p.Asn1114Lys
+chrX	38285662	C	A	Likely_pathogenic	no_assertion_criteria_provided	RPGR	Retinitis_pigmentosa_3		RPGR c.3337G>T p.Gly1113Ter
+chrX	38285679	G	T	Pathogenic	no_assertion_criteria_provided	RPGR	Retinal_dystrophy		RPGR c.3320C>A p.Ser1107Ter
+chrX	38285679	GACTT	G	Pathogenic	reviewed_by_expert_panel	RPGR	Primary_ciliary_dyskinesia|RPGR-related_retinopathy	2519780183	RPGR c.3316_3319del p.Lys1106fs
+chrX	38285681	C	CT	Pathogenic	reviewed_by_expert_panel	RPGR	Retinal_dystrophy|RPGR-related_retinopathy|RPGR-related_disorder|not_provided|Primary_ciliary_dyskinesia|Retinitis_pigmentosa_3	886041376	RPGR c.3317dup p.Ser1107fs
+chrX	38285681	CT	C	Pathogenic	reviewed_by_expert_panel	RPGR	Primary_ciliary_dyskinesia|RPGR-related_retinopathy	886041376	RPGR c.3317del p.Lys1106fs
+chrX	38285682	T	A	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	574644551	RPGR c.3317A>T p.Lys1106Met
+chrX	38285682	T	C	Benign	reviewed_by_expert_panel	RPGR	Primary_ciliary_dyskinesia|RPGR-related_retinopathy	574644551	RPGR c.3317A>G p.Lys1106Arg
+chrX	38285682	T	G	Likely_benign	reviewed_by_expert_panel	RPGR	not_provided|RPGR-related_retinopathy	574644551	RPGR c.3317A>C p.Lys1106Thr
+chrX	38285686	T	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519780233	RPGR c.3313A>T p.Lys1105Ter
+chrX	38285689	GAT	G	Pathogenic	reviewed_by_expert_panel	RPGR	not_provided|RPGR-related_retinopathy	2519780275	RPGR c.3308_3309del p.Tyr1103fs
+chrX	38285690	A	G	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.3309T>C p.Tyr1103=
+chrX	38285692	ATGTTT	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.3302_3306del p.Lys1101fs
+chrX	38285697	TTA	T	Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Macular_degeneration,_X-linked_atrophic|Retinitis_pigmentosa_3|Retinal_dystrophy	2067114709	RPGR c.3300_3301del p.His1100fs
+chrX	38285706	C	T	Benign	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy|Primary_ciliary_dyskinesia	764205212	RPGR c.3293G>A p.Gly1098Asp
+chrX	38285708	A	G	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	932485616	RPGR c.3291T>C p.Tyr1097=
+chrX	38285714	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	not_provided	1601917276	RPGR c.3285G>A p.Val1095=
+chrX	38285720	T	A	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.3279A>T p.Gly1093=
+chrX	38285727	AT	A	Pathogenic	no_assertion_criteria_provided	RPGR	Retinal_dystrophy		RPGR c.3271del p.Lys1090_Ile1091insTer
+chrX	38285728	T	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1049625142	RPGR c.3271A>G p.Ile1091Val
+chrX	38285732	GCTCA	G	Conflicting_classifications_of_pathogenicity	criteria_provided,_conflicting_classifications	RPGR	not_provided|Retinitis_pigmentosa_3|Retinitis_pigmentosa,_X-linked,_and_sinorespiratory_infections,_with_or_without_deafness|Macular_degeneration,_X-linked_atrophic|X-linked_cone-rod_dystrophy_1	2519780437	RPGR c.3263_3266del p.Val1088fs
+chrX	38285733	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1364050231	RPGR c.3266G>A p.Ser1089Asn
+chrX	38285735	C	T	Benign	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_specified|Primary_ciliary_dyskinesia|Retinal_dystrophy|not_provided	78736275	RPGR c.3264G>A p.Val1088=
+chrX	38285743	TG	T	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|not_provided|Retinitis_pigmentosa_3	2067115815	RPGR c.3255del p.Glu1084_Tyr1085insTer
+chrX	38285744	G	C	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	X-linked_cone-rod_dystrophy_1|Retinitis_pigmentosa,_X-linked,_and_sinorespiratory_infections,_with_or_without_deafness|Macular_degeneration,_X-linked_atrophic|Retinitis_pigmentosa_3		RPGR c.3255C>G p.Tyr1085Ter
+chrX	38285744	G	T	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519780519	RPGR c.3255C>A p.Tyr1085Ter
+chrX	38285746	ACTCCT	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519780546	RPGR c.3248_3252del p.Glu1083fs
+chrX	38285749	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519780558	RPGR c.3250G>T p.Glu1084Ter
+chrX	38285757	TCCTG	T	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.3238_3241del p.Gln1080fs
+chrX	38285761	G	A	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa_3|Retinitis_pigmentosa,_X-linked,_and_sinorespiratory_infections,_with_or_without_deafness|Macular_degeneration,_X-linked_atrophic|X-linked_cone-rod_dystrophy_1	2519780631	RPGR c.3238C>T p.Gln1080Ter
+chrX	38285764	TTTCA	T	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	not_provided	2519780655	RPGR c.3231_3234del p.Asn1077fs
+chrX	38285768	A	T	Benign	reviewed_by_expert_panel	RPGR	not_specified|Primary_ciliary_dyskinesia|not_provided|RPGR-related_retinopathy	62636730	RPGR c.3231T>A p.Asn1077Lys
+chrX	38285771	CTCT	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Retinal_dystrophy		RPGR c.3222AGA[1] p.Glu1076del
+chrX	38285773	CTTCTT	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	RPGR-related_retinopathy	2519780725	RPGR c.3221_3225del p.Glu1074fs
+chrX	38285779	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1259306034	RPGR c.3220G>T p.Glu1074Ter
+chrX	38285780	G	A	Benign	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Primary_ciliary_dyskinesia|Retinal_dystrophy|not_specified	111787313	RPGR c.3219C>T p.Gly1073=
+chrX	38285780	G	GCCTGTCTCCTGATACTTCC	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa_3	2147190484	RPGR c.3200_3218dup p.Glu1075fs
+chrX	38285780	GCCTGTCT	G	Pathogenic	reviewed_by_expert_panel	RPGR	not_provided|RPGR-related_retinopathy	2147190470	RPGR c.3212_3218del p.Glu1071fs
+chrX	38285784	G	A	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.3215C>T p.Thr1072Ile
+chrX	38285784	G	GTCTCCTGATACTTCCCC	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	X-linked_cone-rod_dystrophy_1	2519780828	RPGR c.3198_3214dup p.Thr1072fs
+chrX	38285785	T	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.3214A>G p.Thr1072Ala
+chrX	38285788	C	A	Likely_pathogenic	no_assertion_criteria_provided	RPGR	not_provided		RPGR c.3211G>T p.Glu1071Ter
+chrX	38285791	G	A	Likely_pathogenic	no_assertion_criteria_provided	RPGR	X-linked_cone-rod_dystrophy_1	2519780839	RPGR c.3208C>T p.Gln1070Ter
+chrX	38285794	A	ACTTCCCCTCTTCTTCCTCCTCCTCTTCTCTGTTCCTCCTGTTTTCTTCTC	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	X-linked_cone-rod_dystrophy_1		RPGR c.3155_3204dup p.Tyr1069fs
+chrX	38285795	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	766253895	RPGR c.3204G>A p.Lys1068=
+chrX	38285797	T	A	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Retinal_dystrophy	2519780893	RPGR c.3202A>T p.Lys1068Ter
+chrX	38285800	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	747633561	RPGR c.3199G>A p.Gly1067Arg
+chrX	38285800	CCT	C	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|not_provided	2519780933	RPGR c.3197_3198del p.Glu1066fs
+chrX	38285804	T	TTCTTCCTCCTCCTCTTCTCTGTTCCTCCTGTTTTCTTCTCCTTCCCCCTCCTTTTCCCTTTCTTCTCCTTCCTCCTCTCATTCC	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinal_disorder		RPGR c.3194_3195insGGAATGAGAGGAGGAAGGAGAAGAAAGGGAAAAGGAGGGGGAAGGAGAAGAAAACAGGAGGAACAGAGAAGAGGAGGAGGAAGA p.Glu1066_Gly1067insTerGlu
+chrX	38285807	TTCC	T	Benign	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy|Retinal_dystrophy|Primary_ciliary_dyskinesia|RPGR-related_disorder|not_provided	746535151	RPGR c.3183GGA[2] p.Glu1066del
+chrX	38285809	C	A	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinal_dystrophy	2067117239	RPGR c.3190G>T p.Glu1064Ter
+chrX	38285813	C	G	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519781008	RPGR c.3186G>C p.Glu1062Asp
+chrX	38285815	C	A	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinitis_pigmentosa_3	2147190626	RPGR c.3184G>T p.Glu1062Ter
+chrX	38285819	TTC	T	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinal_dystrophy|not_provided|Primary_ciliary_dyskinesia|Retinitis_pigmentosa_3|X-linked_cone-rod_dystrophy_1|Macular_degeneration,_X-linked_atrophic|Cone-rod_dystrophy	771214648	RPGR c.3178_3179del p.Glu1060fs
+chrX	38285823	CT	C	Pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa	2067117666	RPGR c.3175del p.Arg1059fs
+chrX	38285826	TTCC	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	777132996	RPGR c.3167GGA[1] p.Arg1057del
+chrX	38285827	T	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	892594567	RPGR c.3172A>G p.Asn1058Asp
+chrX	38285831	CCT	C	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519781120	RPGR c.3166_3167del p.Arg1056fs
+chrX	38285839	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia|Retinitis_pigmentosa_3	2067118339	RPGR c.3160G>T p.Glu1054Ter
+chrX	38285847	TCC	T	Pathogenic	no_assertion_criteria_provided	RPGR	not_provided	2147190794	RPGR c.3150_3151del p.Glu1051fs
+chrX	38285848	C	A	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	X-linked_cone-rod_dystrophy_1|Retinitis_pigmentosa,_X-linked,_and_sinorespiratory_infections,_with_or_without_deafness|Macular_degeneration,_X-linked_atrophic|Retinitis_pigmentosa_3		RPGR c.3151G>T p.Glu1051Ter
+chrX	38285848	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1235791633	RPGR c.3151G>A p.Glu1051Lys
+chrX	38285849	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.3150G>A p.Gly1050=
+chrX	38285850	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	866249611	RPGR c.3149G>A p.Gly1050Glu
+chrX	38285850	CCCT	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1285695770	RPGR c.3143AGG[1] p.Glu1049del
+chrX	38285853	T	A	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.3146A>T p.Glu1049Val
+chrX	38285856	T	C	Uncertain_significance	no_assertion_criteria_provided	RPGR	not_provided	2147190857	RPGR c.3143A>G p.Lys1048Arg
+chrX	38285861	CCTTT	C	Pathogenic	criteria_provided,_single_submitter	RPGR	Retinal_dystrophy		RPGR c.3134_3137del p.Glu1045fs
+chrX	38285866	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519781357	RPGR c.3133G>T p.Glu1045Ter
+chrX	38285870	T	C	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.3129A>G p.Gly1043=
+chrX	38285873	TTCC	T	Conflicting_classifications_of_pathogenicity	criteria_provided,_conflicting_classifications	RPGR	Retinal_dystrophy|Primary_ciliary_dyskinesia|not_provided	748582313	RPGR c.3120GGA[1] p.Glu1042del
+chrX	38285876	CTCCTCTCCT	C	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	763694930	RPGR c.3114_3122del p.Gly1039_Glu1041del
+chrX	38285876	CTCCTCTCCTTCCTCT	C	Benign	reviewed_by_expert_panel	RPGR	not_provided|RPGR-related_retinopathy|Primary_ciliary_dyskinesia	774012136	RPGR c.3108_3122del p.1033EGEEE[1]
+chrX	38285877	TCCTCTCCTTCCTCTTCC	CCCTCCTTTTCCCTTTCT	Uncertain_significance	criteria_provided,_single_submitter	RPGR	not_provided		RPGR c.3105_3122delinsAGAAAGGGAAAAGGAGGG p.Glu1037_Glu1041delinsArgGluLysGluGly
+chrX	38285878	CCT	C	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.3119_3120del p.Glu1040fs
+chrX	38285879	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.3120G>A p.Glu1040=
+chrX	38285880	TCTC	T	Benign	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Primary_ciliary_dyskinesia	200211905	RPGR c.3116_3118del p.Gly1039del
+chrX	38285881	CTCCT	C	Pathogenic	criteria_provided,_single_submitter	RPGR	Retinal_dystrophy|Primary_ciliary_dyskinesia		RPGR c.3114_3117del p.Gly1039fs
+chrX	38285882	T	TCCTTCCTCTTCCTCTCCTTCCCCCTCTCCTTCCTCCCCTTCCACCTCCCTTTCCACTTCC	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.3116_3117insGGAAGTGGAAAGGGAGGTGGAAGGGGAGGAAGGAGAGGGGGAAGGAGAGGAAGAGGAAGG p.Glu1040_Glu1041insValGluArgGluValGluGlyGluGluGlyGluGlyGluGlyGluGluGluGluGlyGlu
+chrX	38285882	TCCTTCCTCTTCCTCTCCTTCCCCCTCTCCTTCCTCCCCTTCCACCTCCCCTTCCACTTCCCCTTCCTCTTCTTCCTCCCCTTCTCCCTCCCCTTCTTCCTCTCCCTCTCCTTCTTCCTCCCCTTCTTCTTCC	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2985_3116del p.Glu1002_Glu1045del
+chrX	38285890	C	A	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|Retinitis_pigmentosa_3|Retinal_dystrophy	866524368	RPGR c.3109G>T p.Glu1037Ter
+chrX	38285892	TC	T	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519781820	RPGR c.3106del p.Glu1036fs
+chrX	38285892	TCCTCTCCTTCCC	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	778085735	RPGR c.3095_3106del p.1030GE[1]
+chrX	38285893	CCT	C	Pathogenic	reviewed_by_expert_panel	RPGR	Retinal_dystrophy|RPGR-related_retinopathy|Retinitis_pigmentosa|Retinitis_pigmentosa_3|Primary_ciliary_dyskinesia	1601917999	RPGR c.3104_3105del p.Glu1035fs
+chrX	38285901	T	TC	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa_3	606231180	RPGR c.3097dup p.Glu1033fs
+chrX	38285901	TC	T	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinitis_pigmentosa_3|Primary_ciliary_dyskinesia	606231180	RPGR c.3097del p.Glu1033fs
+chrX	38285901	TCC	T	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	RPGR-related_disorder|RPGR-related_retinopathy|Cone_dystrophy_1,_X-linked|Retinal_dystrophy|Primary_ciliary_dyskinesia|X-linked_cone-rod_dystrophy_1|Retinitis_pigmentosa_3|Cone_dystrophy	606231180	RPGR c.3096_3097del p.Glu1033fs
+chrX	38285905	C	CCT	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa_3		RPGR c.3092_3093dup p.Gly1032fs
+chrX	38285905	CCT	C	Pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_disorder|RPGR-related_retinopathy|Retinal_dystrophy|Primary_ciliary_dyskinesia|X-linked_cone-rod_dystrophy_1|Retinitis_pigmentosa_3|Cone_dystrophy	606231181	RPGR c.3092_3093del p.Glu1031fs
+chrX	38285906	CT	C	Pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy|Retinal_dystrophy|Primary_ciliary_dyskinesia|Retinitis_pigmentosa|not_provided|Retinitis_pigmentosa_3|X-linked_cone-rod_dystrophy_1	1186795749	RPGR c.3092del p.Glu1031fs
+chrX	38285907	TCTCCTTCCTCC	T	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	not_provided	1555961350	RPGR c.3081_3091del p.Glu1028fs
+chrX	38285913	T	TCCTCCCCTTCCA	Conflicting_classifications_of_pathogenicity	criteria_provided,_conflicting_classifications	RPGR	not_provided|Primary_ciliary_dyskinesia	201134185	RPGR c.3062TGGAAGGGGAGG[3] p.Glu1028_Glu1029insValGluGlyGlu
+chrX	38285913	TCCTCCCCTTCCA	T	Benign/Likely_benign	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Retinal_dystrophy|Primary_ciliary_dyskinesia	201134185	RPGR c.3062TGGAAGGGGAGG[1] p.1021VEGE[1]
+chrX	38285914	C	A	Pathogenic	no_assertion_criteria_provided	RPGR	Retinal_dystrophy		RPGR c.3085G>T p.Glu1029Ter
+chrX	38285916	TCC	T	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Primary_ciliary_dyskinesia	1601918140	RPGR c.3081_3082del p.Glu1028fs
+chrX	38285917	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1296728483	RPGR c.3082G>T p.Glu1028Ter
+chrX	38285918	CCCTT	C	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinal_dystrophy|not_provided|Retinitis_pigmentosa	2067124487	RPGR c.3077_3080del p.Glu1026fs
+chrX	38285923	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	not_provided		RPGR c.3076G>A p.Glu1026Lys
+chrX	38285927	CTCCCCTTCCACT	C	Benign	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_specified|Primary_ciliary_dyskinesia|not_provided	199896738	RPGR c.3060_3071del p.1021_1024VEGE[1]
+chrX	38285928	T	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	754860829	RPGR c.3071A>G p.Glu1024Gly
+chrX	38285929	C	A	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Retinal_dystrophy	1799325384	RPGR c.3070G>T p.Glu1024Ter
+chrX	38285929	C	G	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1799325384	RPGR c.3070G>C p.Glu1024Gln
+chrX	38285933	TTCCACTTCCCCTTCC	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1300993775	RPGR c.3051_3065del p.Glu1018_Glu1022del
+chrX	38285937	A	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	X-linked_cone-rod_dystrophy_1|Retinitis_pigmentosa_3|Retinitis_pigmentosa,_X-linked,_and_sinorespiratory_infections,_with_or_without_deafness|Macular_degeneration,_X-linked_atrophic		RPGR c.3062T>G p.Val1021Gly
+chrX	38285942	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.3057G>A p.Gly1019=
+chrX	38285942	CCCTTCCTCTTCTTCCTCCCCTTCTCCCTCCCCTTCTTCCTCTCCCTCTCCTTCTTCCTCCCCTTCTTCTTCCCCTTCCTCCTCTTCCCCCTCCCCTTCTCCTTCCTCCTCTTCCCCCTCCCCTTCTCCTTCCTCCCCTTCCCCTTCTCCTTCCTCTTCCCCCTCCCCTTCTCCTTCCTCCTCTTCCCCCTCCCATTCTCCTTCCTCCTCTTCCCCCTCCCCTTCTCCATCCTCCCCTTCCCCTTCTCCTTCCTCCTCTTCCCCCTCCCCTTCTCCTTCCTCTCCTTCCTCCTCCCCTTTCCCTTCTCCTTCCTCCTCTTCTCCCTCCCCTTCTCCTTCCTCTTCTCCCTCCCCTTCTCCTTCCTCCTCTTCTCCCTCCCCTTCTCCTTCCTCTTCTCCCTCCCCTTCTCCTTCCTCCTCTTCCCCCTCCCCTTCT	C	Conflicting_classifications_of_pathogenicity	criteria_provided,_conflicting_classifications	RPGR	Retinitis_pigmentosa|Retinal_dystrophy	2067126569	RPGR c.2622_3056del p.Gly876_Glu1020del
+chrX	38285945	TTCC	T	Benign/Likely_benign	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Primary_ciliary_dyskinesia	200955614	RPGR c.3051_3053del p.Glu1018del
+chrX	38285947	CCT	C	Pathogenic	criteria_provided,_single_submitter	RPGR	not_provided	2519782634	RPGR c.3050_3051del p.Glu1017fs
+chrX	38285950	C	A	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Retinal_dystrophy|Retinitis_pigmentosa	2067127275	RPGR c.3049G>T p.Glu1017Ter
+chrX	38285953	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	not_provided	2519782746	RPGR c.3046G>A p.Glu1016Lys
+chrX	38285953	CT	C	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	X-linked_cone-rod_dystrophy_1		RPGR c.3045del p.Glu1016fs
+chrX	38285955	T	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2147191861	RPGR c.3044A>G p.Glu1015Gly
+chrX	38285955	TCCTCCCCTTCTC	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	776003342	RPGR c.3032_3043del p.1009GE[1]
+chrX	38285958	TC	T	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2067127718	RPGR c.3040del p.Glu1014fs
+chrX	38285958	TCC	T	Pathogenic	reviewed_by_expert_panel	RPGR	Primary_ciliary_dyskinesia|Retinal_dystrophy|RPGR-related_retinopathy|not_provided|Retinitis_pigmentosa_3	2067127718	RPGR c.3039_3040del p.Glu1014fs
+chrX	38285960	CCCTTCTCCCTCCCCTTCTTCCTCTCCCTCT	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.3009_3038del p.Gly1005_Glu1014del
+chrX	38285964	TC	T	Likely_pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy|not_provided	2067128124	RPGR c.3034del p.Glu1012fs
+chrX	38285966	TC	T	Pathogenic	criteria_provided,_single_submitter	RPGR	X-linked_cone-rod_dystrophy_1	2519782964	RPGR c.3032del p.Gly1011fs
+chrX	38285967	CCCTCCCCTTCTT	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	748744854	RPGR c.3020_3031del p.Glu1007_Glu1010del
+chrX	38285970	TCC	T	Pathogenic	reviewed_by_expert_panel	RPGR	Primary_ciliary_dyskinesia|Retinitis_pigmentosa_3|RPGR-related_retinopathy|Retinal_dystrophy|not_provided	1569235565	RPGR c.3027_3028del p.Glu1010fs
+chrX	38285972	CCCTTCTTCCTCTCCCTCT	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.3009_3026del p.1001EEGEGE[1]
+chrX	38285973	CCTT	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2067129078	RPGR c.3020AAG[1] p.Glu1008del
+chrX	38285976	T	TCTTCCTCTCCCTCTC	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.3008_3022dup p.Glu1007_Glu1008insGlyGluGlyGluGlu
+chrX	38285977	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1481259687	RPGR c.3022G>A p.Glu1008Lys
+chrX	38285980	CCT	C	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519783212	RPGR c.3017_3018del p.Glu1006fs
+chrX	38285981	C	G	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2067129513	RPGR c.3018G>C p.Glu1006Asp
+chrX	38285981	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2067129513	RPGR c.3018G>A p.Glu1006=
+chrX	38285985	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.3014G>A p.Gly1005Glu
+chrX	38285986	CCT	C	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinal_dystrophy|Primary_ciliary_dyskinesia		RPGR c.3011_3012del p.Glu1004fs
+chrX	38285988	TCTC	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1465232215	RPGR c.3008_3010del p.Gly1003del
+chrX	38285988	TCTCC	T	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519783360	RPGR c.3007_3010del p.Gly1003fs
+chrX	38285989	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.3010G>T p.Glu1004Ter
+chrX	38285990	TCC	T	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|Retinal_dystrophy	2519783409	RPGR c.3007_3008del p.Gly1003fs
+chrX	38285990	TCCTTCTTCCTCC	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2067130298	RPGR c.2997_3008del p.993EEGE[2]
+chrX	38285991	CCTT	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1555961406	RPGR c.3002AAG[1] p.Glu1002del
+chrX	38285992	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.3007G>T p.Gly1003Ter
+chrX	38285998	C	A	Pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy		RPGR c.3001G>T p.Glu1001Ter
+chrX	38285999	C	CTCCCCTTCTTCT	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519783552	RPGR c.2988_2999dup p.Glu1004_Gly1005insGluGluGlyGlu
+chrX	38285999	CTCCCCTTCTTCT	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2988_2999del p.993EEGE[2]
+chrX	38286000	TCC	T	Pathogenic	reviewed_by_expert_panel	RPGR	Retinal_dystrophy|not_provided|Primary_ciliary_dyskinesia|Retinitis_pigmentosa_3|RPGR-related_retinopathy	2519783585	RPGR c.2997_2998del p.Glu1000fs
+chrX	38286001	CCCCTT	C	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|Retinitis_pigmentosa_3|Retinal_dystrophy	2519783609	RPGR c.2993_2997del p.Glu998fs
+chrX	38286002	CCCTT	C	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinitis_pigmentosa_3|X-linked_cone-rod_dystrophy_1	1569235677	RPGR c.2993_2996del p.Glu998fs
+chrX	38286003	CCTT	C	Conflicting_classifications_of_pathogenicity	criteria_provided,_conflicting_classifications	RPGR	Primary_ciliary_dyskinesia|Retinitis_pigmentosa	1356107537	RPGR c.2987AAG[2] p.Glu998del
+chrX	38286004	CT	C	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519783670	RPGR c.2994del p.Glu1000fs
+chrX	38286005	T	C	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2994A>G p.Glu998=
+chrX	38286005	TTC	T	Pathogenic	no_assertion_criteria_provided	RPGR	Retinal_dystrophy		RPGR c.2992_2993del p.Glu998fs
+chrX	38286007	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2067131596	RPGR c.2992G>T p.Glu998Ter
+chrX	38286008	TTCTTCCCCTTCCTCC	T	Benign	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy|not_provided|Primary_ciliary_dyskinesia	761365864	RPGR c.2976_2990del p.989EGEEE[1]
+chrX	38286011	T	C	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2067132495	RPGR c.2988A>G p.Glu996=
+chrX	38286012	T	TCCCC	Likely_pathogenic	no_assertion_criteria_provided	RPGR	Retinal_dystrophy		RPGR c.2983_2986dup p.Glu996fs
+chrX	38286012	TCC	T	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|Retinitis_pigmentosa_3		RPGR c.2985_2986del p.Glu996fs
+chrX	38286013	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1407084752	RPGR c.2986G>A p.Glu996Lys
+chrX	38286014	C	CCCTTCCTCCTCTTCCCCCTCCCCTTCTCCTTCCTCCTCTTCCCCCTCCCCTTCTCCTTCCTCCCCTTCCCCTTCTCCTTCCTCCCCTTCCCCTTCTCCTTCCTCTTCCCCCTCCCCTTCT	Uncertain_significance	criteria_provided,_single_submitter	RPGR	not_provided		RPGR c.2984_2985insAGAAGGGGAGGGGGAAGAGGAAGGAGAAGGGGAAGGGGAGGAAGGAGAAGGGGAAGGGGAGGAAGGAGAAGGGGAGGGGGAAGAGGAGGAAGGAGAAGGGGAGGGGGAAGAGGAGGAAGG p.Glu996_Glu997insGlyGluGlyGluGluGluGlyGluGlyGluGlyGluGluGlyGluGlyGluGlyGluGluGlyGluGlyGluGlyGluGluGluGluGlyGluGlyGluGlyGluGluGluGluGlyGlu
+chrX	38286014	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2985G>A p.Gly995=
+chrX	38286014	CCCTTCCTCCTCTTCCCCCTCCCCTTCT	C	Conflicting_classifications_of_pathogenicity	criteria_provided,_conflicting_classifications	RPGR	not_provided|Primary_ciliary_dyskinesia	767258184	RPGR c.2931AGAAGGGGAGGGGGAAGAGGAGGAAGG[1] p.979GEGEEEEGE[1]
+chrX	38286017	TTCC	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2976GGA[1] p.Glu994del
+chrX	38286023	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1307512218	RPGR c.2976G>A p.Glu992=
+chrX	38286025	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2974G>A p.Glu992Lys
+chrX	38286026	T	C	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2973A>G p.Glu991=
+chrX	38286027	TC	T	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Primary_ciliary_dyskinesia|Retinitis_pigmentosa_3	2067134254	RPGR c.2971del p.Glu991fs
+chrX	38286028	C	A	Pathogenic	no_assertion_criteria_provided	RPGR	Retinal_dystrophy		RPGR c.2971G>T p.Glu991Ter
+chrX	38286028	CCCCCTCCCCTTCTCCTTCCTCCTCTTCCCCCTCCCCTTCTCCTTCCTCCCCTTCCCCTTCTCCTTCCTCTTCCCCCTCCCCTTCTCCTTCCTCCTCTTCCCCCTCCCATTCTCCTTCCTCCTCTTCCCCCTCCCCTTCTCCATCCT	C	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519784068	RPGR c.2825_2970del p.Glu942fs
+chrX	38286030	C	CCCTCCCCT	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa_3		RPGR c.2961_2968dup p.Gly990fs
+chrX	38286032	CT	C	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Retinitis_pigmentosa_3|Primary_ciliary_dyskinesia	2067134850	RPGR c.2966del p.Glu989fs
+chrX	38286033	TCC	T	Pathogenic	reviewed_by_expert_panel	RPGR	not_provided|RPGR-related_retinopathy|Primary_ciliary_dyskinesia|Retinitis_pigmentosa|Retinitis_pigmentosa_3	1555961440	RPGR c.2964_2965del p.Glu989fs
+chrX	38286034	C	A	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|not_provided|RPGR-related_disorder	1199880148	RPGR c.2965G>T p.Glu989Ter
+chrX	38286034	CCCCTTCTCCTTCCTCCTCTT	C	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia|Retinitis_pigmentosa_3	2067135227	RPGR c.2945_2964del p.Glu982fs
+chrX	38286037	C	T	Uncertain_significance	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|not_provided	1569235768	RPGR c.2962G>A p.Gly988Arg
+chrX	38286039	T	TCTCCTTCCTCCTCTTCCCCCTC	Likely_pathogenic	no_assertion_criteria_provided	RPGR	Retinitis_pigmentosa_3	2067136009	RPGR c.2938_2959dup p.Glu987fs
+chrX	38286042	C	CT	Uncertain_significance	criteria_provided,_single_submitter	RPGR	not_specified	1060499896	RPGR c.2956_2957insA p.Gly986fs
+chrX	38286045	TCCTCCTCTTCCCCCTCC	T	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa_3|Retinal_dystrophy	2067136586	RPGR c.2937_2953del p.Glu980fs
+chrX	38286046	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519784367	RPGR c.2953G>T p.Glu985Ter
+chrX	38286047	CTCCTCT	C	Benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	767210576	RPGR c.2946_2951del p.Glu984_Glu985del
+chrX	38286047	CTCCTCTTCCCCCTCCCCTTCTCCTTCCTCCCCTTCCCCTTCTCCTTCCTCTTCCCCCTCCCCTTCTCCTTCCTCCTCTTCCCCCTCCCATTCTCCTTCCTCCTCTTCCCCCTCCCCTTCTCCATCCTCCCCTTCCCCTTCTCCTTCCTCCTCTTCCCCCTCCCCTTCTCCTTCCTCTCCTTCCTCCTCCCCTTTCCCTTCTCCTTCCTCCTCTTCTCCCTCCCCTTCTCCT	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2721_2951del p.Gly908_Glu984del
+chrX	38286050	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2949G>A p.Glu983=
+chrX	38286051	T	TCTTCCCCCTCCCCTTCTCCTTCCTCCC	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519784470	RPGR c.2921_2947dup p.Glu982_Glu983insGlyGluGluGlyGluGlyGluGlyGlu
+chrX	38286052	C	A	Pathogenic	no_assertion_criteria_provided	RPGR	Retinal_dystrophy	1569235803	RPGR c.2947G>T p.Glu983Ter
+chrX	38286053	T	C	Likely_benign	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Primary_ciliary_dyskinesia	1165629800	RPGR c.2946A>G p.Glu982=
+chrX	38286054	TC	T	Pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy|Primary_ciliary_dyskinesia	2519784531	RPGR c.2944del p.Glu982fs
+chrX	38286054	TCC	T	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa_3		RPGR c.2943_2944del p.Glu982fs
+chrX	38286056	C	G	Likely_benign	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Primary_ciliary_dyskinesia	1410538281	RPGR c.2943G>C p.Gly981=
+chrX	38286057	CCCTCCCCTTCTCCTT	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1486850638	RPGR c.2927_2941del p.971EGEGE[1]
+chrX	38286059	C	CTCCCCTTCTCCTTCCTCCCCT	Benign	reviewed_by_expert_panel	RPGR	not_provided|Retinitis_pigmentosa_3|RPGR-related_retinopathy|Primary_ciliary_dyskinesia	772859148	RPGR c.2919_2939dup p.970GEGEGEE[3]
+chrX	38286059	C	CTCCCCTTCTCCTTCCTCCCCTTCCCCTTCTCCTTCCTCCCCT	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2919AGGGGAGGAAGGAGAAGGGGA[3] p.Glu983_Glu984insGlyGluGlyGluGlyGluGluGlyGluGlyGluGlyGluGlu
+chrX	38286059	C	CTCCCCTTCTCCTTCCTCCCCTTCCCCTTCTCCTTCCTCCCCTTCCCCTTCTCCTTCCTCTTCCCCCTCCCCTTCTCCTTCCTCCTCTTCCCCCTCCCCTTCTCCTTCCTCCTCTTCCCCCTCCCCTTCTCCTTCCTCCCCT	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2939_2940insAGGGGAGGAAGGAGAAGGGGAGGGGGAAGAGGAGGAAGGAGAAGGGGAGGGGGAAGAGGAGGAAGGAGAAGGGGAGGGGGAAGAGGAAGGAGAAGGGGAAGGGGAGGAAGGAGAAGGGGAAGGGGAGGAAGGAGAAGGGGA p.Glu983_Glu984insGlyGluGlyGluGlyGluGluGluGluGlyGluGlyGluGlyGluGluGluGluGlyGluGlyGluGlyGluGluGluGlyGluGlyGluGlyGluGluGlyGluGlyGluGlyGluGluGlyGluGlyGluGlyGluGlu
+chrX	38286059	C	CTCCCCTTCTCCTTCCTCCCCTTCCCCTTCTCCTTCCTCCTCTTCCCCCTCCCCTTCTCCTTCCTCCCCT	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	772859148	RPGR c.2939_2940insAGGGGAGGAAGGAGAAGGGGAGGGGGAAGAGGAGGAAGGAGAAGGGGAAGGGGAGGAAGGAGAAGGGGA p.Glu983_Glu984insGlyGluGlyGluGlyGluGluGluGluGlyGluGlyGluGlyGluGluGlyGluGlyGluGlyGluGlu
+chrX	38286059	C	CTCCCCTTCTTCCTCCCCT	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519784625	RPGR c.2939_2940insAGGGGAGGAAGAAGGGGA p.Glu984_Glu985insGlyGluGlyGluGluGlu
+chrX	38286059	C	T	Likely_benign	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Primary_ciliary_dyskinesia	1242945892	RPGR c.2940G>A p.Glu980=
+chrX	38286059	CT	C	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinitis_pigmentosa_3|Primary_ciliary_dyskinesia	2519784620	RPGR c.2939del p.Glu980fs
+chrX	38286060	T	TC	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2938dup p.Glu980fs
+chrX	38286060	TCC	T	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinitis_pigmentosa|Primary_ciliary_dyskinesia|not_provided|Retinitis_pigmentosa_3	2067138439	RPGR c.2937_2938del p.Glu980fs
+chrX	38286061	CCCCTT	C	Pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy		RPGR c.2933_2937del p.Glu978fs
+chrX	38286062	C	G	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1165776433	RPGR c.2937G>C p.Gly979=
+chrX	38286064	C	A	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2067138677	RPGR c.2935G>T p.Gly979Trp
+chrX	38286066	T	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1164360013	RPGR c.2933A>G p.Glu978Gly
+chrX	38286069	C	A	Likely_benign	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy|Retinitis_pigmentosa_3|Retinal_dystrophy	1234506102	RPGR c.2930G>T p.Gly977Val
+chrX	38286070	C	A	Pathogenic	no_assertion_criteria_provided	RPGR	X-linked_cone-rod_dystrophy_1	137852551	RPGR c.2929G>T p.Gly977Ter
+chrX	38286075	T	TC	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519784938	RPGR c.2923dup p.Glu975fs
+chrX	38286077	C	T	Likely_benign	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Primary_ciliary_dyskinesia	769179127	RPGR c.2922G>A p.Gly974=
+chrX	38286080	T	C	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1601919356	RPGR c.2919A>G p.Glu973=
+chrX	38286081	TCC	T	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinal_dystrophy|not_provided|Retinitis_pigmentosa_3	2067140574	RPGR c.2916_2917del p.Glu973fs
+chrX	38286082	C	A	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinitis_pigmentosa_3|Primary_ciliary_dyskinesia|Retinal_dystrophy|Macular_degeneration,_X-linked_atrophic	2067140471	RPGR c.2917G>T p.Glu973Ter
+chrX	38286084	C	A	Uncertain_significance	no_assertion_criteria_provided	RPGR	Retinal_dystrophy		RPGR c.2915G>T p.Gly972Val
+chrX	38286084	CCTTCT	C	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519785175	RPGR c.2910_2914del p.Glu971fs
+chrX	38286085	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519785162	RPGR c.2914G>A p.Gly972Arg
+chrX	38286088	C	A	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	not_provided	2519785259	RPGR c.2911G>T p.Glu971Ter
+chrX	38286089	TC	T	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa	2147193425	RPGR c.2909del p.Gly970fs
+chrX	38286092	T	TTCC	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1555961470	RPGR c.2904_2906dup p.Glu969_Gly970insGlu
+chrX	38286092	T	TTCCTCTTCCCCCTCCCATTCTCCTTCC	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519785385	RPGR c.2906_2907insGGAAGGAGAATGGGAGGGGGAAGAGGA p.Glu969_Gly970insGluGlyGluTrpGluGlyGluGluGlu
+chrX	38286092	TTCCTCTTCCCCCTCCCCTTCTCCTTCCTCCTCTTCCCCCTCCCATTCTCCTTCCTCCTCTTCCCCCTCCCCTTCTCCATCCTCCCCTTCCCCTTCTCCTTCC	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1569235966	RPGR c.2805_2906del p.Glu936_Glu969del
+chrX	38286094	CCT	C	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2903_2904del p.Glu968fs
+chrX	38286095	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2067142548	RPGR c.2904G>A p.Glu968=
+chrX	38286095	CTCT	C	Likely_benign	reviewed_by_expert_panel	RPGR	not_provided|RPGR-related_retinopathy	753744103	RPGR c.2901_2903del p.Glu969del
+chrX	38286099	T	TC	Pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy|Retinitis_pigmentosa|not_provided	1569235999	RPGR c.2899dup p.Glu967fs
+chrX	38286099	TC	T	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinal_dystrophy|Primary_ciliary_dyskinesia		RPGR c.2899del p.Glu967fs
+chrX	38286099	TCC	T	Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinal_dystrophy|Retinitis_pigmentosa|Retinitis_pigmentosa_3	1569235999	RPGR c.2898_2899del p.Glu967fs
+chrX	38286101	C	T	Conflicting_classifications_of_pathogenicity	criteria_provided,_conflicting_classifications	RPGR	not_provided|Primary_ciliary_dyskinesia	1064797363	RPGR c.2898G>A p.Gly966=
+chrX	38286104	C	T	Likely_benign	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|not_provided	762437958	RPGR c.2895G>A p.Glu965=
+chrX	38286104	CT	C	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Retinitis_pigmentosa_3|Primary_ciliary_dyskinesia	2147193654	RPGR c.2894del p.Glu965fs
+chrX	38286105	TCC	T	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|Retinitis_pigmentosa_3|Retinal_dystrophy	2067144007	RPGR c.2892_2893del p.Glu965fs
+chrX	38286106	C	A	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinal_dystrophy|not_provided|Primary_ciliary_dyskinesia	1420285326	RPGR c.2893G>T p.Glu965Ter
+chrX	38286106	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	not_provided		RPGR c.2893G>A p.Glu965Lys
+chrX	38286109	C	A	Uncertain_significance	no_assertion_criteria_provided	RPGR	not_provided		RPGR c.2890G>T p.Gly964Trp
+chrX	38286109	C	CTTCTCCTTCCTCCTCTTCCCCCTCCCA	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1223013740	RPGR c.2863_2889dup p.Glu963_Gly964insTrpGluGlyGluGluGluGluGlyGlu
+chrX	38286109	CTTCTCCTTCCTCCTCTTCCCCCTCCCA	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2863_2889del p.Trp955_Glu963del
+chrX	38286111	TC	T	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Retinitis_pigmentosa	1064797364	RPGR c.2887del p.Glu963fs
+chrX	38286116	TTCC	T	Conflicting_classifications_of_pathogenicity	criteria_provided,_conflicting_classifications	RPGR	not_provided|Primary_ciliary_dyskinesia	1285073212	RPGR c.2877GGA[1] p.Glu961del
+chrX	38286121	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519785746	RPGR c.2878G>T p.Glu960Ter
+chrX	38286123	T	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1255344069	RPGR c.2876A>G p.Glu959Gly
+chrX	38286123	T	TCTTCCCCCTCCCATTCTCCTTCCTCCTCTTCCCCCTCCCCTTCTCCTTCCTCCC	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1569236068	RPGR c.2875_2876insGGGAGGAAGGAGAAGGGGAGGGGGAAGAGGAGGAAGGAGAATGGGAGGGGGAAG p.944_958GE[3]EEEGEWEGEGEEGEGEGEEEEGEWEGE[1]
+chrX	38286125	T	TTCCCCCTCCCATTCTCCTTCCTCCTCTTCCCCCTCCCCTTCTCCATCCTCCCCTTCCCCTTCTCCTTCCTCCATCC	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519785831	RPGR c.2873_2874insGGATGGAGGAAGGAGAAGGGGAAGGGGAGGATGGAGAAGGGGAGGGGGAAGAGGAGGAAGGAGAATGGGAGGGGGA p.Glu959fs
+chrX	38286126	TC	T	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Macular_degeneration,_X-linked_atrophic|X-linked_cone-rod_dystrophy_1|Retinitis_pigmentosa_3|Retinitis_pigmentosa,_X-linked,_and_sinorespiratory_infections,_with_or_without_deafness|Primary_ciliary_dyskinesia		RPGR c.2872del p.Glu958fs
+chrX	38286127	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Retinal_dystrophy		RPGR c.2872G>T p.Glu958Ter
+chrX	38286128	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1442896340	RPGR c.2871G>A p.Gly957=
+chrX	38286131	CT	C	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|Retinal_dystrophy|Retinitis_pigmentosa_3	2067146007	RPGR c.2867del p.Glu956fs
+chrX	38286132	TCCCA	T	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|not_provided	2519785890	RPGR c.2863_2866del p.Trp955fs
+chrX	38286133	C	A	Likely_pathogenic	no_assertion_criteria_provided	RPGR	Retinitis_pigmentosa_3		RPGR c.2866G>T p.Glu956Ter
+chrX	38286134	C	T	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia|Retinitis_pigmentosa_3	2067146202	RPGR c.2865G>A p.Trp955Ter
+chrX	38286135	C	T	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	not_provided	1555961491	RPGR c.2864G>A p.Trp955Ter
+chrX	38286136	A	AT	Pathogenic	criteria_provided,_single_submitter	RPGR	not_provided	2519785945	RPGR c.2862dup p.Trp955fs
+chrX	38286136	A	ATTCTCCTTCCTCCTCTTCCCCCTCCCCTTCTCCATCCTCCCCTTCCCC	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2815_2862dup p.Glu954_Trp955insGlyGluGlyGluAspGlyGluGlyGluGlyGluGluGluGluGlyGlu
+chrX	38286136	A	C	Conflicting_classifications_of_pathogenicity	criteria_provided,_conflicting_classifications	RPGR	not_provided|Primary_ciliary_dyskinesia	765224300	RPGR c.2863T>G p.Trp955Gly
+chrX	38286136	ATTCTCCTTCCTCCTCTTCCCCC	CTTCTCCATCCTCCCCT	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519785937	RPGR c.2841_2863delinsAGGGGAGGATGGAGAAG p.Glu950_Trp955delinsAspGlyGluGly
+chrX	38286136	ATTCTCCTTCCTCCTCTTCCCCCTCCCCTTCTCCATCCTCCCCTTCCCC	A	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1569236115	RPGR c.2815_2862del p.Gly939_Glu954del
+chrX	38286139	C	A	Pathogenic	no_assertion_criteria_provided	RPGR	Retinal_dystrophy		RPGR c.2860G>T p.Glu954Ter
+chrX	38286143	T	A	Benign	reviewed_by_expert_panel	RPGR	not_provided|RPGR-related_retinopathy	757164085	RPGR c.2856A>T p.Glu952Asp
+chrX	38286143	T	C	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	757164085	RPGR c.2856A>G p.Glu952=
+chrX	38286143	T	TTCCTC	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|Retinitis_pigmentosa_3		RPGR c.2851_2855dup p.Gly953fs
+chrX	38286143	TTCC	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519785995	RPGR c.2850GGA[1] p.Glu952del
+chrX	38286143	TTCCTCCTCT	ATCC	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519785985	RPGR c.2847_2856delinsGGAT p.Glu950_Glu952delinsAsp
+chrX	38286144	T	TCCTC	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519786021	RPGR c.2851_2854dup p.Glu952fs
+chrX	38286145	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519786005	RPGR c.2854G>T p.Glu952Ter
+chrX	38286145	C	G	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2854G>C p.Glu952Gln
+chrX	38286145	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519786005	RPGR c.2854G>A p.Glu952Lys
+chrX	38286146	C	T	Benign/Likely_benign	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Primary_ciliary_dyskinesia	766376194	RPGR c.2853G>A p.Glu951=
+chrX	38286146	CTCCTCT	C	Benign	reviewed_by_expert_panel	RPGR	not_provided|RPGR-related_retinopathy	751757697	RPGR c.2847_2852del p.Glu951_Glu952del
+chrX	38286147	T	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519786062	RPGR c.2852A>G p.Glu951Gly
+chrX	38286151	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	not_provided	1601919915	RPGR c.2848G>T p.Glu950Ter
+chrX	38286151	CT	AG	Pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy|X-linked_cone-rod_dystrophy_1		RPGR c.2847_2848inv p.Glu949_Glu950delinsAspTer
+chrX	38286152	T	C	Likely_benign	criteria_provided,_single_submitter	RPGR	not_provided		RPGR c.2847A>G p.Glu949=
+chrX	38286153	TC	T	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinal_dystrophy|not_provided|Primary_ciliary_dyskinesia|Retinitis_pigmentosa_3	2067148119	RPGR c.2845del p.Glu949fs
+chrX	38286154	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1601919951	RPGR c.2845G>T p.Glu949Ter
+chrX	38286154	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1601919951	RPGR c.2845G>A p.Glu949Lys
+chrX	38286155	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2844G>A p.Gly948=
+chrX	38286156	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2843G>A p.Gly948Glu
+chrX	38286158	C	CCCCCTTCTCCATCCTCCCCT	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519786220	RPGR c.2840_2841insAGGGGAGGATGGAGAAGGGG p.Glu950fs
+chrX	38286158	C	CCCCTTCTCCATCCTCCCCT	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa_3		RPGR c.2840_2841insAGGGGAGGATGGAGAAGGG p.Glu950fs
+chrX	38286158	C	CTCCCATTCTCCTTCCTCCTCTTCCCCCTCCCCTTCTCCATCCTCCCCT	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519786258	RPGR c.2840_2841insAGGGGAGGATGGAGAAGGGGAGGGGGAAGAGGAGGAAGGAGAATGGGA p.Glu949_Glu950insAspGlyGluGlyGluGlyGluGluGluGluGlyGluTrpGluGlyGlu
+chrX	38286158	C	CTCCCCT	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2067148832	RPGR c.2835_2840dup p.Glu949_Glu950insGlyGlu
+chrX	38286158	C	CTCCCCTTCTCCATCCTCCCCT	Benign	reviewed_by_expert_panel	RPGR	Primary_ciliary_dyskinesia|RPGR-related_retinopathy|not_provided	764268405	RPGR c.2820_2840dup p.Asp943_Glu949dup
+chrX	38286158	C	CTCCCCTTCTCCATCCTCCCCTTCCCCTTCTCCATCCTCCCCT	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	764268405	RPGR c.2820AGGGGAGGATGGAGAAGGGGA[3] p.Glu949_Glu950insAspGlyGluGlyGluGlyGluAspGlyGluGlyGluGlyGlu
+chrX	38286158	C	CTCCTTCTCCATCCTCCCCT	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	RPGR-related_disorder		RPGR c.2840_2841insAGGGGAGGATGGAGAAGGA p.Glu950fs
+chrX	38286158	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	868064994	RPGR c.2841G>A p.Glu947=
+chrX	38286158	CT	C	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinal_dystrophy|Retinitis_pigmentosa_3|Primary_ciliary_dyskinesia		RPGR c.2840del p.Glu947fs
+chrX	38286158	CTCCCCTTCTCCATCCTCCCCT	C	Uncertain_significance	reviewed_by_expert_panel	RPGR	Primary_ciliary_dyskinesia|not_provided|RPGR-related_retinopathy	764268405	RPGR c.2820_2840del p.Asp943_Glu949del
+chrX	38286159	TC	T	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa_3|Retinal_dystrophy	1555961509	RPGR c.2839del p.Glu947fs
+chrX	38286159	TCC	T	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinal_dystrophy|not_provided|Retinitis_pigmentosa_3|Primary_ciliary_dyskinesia	1555961509	RPGR c.2838_2839del p.Glu947fs
+chrX	38286160	C	CCCCTTCTCCATCCTCCCCTT	Likely_pathogenic	reviewed_by_expert_panel	RPGR	Retinitis_pigmentosa_3|RPGR-related_retinopathy	2067149319	RPGR c.2819_2838dup p.Glu947fs
+chrX	38286161	C	CCCTTCTCCATCCTCCCCTT	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519786353	RPGR c.2819_2837dup p.Glu947fs
+chrX	38286163	C	A	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1333338518	RPGR c.2836G>T p.Gly946Trp
+chrX	38286170	A	C	Likely_benign	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided	201655057	RPGR c.2829T>G p.Asp943Glu
+chrX	38286170	A	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	RPGR-related_disorder|Primary_ciliary_dyskinesia	201655057	RPGR c.2829T>A p.Asp943Glu
+chrX	38286172	C	CCTCCCCTTCCCCTTCTCCTTCCTCCTCTTCCCCCTCCCCTTCTCCTTCCTCTCCTTCCTCCTCCCCTTTCCCTT	Pathogenic	no_assertion_criteria_provided	RPGR	Retinal_dystrophy		RPGR c.2753_2826dup p.Asp943fs
+chrX	38286174	T	TCCCCTTCCCCTTCTCCATCCTCCCCTTCCCCTTCTCCTTCCTCCTCTTC	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2824_2825insGAAGAGGAGGAAGGAGAAGGGGAAGGGGAGGATGGAGAAGGGGAAGGGG p.Glu942fs
+chrX	38286174	TC	T	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa|Retinitis_pigmentosa_3	1601920131	RPGR c.2824del p.Glu942fs
+chrX	38286177	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	not_provided		RPGR c.2822G>A p.Gly941Glu
+chrX	38286178	C	A	Uncertain_significance	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|Retinitis_pigmentosa_3|Retinal_dystrophy	763102799	RPGR c.2821G>T p.Gly941Trp
+chrX	38286178	C	CTTCCCCTTCTCCATCCTCCCT	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519786511	RPGR c.2820_2821insAGGGAGGATGGAGAAGGGGAA p.Glu940_Gly941insArgGluAspGlyGluGlyGlu
+chrX	38286179	T	C	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1194464187	RPGR c.2820A>G p.Glu940=
+chrX	38286179	T	TTCCCCTTCTCCTTCCTCCTCTTCCCCCTCCCCTTCTCCTTCCTCTCCTTCCTCCTCCCCTTTCCCTTCTCCTTCCTCCTCTTCTCCC	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519786584	RPGR c.2733_2819dup p.Glu942_Asp943insGluGluGluGlyGluGlyLysGlyGluGluGluGlyGluGluGlyGluGlyGluGlyGluGluGluGluGlyGluGlyGluGlyGlu
+chrX	38286180	T	G	Uncertain_significance	no_assertion_criteria_provided	RPGR	Retinal_dystrophy		RPGR c.2819A>C p.Glu940Ala
+chrX	38286180	TCC	T	Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinitis_pigmentosa|not_provided	2147194427	RPGR c.2817_2818del p.Glu940fs
+chrX	38286182	CCCTTCT	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1446643540	RPGR c.2811_2816del p.937GE[2]
+chrX	38286185	T	TTCTCCTTCCTCCTCTTCCCCCTCCCCTTCTCCTTCC	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519786657	RPGR c.2778_2813dup p.Glu938_Gly939insGluGlyGluGlyGluGlyGluGluGluGluGlyGlu
+chrX	38286186	TCTC	T	Uncertain_significance	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	RPGR-related_disorder|Primary_ciliary_dyskinesia	1481243862	RPGR c.2810_2812del p.Gly937del
+chrX	38286188	TCCTTCCTCCTCTTCCCCCTCC	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2067152361	RPGR c.2790_2810del p.Glu934_Glu940del
+chrX	38286190	C	CT	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa_3		RPGR c.2808dup p.Gly937fs
+chrX	38286191	T	A	Benign	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy|Retinal_dystrophy|not_provided|Primary_ciliary_dyskinesia	187844918	RPGR c.2808A>T p.Glu936Asp
+chrX	38286191	TT	ATCCTCCCCTTCCCCTTCTCCTTC	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2807_2808delinsGAAGGAGAAGGGGAAGGGGAGGAT p.Glu936fs
+chrX	38286191	TTCC	T	Conflicting_classifications_of_pathogenicity	criteria_provided,_conflicting_classifications	RPGR	not_provided|Primary_ciliary_dyskinesia	1238945219	RPGR c.2802GGA[1] p.Glu936del
+chrX	38286194	CTCCTCT	C	Likely_benign	criteria_provided,_single_submitter	RPGR	not_provided		RPGR c.2799_2804del p.Glu935_Glu936del
+chrX	38286196	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519786858	RPGR c.2803G>T p.Glu935Ter
+chrX	38286196	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519786858	RPGR c.2803G>A p.Glu935Lys
+chrX	38286198	T	C	Conflicting_classifications_of_pathogenicity	criteria_provided,_conflicting_classifications	RPGR	Retinal_dystrophy|Primary_ciliary_dyskinesia|not_provided	751314374	RPGR c.2801A>G p.Glu934Gly
+chrX	38286199	C	A	Pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy		RPGR c.2800G>T p.Glu934Ter
+chrX	38286200	T	A	Uncertain_significance	no_assertion_criteria_provided	RPGR	Retinal_dystrophy		RPGR c.2799A>T p.Glu933Asp
+chrX	38286201	TC	T	Pathogenic	no_assertion_criteria_provided	RPGR	Retinitis_pigmentosa	1346308311	RPGR c.2797del p.Glu933fs
+chrX	38286202	C	A	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa_3		RPGR c.2797G>T p.Glu933Ter
+chrX	38286203	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Retinal_dystrophy|not_provided		RPGR c.2796G>A p.Gly932=
+chrX	38286206	C	T	Likely_benign	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Retinitis_pigmentosa,_X-linked,_and_sinorespiratory_infections,_with_or_without_deafness|Macular_degeneration,_X-linked_atrophic|X-linked_cone-rod_dystrophy_1|Retinitis_pigmentosa_3|Primary_ciliary_dyskinesia	1446705794	RPGR c.2793G>A p.Glu931=
+chrX	38286206	CT	C	Pathogenic	reviewed_by_expert_panel	RPGR	Retinitis_pigmentosa_3|Primary_ciliary_dyskinesia|RPGR-related_retinopathy|Retinal_dystrophy	2519786964	RPGR c.2792del p.Glu931fs
+chrX	38286207	TC	T	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|not_provided|Retinal_dystrophy	1601920423	RPGR c.2791del p.Glu931fs
+chrX	38286207	TCC	T	Pathogenic	reviewed_by_expert_panel	RPGR	not_provided|RPGR-related_retinopathy|Retinitis_pigmentosa|Retinitis_pigmentosa_3|Primary_ciliary_dyskinesia	1601920423	RPGR c.2790_2791del p.Glu931fs
+chrX	38286209	CCCTTCT	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1384304050	RPGR c.2784_2789del p.928GE[2]
+chrX	38286213	T	TC	Pathogenic	criteria_provided,_single_submitter	RPGR	not_provided	2067155200	RPGR c.2785dup p.Glu929fs
+chrX	38286214	C	A	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	not_provided	1057519236	RPGR c.2785G>T p.Glu929Ter
+chrX	38286217	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519787093	RPGR c.2782G>T p.Gly928Ter
+chrX	38286217	C	T	Uncertain_significance	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Primary_ciliary_dyskinesia	2519787093	RPGR c.2782G>A p.Gly928Arg
+chrX	38286220	CCT	C	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|not_provided|Retinitis_pigmentosa|Retinitis_pigmentosa_3	1601920532	RPGR c.2777_2778del p.Glu926fs
+chrX	38286222	TCTC	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1348292879	RPGR c.2774_2776del p.Gly925del
+chrX	38286225	C	CCT	Pathogenic	no_assertion_criteria_provided	RPGR	Retinitis_pigmentosa	1601920599	RPGR c.2772_2773dup p.Gly925fs
+chrX	38286225	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2774G>A p.Gly925Glu
+chrX	38286227	TTCC	T	Uncertain_significance	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Primary_ciliary_dyskinesia	2067156760	RPGR c.2763GGA[2] p.Glu924del
+chrX	38286232	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1203165819	RPGR c.2767G>A p.Glu923Lys
+chrX	38286234	T	TC	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinal_dystrophy|Retinitis_pigmentosa_3	2067157388	RPGR c.2764dup p.Glu922fs
+chrX	38286234	TC	T	Pathogenic	reviewed_by_expert_panel	RPGR	Primary_ciliary_dyskinesia|RPGR-related_retinopathy		RPGR c.2764del p.Glu922fs
+chrX	38286234	TCC	T	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|Retinal_dystrophy|not_provided|Retinitis_pigmentosa_3	2067157388	RPGR c.2763_2764del p.Glu922fs
+chrX	38286235	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519787265	RPGR c.2764G>T p.Glu922Ter
+chrX	38286236	C	CT	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2762_2763insA p.Glu922fs
+chrX	38286237	CCT	C	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinitis_pigmentosa_3|Primary_ciliary_dyskinesia		RPGR c.2760_2761del p.Glu922fs
+chrX	38286238	C	G	Uncertain_significance	no_assertion_criteria_provided	RPGR	Retinitis_pigmentosa_3	2067157510	RPGR c.2761G>C p.Gly921Arg
+chrX	38286238	CT	C	Pathogenic	no_assertion_criteria_provided	RPGR	Retinal_dystrophy		RPGR c.2760del p.Glu922fs
+chrX	38286241	T	TCCCTTCTCCTTCCTCCTCTTCTCCCTCCCCTTC	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519787317	RPGR c.2725_2757dup p.Gly919_Lys920insGluGlyGluGlyGluGluGluGluGlyGluGly
+chrX	38286241	T	TCCCTTCTCCTTCCTCCTCTTCTCCCTCCCCTTCTCCTTCCTCTTCTCCCTC	Uncertain_significance	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Primary_ciliary_dyskinesia	2519787339	RPGR c.2656GAGGGAGAAGAGGAAGGAGAAGGGGAGGGAGAAGAGGAGGAAGGAGAAGGG[3] p.Gly919_Lys920insGluGlyGluGluGluGlyGluGlyGluGlyGluGluGluGluGlyGluGly
+chrX	38286241	T	TCCCTTCTCCTTCCTCCTCTTCTCCCTCCCCTTCTCCTTCCTCTTCTCCCTCCCCTTCTCCTTCCTCCTCTTCTCCCTC	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519787327	RPGR c.2680_2757dup p.Gly919_Lys920insGluGlyGluGluGluGluGlyGluGlyGluGlyGluGluGluGlyGluGlyGluGlyGluGluGluGluGlyGluGly
+chrX	38286241	TCC	T	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2756_2757del p.Gly919fs
+chrX	38286241	TCCCTTCTCCTTCCTCCTCTTCTCCCTC	T	Uncertain_significance	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Primary_ciliary_dyskinesia	2519787323	RPGR c.2731_2757del p.Glu911_Gly919del
+chrX	38286241	TCCCTTCTCCTTCCTCCTCTTCTCCCTCCCCTTCTCCTTCCTCTTCTCCCTC	T	Conflicting_classifications_of_pathogenicity	criteria_provided,_conflicting_classifications	RPGR	not_provided|Primary_ciliary_dyskinesia	2519787339	RPGR c.2656GAGGGAGAAGAGGAAGGAGAAGGGGAGGGAGAAGAGGAGGAAGGAGAAGGG[1] p.886EGEEEGEGEGEEEEGEG[1]
+chrX	38286246	TCTC	T	Conflicting_classifications_of_pathogenicity	criteria_provided,_conflicting_classifications	RPGR	not_provided|Primary_ciliary_dyskinesia	1462676823	RPGR c.2750_2752del p.Gly917del
+chrX	38286247	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519787370	RPGR c.2752G>T p.Glu918Ter
+chrX	38286248	T	C	Likely_benign	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Primary_ciliary_dyskinesia	1351030492	RPGR c.2751A>G p.Gly917=
+chrX	38286248	TC	T	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519787400	RPGR c.2750del p.Gly917fs
+chrX	38286249	CCTT	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1239505045	RPGR c.2747_2749del p.Glu916del
+chrX	38286251	T	C	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2748A>G p.Glu916=
+chrX	38286251	TTCC	T	Likely_benign	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|not_provided	751721873	RPGR c.2742GGA[1] p.Glu916del
+chrX	38286254	C	CTCCTCTTCTCCCTCCCCTTCTCCT	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia|RPGR-related_disorder|Retinitis_pigmentosa_3	757402645	RPGR c.2697AGGAGAAGGGGAGGGAGAAGAGGA[3] p.900GEGEGEEE[3]
+chrX	38286254	CTCCTCTTCTCCCTCCCCTTCTCCT	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	757402645	RPGR c.2697AGGAGAAGGGGAGGGAGAAGAGGA[1] p.900GEGEGEEE[1]
+chrX	38286255	TC	T	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2743del p.Glu915fs
+chrX	38286256	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	not_provided	2519787455	RPGR c.2743G>T p.Glu915Ter
+chrX	38286263	T	C	Likely_benign	criteria_provided,_single_submitter	RPGR	not_provided		RPGR c.2736A>G p.Gly912=
+chrX	38286263	TC	T	Pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa	2067159265	RPGR c.2735del p.Gly912fs
+chrX	38286265	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2734G>T p.Gly912Ter
+chrX	38286267	T	TCC	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519787528	RPGR c.2730_2731dup p.Glu911fs
+chrX	38286267	TC	T	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2731del p.Glu911fs
+chrX	38286267	TCC	T	Pathogenic	reviewed_by_expert_panel	RPGR	not_provided|Primary_ciliary_dyskinesia|RPGR-related_retinopathy|Retinal_dystrophy	2519787528	RPGR c.2730_2731del p.Glu911fs
+chrX	38286268	C	A	Likely_pathogenic	no_assertion_criteria_provided	RPGR	Retinitis_pigmentosa_3	2067159456	RPGR c.2731G>T p.Glu911Ter
+chrX	38286270	C	A	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	749762268	RPGR c.2729G>T p.Gly910Val
+chrX	38286270	C	T	Benign	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy|not_provided|Primary_ciliary_dyskinesia	749762268	RPGR c.2729G>A p.Gly910Glu
+chrX	38286271	CT	C	Pathogenic	no_assertion_criteria_provided	RPGR	Retinal_dystrophy		RPGR c.2727del p.Glu911fs
+chrX	38286274	C	A	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	not_provided	2519787589	RPGR c.2725G>T p.Glu909Ter
+chrX	38286278	T	TTCCTCTTCTCCCTCCCCTTCTCCTTCC	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	781514081	RPGR c.2667GGAAGGAGAAGGGGAGGGAGAAGAGGA[3] p.Glu907_Gly908insGluGlyGluGlyGluGlyGluGluGlu
+chrX	38286278	TTCC	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2718_2720del p.Glu907del
+chrX	38286278	TTCCTCTTCTCCCTCCCCTTCTCCTTCC	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	781514081	RPGR c.2667GGAAGGAGAAGGGGAGGGAGAAGAGGA[1] p.890EGEGEGEEE[1]
+chrX	38286279	T	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519787623	RPGR c.2720A>G p.Glu907Gly
+chrX	38286280	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2719G>T p.Glu907Ter
+chrX	38286283	C	A	Pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy|not_provided|Primary_ciliary_dyskinesia	2067160069	RPGR c.2716G>T p.Glu906Ter
+chrX	38286283	CTT	C	Pathogenic	reviewed_by_expert_panel	RPGR	Primary_ciliary_dyskinesia|RPGR-related_retinopathy|Retinal_dystrophy|not_provided|Retinitis_pigmentosa_3	2067160273	RPGR c.2714_2715del p.Glu905fs
+chrX	38286284	T	A	Uncertain_significance	no_assertion_criteria_provided	RPGR	Optic_atrophy|Retinal_dystrophy		RPGR c.2715A>T p.Glu905Asp
+chrX	38286284	T	C	Uncertain_significance	no_assertion_criteria_provided	RPGR	Optic_atrophy		RPGR c.2715A>G p.Glu905=
+chrX	38286285	TCTCC	T	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519787728	RPGR c.2710_2713del p.Gly904fs
+chrX	38286287	T	C	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	774705528	RPGR c.2712A>G p.Gly904=
+chrX	38286291	TCC	T	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Primary_ciliary_dyskinesia|Retinitis_pigmentosa_3|Retinal_dystrophy	2519787762	RPGR c.2706_2707del p.Glu903fs
+chrX	38286293	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	not_provided	2067160452	RPGR c.2706G>A p.Gly902=
+chrX	38286297	TC	T	Pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy		RPGR c.2701del p.Glu901fs
+chrX	38286302	TTCC	T	Conflicting_classifications_of_pathogenicity	criteria_provided,_conflicting_classifications	RPGR	Macular_degeneration,_X-linked_atrophic|Retinitis_pigmentosa_3|Retinitis_pigmentosa,_X-linked,_and_sinorespiratory_infections,_with_or_without_deafness|X-linked_cone-rod_dystrophy_1|not_provided|Primary_ciliary_dyskinesia	745428229	RPGR c.2691GGA[1] p.Glu899del
+chrX	38286302	TTCCTCCTCTTCTCCC	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2067161070	RPGR c.2682_2696del p.Glu897_Glu901del
+chrX	38286304	C	A	Pathogenic	reviewed_by_expert_panel	RPGR	Primary_ciliary_dyskinesia|Retinitis_pigmentosa_3|RPGR-related_retinopathy|Retinal_dystrophy|not_provided	2067161139	RPGR c.2695G>T p.Glu899Ter
+chrX	38286305	C	CTCCTCTTCTCCCTCCCCTTCTCCT	Conflicting_classifications_of_pathogenicity	criteria_provided,_conflicting_classifications	RPGR	not_provided|Primary_ciliary_dyskinesia	756520886	RPGR c.2646AGGAGAAGGGGAGGGAGAAGAGGA[3] p.883GEGEGEEE[3]
+chrX	38286305	CTCCTCTTCTCCCTCCCCTTCTCCT	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	756520886	RPGR c.2646AGGAGAAGGGGAGGGAGAAGAGGA[1] p.883GEGEGEEE[1]
+chrX	38286306	T	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519787902	RPGR c.2693A>G p.Glu898Gly
+chrX	38286307	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1469760018	RPGR c.2692G>T p.Glu898Ter
+chrX	38286308	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519787955	RPGR c.2691G>A p.Glu897=
+chrX	38286310	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	not_provided	2067161460	RPGR c.2689G>T p.Glu897Ter
+chrX	38286313	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519788018	RPGR c.2686G>A p.Glu896Lys
+chrX	38286314	T	C	Likely_benign	reviewed_by_expert_panel	RPGR	not_provided|RPGR-related_retinopathy	1476469122	RPGR c.2685A>G p.Gly895=
+chrX	38286314	TCCCTCCCCTTCTCCTTCCTCTTCTCCCTCCCCTTCTCCTTCCTCCTCTTCC	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1569236514	RPGR c.2634_2684del p.886EGEEEGEGEGEEEEGEG[1]
+chrX	38286315	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2067161866	RPGR c.2684G>A p.Gly895Glu
+chrX	38286317	C	CT	Pathogenic	no_assertion_criteria_provided	RPGR	Retinal_dystrophy		RPGR c.2681dup p.Glu896fs
+chrX	38286317	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1601921044	RPGR c.2682G>A p.Glu894=
+chrX	38286318	TCC	T	Pathogenic	reviewed_by_expert_panel	RPGR	not_provided|Primary_ciliary_dyskinesia|RPGR-related_retinopathy|Retinitis_pigmentosa_3	2147195624	RPGR c.2679_2680del p.Glu894fs
+chrX	38286321	C	A	Uncertain_significance	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|not_provided	1418019007	RPGR c.2678G>T p.Gly893Val
+chrX	38286326	T	TCCTTCCTCTTCTCCCTCCC	Pathogenic	no_assertion_criteria_provided	RPGR	RPGR-related_disorder		RPGR c.2654_2672dup p.Glu892fs
+chrX	38286327	CCTTCCT	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2067162950	RPGR c.2666_2671del p.Glu889_Glu890del
+chrX	38286329	T	TTCC	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2667_2669dup p.Glu890_Gly891insGlu
+chrX	38286329	TTC	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa_3		RPGR c.2668_2669del p.Glu890fs
+chrX	38286329	TTCC	T	Benign	reviewed_by_expert_panel	RPGR	not_specified|RPGR-related_retinopathy|not_provided|Primary_ciliary_dyskinesia	199663434	RPGR c.2667_2669del p.Glu890del
+chrX	38286331	C	CCTCTT	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa_3		RPGR c.2663_2667dup p.Glu890fs
+chrX	38286332	C	T	Benign	no_assertion_criteria_provided	RPGR	Optic_atrophy		RPGR c.2667G>A p.Glu889=
+chrX	38286334	C	A	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|Retinal_dystrophy|Retinitis_pigmentosa_3	2067163605	RPGR c.2665G>T p.Glu889Ter
+chrX	38286335	T	A	Uncertain_significance	no_assertion_criteria_provided	RPGR	Retinal_dystrophy		RPGR c.2664A>T p.Glu888Asp
+chrX	38286336	TCTCC	T	Pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy		RPGR c.2659_2662del p.Gly887fs
+chrX	38286338	T	TCCCTCCCCTTCTCCTTCCTCCTCTTCC	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2634_2660dup p.Glu890_Gly891insGluGlyGluGlyGluGlyGluGluGlu
+chrX	38286339	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519788457	RPGR c.2660G>A p.Gly887Glu
+chrX	38286341	C	A	Uncertain_significance	no_assertion_criteria_provided	RPGR	Retinal_dystrophy		RPGR c.2658G>T p.Glu886Asp
+chrX	38286341	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2658G>A p.Glu886=
+chrX	38286342	TCC	T	Pathogenic	reviewed_by_expert_panel	RPGR	Primary_ciliary_dyskinesia|RPGR-related_retinopathy|Retinal_dystrophy|not_provided|Retinitis_pigmentosa_3	2067164096	RPGR c.2655_2656del p.Glu886fs
+chrX	38286346	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2067164307	RPGR c.2653G>A p.Gly885Arg
+chrX	38286349	C	A	Pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy|not_provided|Primary_ciliary_dyskinesia|Retinitis_pigmentosa_3	137852549	RPGR c.2650G>T p.Glu884Ter
+chrX	38286350	T	TCCTTCCTCCTCTTCCCCCTCCC	Likely_pathogenic	no_assertion_criteria_provided	RPGR	Retinitis_pigmentosa_3	2067164990	RPGR c.2627_2648dup p.Glu884fs
+chrX	38286352	C	A	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinitis_pigmentosa|not_provided	1555961624	RPGR c.2647G>T p.Gly883Ter
+chrX	38286353	TTCC	T	Conflicting_classifications_of_pathogenicity	criteria_provided,_conflicting_classifications	RPGR	not_provided|Primary_ciliary_dyskinesia	749799824	RPGR c.2640GGA[1] p.Glu882del
+chrX	38286354	T	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	not_provided		RPGR c.2645A>G p.Glu882Gly
+chrX	38286355	C	A	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Primary_ciliary_dyskinesia	2519788643	RPGR c.2644G>T p.Glu882Ter
+chrX	38286355	CCTCCTCTTCCCCCTCCCCTT	C	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinitis_pigmentosa_3|X-linked_cone-rod_dystrophy_1	2519788652	RPGR c.2624_2643del p.Glu875fs
+chrX	38286358	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	not_provided	1569236609	RPGR c.2641G>T p.Glu881Ter
+chrX	38286359	CTCTTCCC	TTCTCCCTCCCCTTCTCCTTCCTCCTCTTCCCCCTCCCCTTCTCCTTCCTCCCCTTCTT	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519788681	RPGR c.2633_2640delinsAAGAAGGGGAGGAAGGAGAAGGGGAGGGGGAAGAGGAGGAAGGAGAAGGGGAGGGAGAA p.Gly878_Glu879delinsGluGluGlyGluGluGlyGluGlyGluGlyGluGluGluGluGlyGluGlyGluGly
+chrX	38286363	T	TC	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2635dup p.Glu879fs
+chrX	38286363	TC	T	Pathogenic	criteria_provided,_single_submitter	RPGR	Retinal_dystrophy|Primary_ciliary_dyskinesia	2519788713	RPGR c.2635del p.Glu879fs
+chrX	38286365	C	T	Benign/Likely_benign	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Primary_ciliary_dyskinesia	371230592	RPGR c.2634G>A p.Gly878=
+chrX	38286366	C	A	Uncertain_significance	criteria_provided,_single_submitter	RPGR	not_provided	1218098015	RPGR c.2633G>T p.Gly878Val
+chrX	38286366	C	CCCTCCCCTTCTCCTT	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2067166248	RPGR c.2618_2632dup p.Glu877_Gly878insGluGlyGluGlyGlu
+chrX	38286366	C	CCCTCCCCTTCTCCTTCCTCCCCTTCTT	Benign	reviewed_by_expert_panel	RPGR	not_provided|RPGR-related_retinopathy|Primary_ciliary_dyskinesia	769216492	RPGR c.2606_2632dup p.860EEGEEGEGE[3]
+chrX	38286366	C	CCCTCCTTCTCCTTCCTCCCCTTCTT	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2628_2632GGA[2]AGAAGGGGAGGAAGGAGAAGGAGG[1] p.Gly878fs
+chrX	38286366	CCCTCCCCTTCTCCTT	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2067166248	RPGR c.2618_2632del p.Glu873_Glu877del
+chrX	38286368	CT	C	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Primary_ciliary_dyskinesia	2519788765	RPGR c.2630del p.Glu877fs
+chrX	38286369	TCC	T	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Primary_ciliary_dyskinesia|Retinitis_pigmentosa_3	2067166789	RPGR c.2628_2629del p.Glu877fs
+chrX	38286373	C	CT	Pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy|not_provided|Primary_ciliary_dyskinesia	2519788844	RPGR c.2625dup p.Gly876fs
+chrX	38286373	CT	C	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	not_provided	2519788844	RPGR c.2625del p.Glu877fs
+chrX	38286375	TCTC	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1298062071	RPGR c.2621_2623del p.Gly874del
+chrX	38286378	CCTT	C	Uncertain_significance	no_assertion_criteria_provided	RPGR	Retinal_dystrophy		RPGR c.2618_2620del p.Glu873del
+chrX	38286378	CCTTCCTCCCCTT	C	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	747742286	RPGR c.2597AAGGGGAGGAAG[1] p.866EGEE[1]
+chrX	38286378	CCTTCCTCCCCTTCTT	C	Benign	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy|not_specified|Primary_ciliary_dyskinesia|not_provided|X-linked_cone-rod_dystrophy_1	200824587	RPGR c.2606_2620del p.Glu869_Glu873del
+chrX	38286379	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa_3		RPGR c.2620G>T p.Gly874Ter
+chrX	38286380	T	C	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	756083902	RPGR c.2619A>G p.Glu873=
+chrX	38286382	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519788962	RPGR c.2617G>T p.Glu873Ter
+chrX	38286382	CCT	C	Likely_pathogenic	no_assertion_criteria_provided	RPGR	Retinitis_pigmentosa_3		RPGR c.2615_2616del p.Glu872fs
+chrX	38286383	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519788976	RPGR c.2616G>A p.Glu872=
+chrX	38286383	CTCCCCTTCTTCCTCCCCTTCTCCTTCT	C	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1444160129	RPGR c.2589_2615del p.860EEGEEGEGE[1]
+chrX	38286384	TCC	T	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519789017	RPGR c.2613_2614del p.Glu872fs
+chrX	38286385	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519789004	RPGR c.2614G>T p.Glu872Ter
+chrX	38286386	C	A	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1601921644	RPGR c.2613G>T p.Gly871=
+chrX	38286386	CCCTTCTTCCTCCCCTTCT	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519789062	RPGR c.2595_2612del p.Gly867_Glu872del
+chrX	38286387	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1279895966	RPGR c.2612G>A p.Gly871Glu
+chrX	38286387	CCT	C	Pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa_3	2519789073	RPGR c.2610_2611del p.Glu872fs
+chrX	38286390	T	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1343966503	RPGR c.2609A>G p.Glu870Gly
+chrX	38286390	T	G	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2609A>C p.Glu870Ala
+chrX	38286390	TCTTCCTCCCCTTCTC	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2594_2608del p.Gly865_Glu869del
+chrX	38286391	C	A	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinal_dystrophy	2067169164	RPGR c.2608G>T p.Glu870Ter
+chrX	38286393	T	C	Likely_benign	reviewed_by_expert_panel	RPGR	Primary_ciliary_dyskinesia|RPGR-related_retinopathy|Retinal_dystrophy	201131185	RPGR c.2606A>G p.Glu869Gly
+chrX	38286394	C	A	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Retinitis_pigmentosa|Primary_ciliary_dyskinesia	1555961677	RPGR c.2605G>T p.Glu869Ter
+chrX	38286395	CTCCCCTTCTCCTTCT	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1193509492	RPGR c.2589_2603del p.Gly865_Glu869del
+chrX	38286396	TCC	T	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|Retinitis_pigmentosa_3|Retinal_dystrophy|not_provided	2067169934	RPGR c.2601_2602del p.Glu868fs
+chrX	38286398	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519789215	RPGR c.2601G>A p.Gly867=
+chrX	38286400	C	CTTCTCCTTCCTCCCCTTCTTCCTCCCG	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519789236	RPGR c.2598_2599insCGGGAGGAAGAAGGGGAGGAAGGAGAA p.Glu866_Gly867insArgGluGluGluGlyGluGluGlyGlu
+chrX	38286402	TCTC	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia|RPGR-related_disorder	771584745	RPGR c.2594_2596del p.Gly865del
+chrX	38286404	TCCTTCTTCC	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1942516036	RPGR c.2577GGAAGAAGG[1] p.861EGE[1]
+chrX	38286409	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	not_provided	2519789277	RPGR c.2590G>T p.Glu864Ter
+chrX	38286410	T	C	Likely_benign	reviewed_by_expert_panel	RPGR	Primary_ciliary_dyskinesia|not_provided|RPGR-related_retinopathy	777091269	RPGR c.2589A>G p.Glu863=
+chrX	38286411	TC	T	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinitis_pigmentosa_3|Retinal_dystrophy	2067170858	RPGR c.2587del p.Glu863fs
+chrX	38286411	TCC	T	Conflicting_classifications_of_pathogenicity	criteria_provided,_conflicting_classifications	RPGR	Primary_ciliary_dyskinesia|not_provided|Retinitis_pigmentosa_3	2067170858	RPGR c.2586_2587del p.Glu863fs
+chrX	38286412	C	A	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa_3	2147196529	RPGR c.2587G>T p.Glu863Ter
+chrX	38286419	T	C	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1257370946	RPGR c.2580A>G p.Glu860=
+chrX	38286420	T	TCCTCCCCTTTCCCTTCTCCTTCCTCCTCTTCCCCCTCCCCTTCCTCCTCTTCCC	Uncertain_significance	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Primary_ciliary_dyskinesia	2519789434	RPGR c.2525_2578dup p.Glu859_Glu860insGlyGluGluGluGluGlyGluGlyGluGluGluGluGlyGluGlyLysGlyGlu
+chrX	38286423	TCC	T	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519789485	RPGR c.2574_2575del p.Glu859fs
+chrX	38286425	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2574G>A p.Gly858=
+chrX	38286426	CCT	C	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Primary_ciliary_dyskinesia	2067172385	RPGR c.2571_2572del p.Glu859fs
+chrX	38286427	C	A	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Retinal_dystrophy|Primary_ciliary_dyskinesia		RPGR c.2572G>T p.Gly858Trp
+chrX	38286427	CT	C	Conflicting_classifications_of_pathogenicity	criteria_provided,_conflicting_classifications	RPGR	RPGR-related_retinopathy|not_provided|Primary_ciliary_dyskinesia	1555961704	RPGR c.2571del p.Glu859fs
+chrX	38286429	T	TC	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1281257509	RPGR c.2569_2570insG p.Lys857fs
+chrX	38286430	T	A	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	not_provided	1250133030	RPGR c.2569A>T p.Lys857Ter
+chrX	38286430	T	C	Likely_benign	criteria_provided,_single_submitter	RPGR	not_provided	1250133030	RPGR c.2569A>G p.Lys857Glu
+chrX	38286430	T	TC	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|Retinitis_pigmentosa_3|Retinal_dystrophy	2067172824	RPGR c.2568dup p.Lys857fs
+chrX	38286430	TCC	T	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa	2067172824	RPGR c.2567_2568del p.Gly856fs
+chrX	38286433	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2067172951	RPGR c.2566G>A p.Gly856Arg
+chrX	38286434	T	C	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	748831947	RPGR c.2565A>G p.Glu855=
+chrX	38286435	T	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519789645	RPGR c.2564A>G p.Glu855Gly
+chrX	38286436	CT	C	Pathogenic	criteria_provided,_single_submitter	RPGR	not_provided	2534585440	RPGR c.2562del p.Glu855fs
+chrX	38286437	T	TCCTTCCTCCTCTTCCCCCTCC	Likely_benign	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_specified|Primary_ciliary_dyskinesia	751710678	RPGR c.2520GGAGGGGGAAGAGGAGGAAGG[3] p.829EEEEGEG[5]
+chrX	38286437	T	TCCTTCCTCCTCTTCCCCCTCCCCTTCCTCCTCTTCCCCCTCC	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	751710678	RPGR c.2520GGAGGGGGAAGAGGAGGAAGG[4] p.Gly856_Lys857insGluGluGluGluGlyGluGlyGluGluGluGluGlyGluGly
+chrX	38286437	TCCTTCCTCCTCTTCCCCCTCC	T	Benign	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|not_provided	751710678	RPGR c.2520GGAGGGGGAAGAGGAGGAAGG[1] p.829EEEEGEG[3]
+chrX	38286437	TCCTTCCTCCTCTTCCCCCTCCCCTTCCTCCTCTTCCCCCTCC	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	751710678	RPGR c.2520_2561del p.829EEEEGEG[2]
+chrX	38286440	TTCCTCCTCTTCCCCCTCCCCTTCC	T	Benign/Likely_benign	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|not_provided	760332126	RPGR c.2535_2558del p.Glu846_Glu853del
+chrX	38286442	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Retinal_dystrophy|Primary_ciliary_dyskinesia	756933299	RPGR c.2557G>A p.Glu853Lys
+chrX	38286443	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1213874124	RPGR c.2556G>A p.Glu852=
+chrX	38286447	T	C	Uncertain_significance	no_assertion_criteria_provided	RPGR	Retinal_dystrophy		RPGR c.2552A>G p.Glu851Gly
+chrX	38286450	TC	T	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|Retinal_dystrophy|not_provided|Retinitis_pigmentosa_3	2067174697	RPGR c.2548del p.Glu850fs
+chrX	38286451	C	A	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided	1601922074	RPGR c.2548G>T p.Glu850Ter
+chrX	38286451	C	T	Uncertain_significance	no_assertion_criteria_provided	RPGR	Retinal_dystrophy		RPGR c.2548G>A p.Glu850Lys
+chrX	38286452	C	A	Uncertain_significance	no_assertion_criteria_provided	RPGR	Retinal_dystrophy		RPGR c.2547G>T p.Gly849=
+chrX	38286452	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519789804	RPGR c.2547G>A p.Gly849=
+chrX	38286455	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Retinal_dystrophy|not_provided		RPGR c.2544G>A p.Glu848=
+chrX	38286455	CT	C	Pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy|not_provided|Retinal_dystrophy|Primary_ciliary_dyskinesia|Retinitis_pigmentosa_3	1233849070	RPGR c.2543del p.Glu848fs
+chrX	38286455	CTCCCCTTCCTCCTCTTCCCCCT	C	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519789861	RPGR c.2522_2543del p.Glu841fs
+chrX	38286456	TCC	T	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	not_provided	2519789871	RPGR c.2541_2542del p.Glu848fs
+chrX	38286457	CCCCTT	C	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2537_2541del p.Glu846fs
+chrX	38286458	C	T	Likely_benign	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_specified|not_provided|Primary_ciliary_dyskinesia	750364695	RPGR c.2541G>A p.Gly847=
+chrX	38286459	C	T	Uncertain_significance	no_assertion_criteria_provided	RPGR	Retinal_dystrophy		RPGR c.2540G>A p.Gly847Glu
+chrX	38286460	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1454586504	RPGR c.2539G>A p.Gly847Arg
+chrX	38286461	TTCC	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1244107507	RPGR c.2532GGA[1] p.Glu846del
+chrX	38286462	T	TC	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia|X-linked_cone-rod_dystrophy	2519789982	RPGR c.2536dup p.Glu846fs
+chrX	38286468	T	C	Uncertain_significance	no_assertion_criteria_provided	RPGR	Retinal_dystrophy		RPGR c.2531A>G p.Glu844Gly
+chrX	38286469	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Retinal_dystrophy|Primary_ciliary_dyskinesia		RPGR c.2530G>T p.Glu844Ter
+chrX	38286471	T	TC	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Retinitis_pigmentosa|Retinitis_pigmentosa_3	2067175855	RPGR c.2527dup p.Glu843fs
+chrX	38286471	TC	T	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2067175855	RPGR c.2527del p.Glu843fs
+chrX	38286471	TCC	T	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa_3|Retinal_dystrophy	2067175855	RPGR c.2526_2527del p.Glu843fs
+chrX	38286472	C	A	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Primary_ciliary_dyskinesia	2519790060	RPGR c.2527G>T p.Glu843Ter
+chrX	38286472	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519790060	RPGR c.2527G>A p.Glu843Lys
+chrX	38286473	C	CCCCT	Pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa_3	2147197113	RPGR c.2522_2525dup p.Glu843fs
+chrX	38286473	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519790083	RPGR c.2526G>A p.Gly842=
+chrX	38286474	CCCTCCCCTT	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2516_2524del p.Glu839_Glu841del
+chrX	38286476	CT	C	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|RPGR-related_disorder|Retinitis_pigmentosa|Retinitis_pigmentosa_3	1601922202	RPGR c.2522del p.Glu841fs
+chrX	38286476	CTCCCCTTCCTCCTCTTCCCCCT	C	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa_3|Retinal_dystrophy	2067176160	RPGR c.2501_2522del p.Glu834fs
+chrX	38286478	C	CCCCTTCCTCCTCTTCCCCCTCACCCTCCTCCTCTTCCTCTT	Pathogenic	criteria_provided,_single_submitter	RPGR	Retinal_dystrophy|not_provided	2147197209	RPGR c.2480_2520dup p.Glu841fs
+chrX	38286478	C	CCCCTTCCTCCTCTTCCCCCTT	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2520_2521insAAGGGGGAAGAGGAGGAAGGG p.Gly840_Glu841insLysGlyGluGluGluGluGly
+chrX	38286478	CCCCTT	C	Pathogenic	reviewed_by_expert_panel	RPGR	Retinal_dystrophy|RPGR-related_retinopathy|Retinitis_pigmentosa|Retinitis_pigmentosa_3	2067176379	RPGR c.2516_2520del p.Glu839fs
+chrX	38286479	C	A	Likely_benign	criteria_provided,_single_submitter	RPGR	not_provided		RPGR c.2520G>T p.Gly840=
+chrX	38286479	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2520G>A p.Gly840=
+chrX	38286479	CCCTTCCTCCTCTTCCCCCTCACCCT	AC	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519790167	RPGR c.2495_2520delinsGT p.Glu832_Glu839del
+chrX	38286479	CCCTTCCTCCTCTTCCCCCTCACCCTCCTCCTCT	ACCCTCCTCC	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519790180	RPGR c.2487_2520delinsGGAGGAGGGT p.Glu832_Glu839del
+chrX	38286480	CCT	C	Pathogenic	reviewed_by_expert_panel	RPGR	Retinal_dystrophy|not_provided|Retinitis_pigmentosa_3|RPGR-related_retinopathy	1373833359	RPGR c.2517_2518del p.Glu841fs
+chrX	38286482	T	C	Likely_benign	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Primary_ciliary_dyskinesia	755138994	RPGR c.2517A>G p.Glu839=
+chrX	38286482	TTCC	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	not_provided	759536041	RPGR c.2511GGA[1] p.Glu839del
+chrX	38286482	TTCCTCCTCTTCCCCCTCACCC	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1569236939	RPGR c.2496_2516del p.829EEEEGEG[3]
+chrX	38286485	CTCCTCTTCCCCCTCACCCTCCTCCTCT	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2487_2513del p.Glu831_Glu839del
+chrX	38286486	TC	T	Pathogenic	criteria_provided,_single_submitter	RPGR	X-linked_cone-rod_dystrophy_1	2147197281	RPGR c.2512del p.Glu838fs
+chrX	38286488	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1349104214	RPGR c.2511G>A p.Glu837=
+chrX	38286490	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia|Retinitis_pigmentosa_3	2067177281	RPGR c.2509G>T p.Glu837Ter
+chrX	38286492	T	TC	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa	1569236971	RPGR c.2506dup p.Glu836fs
+chrX	38286492	TC	T	Pathogenic	reviewed_by_expert_panel	RPGR	Primary_ciliary_dyskinesia|RPGR-related_retinopathy|not_provided	1569236971	RPGR c.2506del p.Glu836fs
+chrX	38286492	TCC	T	Pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy|not_provided|Retinitis_pigmentosa_3	1569236971	RPGR c.2505_2506del p.Glu836fs
+chrX	38286493	C	A	Pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy		RPGR c.2506G>T p.Glu836Ter
+chrX	38286496	CCT	C	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinal_dystrophy|not_provided|Primary_ciliary_dyskinesia	2519790385	RPGR c.2501_2502del p.Glu834fs
+chrX	38286497	CT	C	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Retinal_dystrophy|Primary_ciliary_dyskinesia|Retinitis_pigmentosa_3	2067178120	RPGR c.2501del p.Glu834fs
+chrX	38286500	A	C	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	752979508	RPGR c.2499T>G p.Gly833=
+chrX	38286501	CCCT	C	Uncertain_significance	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|Macular_degeneration,_X-linked_atrophic|Retinitis_pigmentosa_3|Retinitis_pigmentosa,_X-linked,_and_sinorespiratory_infections,_with_or_without_deafness|X-linked_cone-rod_dystrophy_1	765319100	RPGR c.2489AGG[2] p.Glu832del
+chrX	38286502	CCTCCTCCTCTTCCT	C	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2483_2496del p.Glu828fs
+chrX	38286503	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1285174065	RPGR c.2496G>A p.Glu832=
+chrX	38286504	TC	T	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519790473	RPGR c.2494del p.Glu832fs
+chrX	38286506	CTCCTCT	C	Uncertain_significance	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	X-linked_cone-rod_dystrophy_1|Primary_ciliary_dyskinesia	1224260017	RPGR c.2481AGAGGA[1] p.Glu831_Glu832del
+chrX	38286507	T	TC	Pathogenic	no_assertion_criteria_provided	RPGR	Retinal_dystrophy		RPGR c.2491dup p.Glu831fs
+chrX	38286508	C	A	Pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy|not_provided|Retinitis_pigmentosa	865977487	RPGR c.2491G>T p.Glu831Ter
+chrX	38286511	C	A	Likely_pathogenic	no_assertion_criteria_provided	RPGR	Retinitis_pigmentosa_3	1601922510	RPGR c.2488G>T p.Glu830Ter
+chrX	38286514	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Retinal_dystrophy|Primary_ciliary_dyskinesia	2519790535	RPGR c.2485G>T p.Glu829Ter
+chrX	38286517	C	A	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|Retinal_dystrophy|Retinitis_pigmentosa_3	2519790541	RPGR c.2482G>T p.Glu828Ter
+chrX	38286519	T	TCCCTCTCTCCTTTCCCCTCCTCTACTTCCCCTCCCTCTACTTCCCCTCCCTCCTCTTTTTCCTCCCCTCTC	Uncertain_significance	criteria_provided,_single_submitter	RPGR	RPGR-related_retinopathy	2519790562	RPGR c.2409_2479dup p.Glu827delinsGlyGluGlyArgLysLysArgArgGluGlyLysTer
+chrX	38286519	TC	T	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa_3		RPGR c.2479del p.Glu827fs
+chrX	38286520	C	A	Conflicting_classifications_of_pathogenicity	criteria_provided,_conflicting_classifications	RPGR	Primary_ciliary_dyskinesia|Retinitis_pigmentosa_3|Retinal_dystrophy	2067179538	RPGR c.2479G>T p.Glu827Ter
+chrX	38286521	CCT	C	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinal_dystrophy|not_provided|Retinitis_pigmentosa|Primary_ciliary_dyskinesia	2067179633	RPGR c.2476_2477del p.Arg826fs
+chrX	38286521	CCTCT	C	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2474_2477del p.Glu825fs
+chrX	38286522	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2477G>A p.Arg826Lys
+chrX	38286524	C	CA	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa	2147197552	RPGR c.2474_2475insT p.Glu825fs
+chrX	38286526	CTCCTT	C	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2468_2472del p.Lys823fs
+chrX	38286527	TC	T	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519790630	RPGR c.2471del p.Gly824fs
+chrX	38286527	TCC	T	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|Retinitis_pigmentosa_3	2067179881	RPGR c.2470_2471del p.Gly824fs
+chrX	38286529	C	A	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinitis_pigmentosa_3|Primary_ciliary_dyskinesia	2147197584	RPGR c.2470G>T p.Gly824Ter
+chrX	38286529	CT	C	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519790671	RPGR c.2469del p.Gly824fs
+chrX	38286530	T	TTTCCCCTCCTCTAC	Pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy|Retinitis_pigmentosa_3	2147197604	RPGR c.2455_2468dup p.Lys823_Gly824insTer
+chrX	38286530	TTTCCCCTCCTCTAC	T	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinitis_pigmentosa_3|not_provided|Primary_ciliary_dyskinesia	2147197604	RPGR c.2455_2468del p.Val819fs
+chrX	38286530	TTTCCCCTCCTCTACTTCCCCTCCCTCTAC	T	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519790697	RPGR c.2440_2468del p.Val814fs
+chrX	38286532	T	A	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinal_dystrophy|Primary_ciliary_dyskinesia		RPGR c.2467A>T p.Lys823Ter
+chrX	38286532	TC	T	Pathogenic	no_assertion_criteria_provided	RPGR	Retinal_dystrophy		RPGR c.2466del p.Gly824fs
+chrX	38286534	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	763051284	RPGR c.2465G>A p.Gly822Glu
+chrX	38286535	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	375806829	RPGR c.2464G>A p.Gly822Arg
+chrX	38286537	T	TCCTCTACTTCCCCTC	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	777850798	RPGR c.2432GAGGGGAAGTAGAGG[3] p.Glu820_Glu821insGlyGlyGluValGlu
+chrX	38286537	TCCTCTACTTCCCCTC	T	Likely_benign	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Primary_ciliary_dyskinesia|X-linked_cone-rod_dystrophy_1	777850798	RPGR c.2432GAGGGGAAGTAGAGG[1] p.811GGEVE[1]
+chrX	38286538	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa	2067180233	RPGR c.2461G>T p.Glu821Ter
+chrX	38286538	CCTCT	C	Likely_pathogenic	reviewed_by_expert_panel	RPGR	Retinitis_pigmentosa_3|RPGR-related_retinopathy	2067180395	RPGR c.2457_2460del p.Glu820fs
+chrX	38286541	C	CT	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2067180593	RPGR c.2457dup p.Glu820fs
+chrX	38286542	T	C	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2457A>G p.Val819=
+chrX	38286544	CT	C	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|See_cases	2519790827	RPGR c.2454del p.Glu818_Val819insTer
+chrX	38286546	T	TCCCCTCCCTCTACTTCCCCTCCCTCCTCTTTTTCCTCCCCTCTCCCCTCTGTTTCCTCCTCTTC	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa_3		RPGR c.2389_2452dup p.Glu818fs
+chrX	38286547	C	A	Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinal_dystrophy|Retinitis_pigmentosa	2147197770	RPGR c.2452G>T p.Glu818Ter
+chrX	38286547	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2452G>A p.Glu818Lys
+chrX	38286548	C	T	Likely_benign	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Primary_ciliary_dyskinesia	2067180910	RPGR c.2451G>A p.Gly817=
+chrX	38286550	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1271729130	RPGR c.2449G>A p.Gly817Arg
+chrX	38286551	TC	T	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinitis_pigmentosa|Retinal_dystrophy|Retinitis_pigmentosa_3	1854473658	RPGR c.2447del p.Gly816fs
+chrX	38286553	CCTCT	C	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinal_dystrophy|X-linked_cone-rod_dystrophy_1|Retinitis_pigmentosa_3|Retinitis_pigmentosa,_X-linked,_and_sinorespiratory_infections,_with_or_without_deafness|Macular_degeneration,_X-linked_atrophic|not_provided|Retinitis_pigmentosa|Retinal_disorder|Primary_ciliary_dyskinesia	1569237077	RPGR c.2442_2445del p.Gly817fs
+chrX	38286557	T	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Retinal_dystrophy	2519790905	RPGR c.2442A>G p.Val814=
+chrX	38286562	C	A	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|Retinal_dystrophy	2519790959	RPGR c.2437G>T p.Glu813Ter
+chrX	38286562	CCCCT	C	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519790975	RPGR c.2433_2436del p.Gly812fs
+chrX	38286563	CCCTCCCTCCTCTTTTT	C	Pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy|Retinitis_pigmentosa	2147197891	RPGR c.2420_2435del p.Glu807fs
+chrX	38286565	CT	C	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519791019	RPGR c.2433del p.Glu813fs
+chrX	38286567	CCCT	C	Uncertain_significance	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|not_provided	745480662	RPGR c.2426AGG[1] p.Glu810del
+chrX	38286571	CCT	C	Pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy|Retinal_dystrophy|not_provided|Primary_ciliary_dyskinesia|Retinitis_pigmentosa|Retinitis_pigmentosa_3	730882261	RPGR c.2426_2427del p.Glu809fs
+chrX	38286571	CCTCT	C	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	not_provided	2519791076	RPGR c.2424_2427del p.Glu809fs
+chrX	38286572	C	T	Conflicting_classifications_of_pathogenicity	criteria_provided,_conflicting_classifications	RPGR	Retinal_dystrophy|Primary_ciliary_dyskinesia	774543262	RPGR c.2427G>A p.Glu809=
+chrX	38286573	T	A	Uncertain_significance	criteria_provided,_single_submitter	RPGR	not_provided	2519791084	RPGR c.2426A>T p.Glu809Val
+chrX	38286574	C	A	Likely_pathogenic	no_assertion_criteria_provided	RPGR	Retinitis_pigmentosa_3	1168146969	RPGR c.2425G>T p.Glu809Ter
+chrX	38286574	C	CT	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519791125	RPGR c.2424dup p.Glu809fs
+chrX	38286574	C	G	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1168146969	RPGR c.2425G>C p.Glu809Gln
+chrX	38286574	CT	C	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519791125	RPGR c.2424del p.Glu809fs
+chrX	38286574	CTT	C	Pathogenic	criteria_provided,_single_submitter	RPGR	not_provided	2519791125	RPGR c.2423_2424del p.Lys808fs
+chrX	38286580	C	A	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|Retinitis_pigmentosa_3|Retinal_dystrophy	2067182354	RPGR c.2419G>T p.Glu807Ter
+chrX	38286580	CCTCCCCT	C	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|not_provided	2519791194	RPGR c.2412_2418del p.Gly805fs
+chrX	38286582	T	C	Uncertain_significance	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|RPGR-related_disorder|Retinal_dystrophy|Retinitis_pigmentosa_3	1364555173	RPGR c.2417A>G p.Glu806Gly
+chrX	38286583	C	A	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Retinitis_pigmentosa	1555961787	RPGR c.2416G>T p.Glu806Ter
+chrX	38286584	C	G	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519791236	RPGR c.2415G>C p.Gly805=
+chrX	38286585	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2414G>A p.Gly805Glu
+chrX	38286585	CCT	C	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|Retinal_dystrophy|not_provided|Retinitis_pigmentosa_3	2067182636	RPGR c.2412_2413del p.Glu806fs
+chrX	38286588	C	T	Benign	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy|Primary_ciliary_dyskinesia|not_provided	147388235	RPGR c.2411G>A p.Arg804Lys
+chrX	38286589	T	A	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Retinitis_pigmentosa	1601922877	RPGR c.2410A>T p.Arg804Ter
+chrX	38286589	TC	T	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinal_dystrophy|Retinitis_pigmentosa_3	2067182990	RPGR c.2409del p.Arg804fs
+chrX	38286589	TCCCCTCTGTTTCCTCCTCTTC	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1304711822	RPGR c.2389_2409del p.Glu797_Gly803del
+chrX	38286590	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2409G>A p.Gly803=
+chrX	38286590	CCCCTCTGTTTCCTCCTCTT	C	Pathogenic	criteria_provided,_single_submitter	RPGR	not_provided|Primary_ciliary_dyskinesia	2519791293	RPGR c.2390_2408del p.Glu797fs
+chrX	38286591	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1365914853	RPGR c.2408G>A p.Gly803Glu
+chrX	38286592	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519791300	RPGR c.2407G>A p.Gly803Arg
+chrX	38286592	CCT	C	Pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_disorder|Inborn_genetic_diseases|Myopia_25,_autosomal_dominant|RPGR-related_retinopathy|Retinal_dystrophy|X-linked_cone-rod_dystrophy_1|Retinitis_pigmentosa_3|Retinitis_pigmentosa,_X-linked,_and_sinorespiratory_infections,_with_or_without_deafness|Macular_degeneration,_X-linked_atrophic|not_provided|Primary_ciliary_dyskinesia|Retinitis_pigmentosa|Retinal_disorder|High_myopia,_early-onset	398122960	RPGR c.2405_2406del p.Glu802fs
+chrX	38286592	CCTCT	C	Pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy|Retinal_dystrophy|not_provided|Retinitis_pigmentosa_3	2067183162	RPGR c.2403_2406del p.Glu802fs
+chrX	38286597	GTT	G	Likely_pathogenic	no_assertion_criteria_provided	RPGR	Retinitis_pigmentosa_3		RPGR c.2400_2401del p.Glu800fs
+chrX	38286600	T	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519791382	RPGR c.2399A>G p.Glu800Gly
+chrX	38286600	T	TCCTC	Pathogenic	no_assertion_criteria_provided	RPGR	Retinal_dystrophy		RPGR c.2395_2398dup p.Glu800fs
+chrX	38286606	TCTTCCCCCTCTCCTTGGTCTCCTTCTTCCTCTCCTTTCTCCTC	T	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2350_2392del p.Glu784fs
+chrX	38286613	CCT	C	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519791486	RPGR c.2384_2385del p.Glu795fs
+chrX	38286614	C	G	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1229688029	RPGR c.2385G>C p.Glu795Asp
+chrX	38286614	CT	C	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinal_dystrophy|not_provided|Primary_ciliary_dyskinesia|Retinitis_pigmentosa_3|Retinitis_pigmentosa	1569237206	RPGR c.2384del p.Glu795fs
+chrX	38286616	C	A	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa|Retinitis_pigmentosa_3	2067183876	RPGR c.2383G>T p.Glu795Ter
+chrX	38286619	CT	C	Likely_pathogenic	no_assertion_criteria_provided	RPGR	Retinitis_pigmentosa_3		RPGR c.2379del p.Gly794fs
+chrX	38286621	T	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	not_provided	2519791526	RPGR c.2378A>G p.Gln793Arg
+chrX	38286621	TGG	T	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	X-linked_RPGR-related_disorders		RPGR c.2376_2377del p.Asp792fs
+chrX	38286622	G	A	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|Retinitis_pigmentosa_3|Retinal_dystrophy	2067184023	RPGR c.2377C>T p.Gln793Ter
+chrX	38286623	GTCTCCTTCTTCCTCTCCTT	G	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|Retinitis_pigmentosa	2519791561	RPGR c.2357_2375del p.Lys786fs
+chrX	38286627	CCTT	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1220781013	RPGR c.2366AAG[1] p.Glu790del
+chrX	38286630	TCTTCCTCTCCTTTCTCCTC	T	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519791604	RPGR c.2350_2368del p.Glu784fs
+chrX	38286632	TTCCTC	T	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa_3	2067184362	RPGR c.2362_2366del p.Glu788fs
+chrX	38286636	TCTC	T	Uncertain_significance	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|Retinal_dystrophy|not_provided	1287687440	RPGR c.2360_2362del p.Gly787del
+chrX	38286638	TC	T	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia|X-linked_cone-rod_dystrophy	2519791671	RPGR c.2360del p.Gly787fs
+chrX	38286644	CTCCTCCTTCCCCGCTCTTTCCTCCTTTT	C	Likely_pathogenic	no_assertion_criteria_provided	RPGR	Retinitis_pigmentosa_3	2067184831	RPGR c.2327_2354del p.Lys776fs
+chrX	38286650	CTTCCCCGCTCTTTCCTCCTTTTTCCTCT	C	Pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa	2067185063	RPGR c.2321_2348del p.Glu774fs
+chrX	38286652	TC	T	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinal_dystrophy|Retinitis_pigmentosa|Retinitis_pigmentosa_3|not_provided	1064797365	RPGR c.2346del p.Lys783fs
+chrX	38286653	C	CCCCGCTCTTT	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	not_provided	2519791783	RPGR c.2336_2345dup p.Glu784fs
+chrX	38286653	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2346G>A p.Gly782=
+chrX	38286655	C	A	Uncertain_significance	no_assertion_criteria_provided	RPGR	Retinal_dystrophy		RPGR c.2344G>T p.Gly782Trp
+chrX	38286655	C	T	Uncertain_significance	no_assertion_criteria_provided	RPGR	RPGR-related_disorder		RPGR c.2344G>A p.Gly782Arg
+chrX	38286656	C	T	Likely_benign	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Primary_ciliary_dyskinesia	139643783	RPGR c.2343G>A p.Ala781=
+chrX	38286657	G	A	Uncertain_significance	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinal_dystrophy|Primary_ciliary_dyskinesia	368235489	RPGR c.2342C>T p.Ala781Val
+chrX	38286657	GCT	G	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinitis_pigmentosa_3|Retinal_dystrophy	2067185505	RPGR c.2340_2341del p.Arg780fs
+chrX	38286658	C	T	Benign	reviewed_by_expert_panel	RPGR	not_specified|Retinal_dystrophy|RPGR-related_retinopathy|not_provided|Primary_ciliary_dyskinesia	5917557	RPGR c.2341G>A p.Ala781Thr
+chrX	38286658	CT	C	Pathogenic	reviewed_by_expert_panel	RPGR	Primary_ciliary_dyskinesia|RPGR-related_retinopathy|Retinal_dystrophy|not_provided|Retinitis_pigmentosa_3	2067185564	RPGR c.2340del p.Ala781fs
+chrX	38286660	CTTTCCTCCTT	C	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2329_2338del p.Lys777fs
+chrX	38286662	T	TGA	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519791875	RPGR c.2336_2337insTC p.Glu779fs
+chrX	38286662	TTCC	T	Benign/Likely_benign	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Primary_ciliary_dyskinesia	201730068	RPGR c.2331GGA[1] p.Glu779del
+chrX	38286664	C	CCTCCTTTTTCCTCT	Pathogenic	no_assertion_criteria_provided	RPGR	Retinal_dystrophy		RPGR c.2321_2334dup p.Glu779fs
+chrX	38286665	CT	C	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519791904	RPGR c.2333del p.Glu778fs
+chrX	38286667	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2332G>T p.Glu778Ter
+chrX	38286667	CCT	C	Pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy		RPGR c.2330_2331del p.Lys777fs
+chrX	38286668	C	T	Likely_benign	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|not_provided	1032517565	RPGR c.2331G>A p.Lys777=
+chrX	38286668	CT	C	Pathogenic	criteria_provided,_single_submitter	RPGR	not_provided	2147198604	RPGR c.2330del p.Lys777fs
+chrX	38286668	CTTTTTCCTCT	C	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinal_dystrophy|Retinitis_pigmentosa_3	2519791945	RPGR c.2321_2330del p.Glu774fs
+chrX	38286672	T	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519791952	RPGR c.2327A>G p.Lys776Arg
+chrX	38286674	CCT	C	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinal_dystrophy|Retinitis_pigmentosa|Retinitis_pigmentosa_3|not_provided|Primary_ciliary_dyskinesia	1555961832	RPGR c.2323_2324del p.Arg775fs
+chrX	38286679	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2067186077	RPGR c.2320G>T p.Glu774Ter
+chrX	38286682	CT	C	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinal_dystrophy	2519792048	RPGR c.2316del p.Gly773fs
+chrX	38286683	TTCC	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1387045893	RPGR c.2310GGA[1] p.Glu772del
+chrX	38286684	TCCTC	T	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519792080	RPGR c.2311_2314del p.Glu771fs
+chrX	38286687	TC	T	Pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy		RPGR c.2311del p.Glu771fs
+chrX	38286693	TCACGTTCTCCCTC	T	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519792150	RPGR c.2293_2305del p.Glu765fs
+chrX	38286696	C	T	Conflicting_classifications_of_pathogenicity	criteria_provided,_conflicting_classifications	RPGR	Primary_ciliary_dyskinesia|not_provided	1384034145	RPGR c.2303G>A p.Arg768His
+chrX	38286697	G	A	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1321272383	RPGR c.2302C>T p.Arg768Cys
+chrX	38286699	T	TCTCC	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2296_2299dup p.Glu767fs
+chrX	38286699	TCTCC	T	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Retinitis_pigmentosa|Retinal_dystrophy|Retinitis_pigmentosa_3	2067186632	RPGR c.2296_2299del p.Gly766fs
+chrX	38286701	TCCCTC	T	Likely_pathogenic	reviewed_by_expert_panel	RPGR	Retinal_dystrophy|Retinitis_pigmentosa_3|RPGR-related_retinopathy	2067186762	RPGR c.2293_2297del p.Glu765fs
+chrX	38286705	TCCA	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519792278	RPGR c.2291_2293del p.Val764del
+chrX	38286706	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2147198765	RPGR c.2293G>T p.Glu765Ter
+chrX	38286712	C	A	Pathogenic	no_assertion_criteria_provided	RPGR	Retinal_dystrophy		RPGR c.2287G>T p.Glu763Ter
+chrX	38286714	T	TCC	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2283_2284dup p.Glu762fs
+chrX	38286714	TC	T	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2067187127	RPGR c.2284del p.Glu762fs
+chrX	38286714	TCC	T	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|Retinal_dystrophy|Retinitis_pigmentosa_3	2067187127	RPGR c.2283_2284del p.Glu762fs
+chrX	38286715	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2284G>T p.Glu762Ter
+chrX	38286721	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519792372	RPGR c.2278G>T p.Glu760Ter
+chrX	38286721	CTCCT	C	Pathogenic	criteria_provided,_single_submitter	RPGR	not_provided	2519792385	RPGR c.2274_2277del p.Gly759fs
+chrX	38286726	TC	T	Likely_pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy		RPGR c.2272del p.Glu758fs
+chrX	38286727	C	A	Pathogenic	no_assertion_criteria_provided	RPGR	Retinitis_pigmentosa	1601923388	RPGR c.2272G>T p.Glu758Ter
+chrX	38286727	CCT	C	Pathogenic	reviewed_by_expert_panel	RPGR	Primary_ciliary_dyskinesia|RPGR-related_retinopathy|not_provided	2519792436	RPGR c.2270_2271del p.Glu757fs
+chrX	38286730	CT	C	Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Retinal_dystrophy	2519792465	RPGR c.2268del p.Glu757fs
+chrX	38286738	T	TCTCCCTCC	Pathogenic	no_assertion_criteria_provided	RPGR	Retinal_dystrophy		RPGR c.2253_2260dup p.Glu754fs
+chrX	38286738	TCTCC	T	Pathogenic	reviewed_by_expert_panel	RPGR	Primary_ciliary_dyskinesia|RPGR-related_disorder|Retinitis_pigmentosa|Retinitis_pigmentosa_40|RPGR-related_retinopathy|Retinal_dystrophy|not_provided|Retinitis_pigmentosa_3	2067187618	RPGR c.2257_2260del p.Gly753fs
+chrX	38286739	C	A	Pathogenic	reviewed_by_expert_panel	RPGR	not_provided|Retinitis_pigmentosa_3|RPGR-related_retinopathy|Retinal_dystrophy|Retinitis_pigmentosa,_X-linked,_and_sinorespiratory_infections,_with_or_without_deafness|Macular_degeneration,_X-linked_atrophic|X-linked_cone-rod_dystrophy_1	2067187550	RPGR c.2260G>T p.Glu754Ter
+chrX	38286742	C	A	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Retinitis_pigmentosa_3	267606453	RPGR c.2257G>T p.Gly753Ter
+chrX	38286743	CTCCT	C	Pathogenic	reviewed_by_expert_panel	RPGR	not_provided|RPGR-related_retinopathy|Retinal_dystrophy|Primary_ciliary_dyskinesia|Retinitis_pigmentosa_3	1475590979	RPGR c.2252_2255del p.Lys751fs
+chrX	38286744	TC	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	not_specified	1060499897	RPGR c.2254del p.Glu752fs
+chrX	38286745	CCTTCT	C	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|Retinal_dystrophy|Retinitis_pigmentosa_3	2067188031	RPGR c.2249_2253del p.Glu750fs
+chrX	38286745	CCTTCTCTT	C	Pathogenic	criteria_provided,_single_submitter	RPGR	not_provided	2519792575	RPGR c.2246_2253del p.Glu749fs
+chrX	38286745	CCTTCTCTTCTTCCT	C	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	not_provided	2519792588	RPGR c.2240_2253del p.Glu747fs
+chrX	38286747	TTC	T	Likely_pathogenic	no_assertion_criteria_provided	RPGR	Retinitis_pigmentosa	1555961849	RPGR c.2250_2251del p.Lys751fs
+chrX	38286748	T	A	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa_3|Retinal_dystrophy	2067188111	RPGR c.2251A>T p.Lys751Ter
+chrX	38286751	C	A	Likely_pathogenic	reviewed_by_expert_panel	RPGR	Primary_ciliary_dyskinesia|RPGR-related_retinopathy	867420711	RPGR c.2248G>T p.Glu750Ter
+chrX	38286753	TC	T	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519792649	RPGR c.2245del p.Glu749fs
+chrX	38286760	CTT	C	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Retinitis_pigmentosa_3	2147199015	RPGR c.2237_2238del p.Glu746fs
+chrX	38286761	TTC	T	Pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_disorder|RPGR-related_retinopathy|Retinal_dystrophy|Macular_degeneration,_X-linked_atrophic|Retinitis_pigmentosa,_X-linked,_and_sinorespiratory_infections,_with_or_without_deafness|X-linked_cone-rod_dystrophy_1|Retinitis_pigmentosa_3|not_provided|Retinitis_pigmentosa|Primary_ciliary_dyskinesia	1555961852	RPGR c.2236_2237del p.Glu746fs
+chrX	38286761	TTCTC	T	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|See_cases|Retinal_dystrophy|Retinitis_pigmentosa|Retinitis_pigmentosa_3	1555961852	RPGR c.2234_2237del p.Arg745fs
+chrX	38286763	CTCTG	C	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519792716	RPGR c.2232_2235del p.Asp744fs
+chrX	38286769	C	CT	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519792735	RPGR c.2229dup p.Asp744fs
+chrX	38286771	C	A	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2228G>T p.Gly743Val
+chrX	38286771	CCCT	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	756401194	RPGR c.2222AGG[1] p.Glu742del
+chrX	38286772	CCTCCT	C	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2222_2226del p.Glu741fs
+chrX	38286772	CCTCCTCTTCTTCTCCTTCTCCATG	C	Conflicting_classifications_of_pathogenicity	criteria_provided,_conflicting_classifications	RPGR	not_provided|Macular_degeneration,_X-linked_atrophic|Retinitis_pigmentosa_3|Retinitis_pigmentosa,_X-linked,_and_sinorespiratory_infections,_with_or_without_deafness|X-linked_cone-rod_dystrophy_1|Primary_ciliary_dyskinesia	768423834	RPGR c.2203_2226del p.His735_Glu742del
+chrX	38286774	TCCTC	T	Pathogenic	no_assertion_criteria_provided	RPGR	Retinitis_pigmentosa	1601923578	RPGR c.2221_2224del p.Glu741fs
+chrX	38286775	C	A	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa_3		RPGR c.2224G>T p.Glu742Ter
+chrX	38286775	CCTCTT	C	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519792808	RPGR c.2219_2223del p.Glu740fs
+chrX	38286776	C	T	Benign	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_specified|not_provided|Retinal_dystrophy|Primary_ciliary_dyskinesia	147619484	RPGR c.2223G>A p.Glu741=
+chrX	38286777	T	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2222A>G p.Glu741Gly
+chrX	38286778	C	A	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	not_provided	2519792822	RPGR c.2221G>T p.Glu741Ter
+chrX	38286779	T	C	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	149101436	RPGR c.2220A>G p.Glu740=
+chrX	38286781	C	A	Pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_disorder|Primary_ciliary_dyskinesia|RPGR-related_retinopathy|not_provided|Retinitis_pigmentosa_3	983693027	RPGR c.2218G>T p.Glu740Ter
+chrX	38286784	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1459539276	RPGR c.2215G>T p.Glu739Ter
+chrX	38286784	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1459539276	RPGR c.2215G>A p.Glu739Lys
+chrX	38286785	T	TCCTTCTCCATGCTCCTCCTCCCCTCCCTCCTCCATCTCTTGGTTTCTTTCCTTCTGATGGCCCTGCTCCCTCTCCTTTTGCTCCTGCTCTTCCCCATCCCTCTTCTTCC	Pathogenic	criteria_provided,_single_submitter	RPGR	not_provided	2519792916	RPGR c.2105_2213dup p.Glu742fs
+chrX	38286787	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519792921	RPGR c.2212G>T p.Gly738Ter
+chrX	38286796	G	A	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1418355872	RPGR c.2203C>T p.His735Tyr
+chrX	38286799	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	not_provided		RPGR c.2200G>T p.Glu734Ter
+chrX	38286803	CT	C	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	not_provided	2519793023	RPGR c.2195del p.Glu732fs
+chrX	38286804	TC	T	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519793036	RPGR c.2194del p.Glu732fs
+chrX	38286807	C	G	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1454265991	RPGR c.2192G>C p.Gly731Ala
+chrX	38286808	C	CTCCCTCCTCCATCTCTTGGTTTCTTTCCTTCTGATGGCCCTGCTCCCTCTCCTTTTGCTCCTGCTCTTCCCCA	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa_3|Retinal_dystrophy	2067190364	RPGR c.2118_2190dup p.Gly731fs
+chrX	38286808	CT	C	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa_3		RPGR c.2190del p.Glu732fs
+chrX	38286809	T	TCC	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519793097	RPGR c.2188_2189dup p.Gly731fs
+chrX	38286811	C	A	Likely_pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy		RPGR c.2188G>T p.Gly730Ter
+chrX	38286814	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa	1601923813	RPGR c.2185G>T p.Glu729Ter
+chrX	38286815	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519793131	RPGR c.2184G>A p.Glu728=
+chrX	38286819	A	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	not_specified	904024794	RPGR c.2180T>A p.Met727Lys
+chrX	38286823	C	A	Pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy		RPGR c.2176G>T p.Glu726Ter
+chrX	38286824	T	C	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2175A>G p.Gln725=
+chrX	38286826	G	A	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|Retinitis_pigmentosa|Retinitis_pigmentosa_3	907856232	RPGR c.2173C>T p.Gln725Ter
+chrX	38286826	G	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	not_provided		RPGR c.2173C>G p.Gln725Glu
+chrX	38286827	GTTTC	G	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinal_dystrophy|Retinitis_pigmentosa_3	2067190922	RPGR c.2168_2171del p.Arg723fs
+chrX	38286831	CT	C	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinal_dystrophy|not_provided	2067190976	RPGR c.2167del p.Arg723fs
+chrX	38286832	T	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519793247	RPGR c.2167A>T p.Arg723Ter
+chrX	38286836	CTTCT	C	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	not_provided	2519793270	RPGR c.2159_2162del p.Gln720fs
+chrX	38286841	G	A	Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinal_dystrophy|Retinitis_pigmentosa_3	2067191154	RPGR c.2158C>T p.Gln720Ter
+chrX	38286845	G	A	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2154C>T p.Gly718=
+chrX	38286845	GC	G	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinal_dystrophy	2519793295	RPGR c.2153del p.Gly718fs
+chrX	38286846	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2153G>A p.Gly718Asp
+chrX	38286850	G	A	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|X-linked_cone-rod_dystrophy_1	2519793311	RPGR c.2149C>T p.Gln717Ter
+chrX	38286850	G	GCTCCCTCTCCTTTTGCTCCTGCTCTTCCCCATCCCTCTTCTTCCATTCTTCCTTCTCTGCTAGTTCCTTCT	Pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa_3	2147199457	RPGR c.2078_2148dup p.Gln717delinsArgArgAsnTer
+chrX	38286850	GCTCCCTCTCCTTTTGCTCCTGCTCTTCCCCATCCCTCTTCTTCCATTCTTCCTTCTCTGCTAGTTCCTTCT	G	Pathogenic	no_assertion_criteria_provided	RPGR	Retinal_dystrophy		RPGR c.2078_2148del p.Glu693fs
+chrX	38286853	C	A	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|Retinitis_pigmentosa_3|Retinal_dystrophy|not_provided	2067191335	RPGR c.2146G>T p.Glu716Ter
+chrX	38286854	C	CCTCAG	Pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy		RPGR c.2144_2145insCTGAG p.Arg715delinsSerTer
+chrX	38286854	CCT	C	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Retinitis_pigmentosa	2067191541	RPGR c.2143_2144del p.Arg715fs
+chrX	38286858	TC	T	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519793374	RPGR c.2140del p.Glu714fs
+chrX	38286859	C	A	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa_3	2147199519	RPGR c.2140G>T p.Glu714Ter
+chrX	38286860	C	CTTTTGCTCCTGCTCTTCCCCATCCCTCTTCTTCCATTCTT	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519793388	RPGR c.2099_2138dup p.Glu714fs
+chrX	38286860	CT	C	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa_3|Retinal_dystrophy	2067191635	RPGR c.2138del p.Lys713fs
+chrX	38286864	T	C	Conflicting_classifications_of_pathogenicity	criteria_provided,_conflicting_classifications	RPGR	Primary_ciliary_dyskinesia	749852225	RPGR c.2135A>G p.Gln712Arg
+chrX	38286871	G	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2128C>T p.Gln710Ter
+chrX	38286874	C	A	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa_3|Retinal_dystrophy	1305342570	RPGR c.2125G>T p.Glu709Ter
+chrX	38286876	T	C	Pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa	2067192032	RPGR c.2123A>G p.Glu708Gly
+chrX	38286887	CTT	C	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2110_2111del p.Lys704fs
+chrX	38286893	C	T	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|Retinal_dystrophy|Retinitis_pigmentosa_3	2067193056	RPGR c.2106G>A p.Trp702Ter
+chrX	38286894	C	T	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2105G>A p.Trp702Ter
+chrX	38286897	TCTTC	T	Likely_pathogenic	no_assertion_criteria_provided	RPGR	Retinitis_pigmentosa_3	2067193155	RPGR c.2098_2101del p.Glu700fs
+chrX	38286898	C	A	Likely_pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy		RPGR c.2101G>T p.Glu701Ter
+chrX	38286905	C	A	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	377524122	RPGR c.2094G>T p.Glu698Asp
+chrX	38286913	G	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2147199781	RPGR c.2086C>G p.Leu696Val
+chrX	38286915	TC	T	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	not_provided	2519793716	RPGR c.2083del p.Glu695fs
+chrX	38286916	C	A	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Retinitis_pigmentosa	2067193671	RPGR c.2083G>T p.Glu695Ter
+chrX	38286918	T	TTCTCTCCC	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa_3|Retinal_dystrophy	2519793746	RPGR c.2073_2080dup p.Lys694fs
+chrX	38286919	T	A	Likely_pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy		RPGR c.2080A>T p.Lys694Ter
+chrX	38286925	C	G	Uncertain_significance	no_assertion_criteria_provided	RPGR	Retinitis_pigmentosa_3		RPGR c.2074G>C p.Gly692Arg
+chrX	38286928	C	A	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|Retinitis_pigmentosa_3	2147199844	RPGR c.2071G>T p.Glu691Ter
+chrX	38286928	CT	C	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|not_provided	1601924055	RPGR c.2070del p.Glu691fs
+chrX	38286932	T	A	Likely_benign	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Primary_ciliary_dyskinesia	868710724	RPGR c.2067A>T p.Pro689=
+chrX	38286934	GC	G	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa	2519793840	RPGR c.2064del p.Arg688fs
+chrX	38286939	T	TC	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Retinitis_pigmentosa	2067194747	RPGR c.2059dup p.Glu687fs
+chrX	38286940	C	A	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|Retinitis_pigmentosa_3|Retinal_dystrophy	2067194648	RPGR c.2059G>T p.Glu687Ter
+chrX	38286942	A	T	Benign	reviewed_by_expert_panel	RPGR	X-linked_cone-rod_dystrophy_1|Retinitis_pigmentosa,_X-linked,_and_sinorespiratory_infections,_with_or_without_deafness|Retinitis_pigmentosa_3|Macular_degeneration,_X-linked_atrophic|not_provided|Primary_ciliary_dyskinesia|RPGR-related_retinopathy	151247357	RPGR c.2057T>A p.Met686Lys
+chrX	38286942	ATTTCTCCTCTACCCTTGTC	A	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Retinitis_pigmentosa	1601924111	RPGR c.2038_2056del p.Asp680fs
+chrX	38286943	T	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2067194947	RPGR c.2056A>G p.Met686Val
+chrX	38286944	T	C	Likely_benign	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Primary_ciliary_dyskinesia	370892592	RPGR c.2055A>G p.Glu685=
+chrX	38286946	C	G	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1359767393	RPGR c.2053G>C p.Glu685Gln
+chrX	38286950	T	TC	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519794006	RPGR c.2048dup p.Gly684fs
+chrX	38286956	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	753741318	RPGR c.2043G>A p.Lys681=
+chrX	38286956	CTT	C	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa_3|Retinal_dystrophy	1569237670	RPGR c.2041_2042del p.Lys681fs
+chrX	38286959	G	A	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2040C>T p.Asp680=
+chrX	38286960	T	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519794080	RPGR c.2039A>G p.Asp680Gly
+chrX	38286966	TCC	T	Pathogenic	no_assertion_criteria_provided	RPGR	Retinal_dystrophy		RPGR c.2031_2032del p.Lys679fs
+chrX	38286971	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.2028G>A p.Lys676=
+chrX	38286976	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa	1601924184	RPGR c.2023G>T p.Glu675Ter
+chrX	38286981	TCCTCATCTTG	T	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa_3	2067196699	RPGR c.2008_2017del p.Gln670fs
+chrX	38286983	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519794234	RPGR c.2016G>A p.Glu672=
+chrX	38286992	C	T	Pathogenic	reviewed_by_expert_panel	RPGR	Primary_ciliary_dyskinesia|RPGR-related_retinopathy|Retinal_dystrophy	2519794257	RPGR c.2007G>A p.Trp669Ter
+chrX	38286993	C	T	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Primary_ciliary_dyskinesia|Retinitis_pigmentosa_3	2067196800	RPGR c.2006G>A p.Trp669Ter
+chrX	38286996	TG	T	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinal_dystrophy	2519794313	RPGR c.2002del p.His668fs
+chrX	38287003	CTCCTGAACTACCT	C	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	not_provided	2519794381	RPGR c.1983_1995del p.Gly662fs
+chrX	38287008	G	C	Pathogenic	no_assertion_criteria_provided	RPGR	Retinal_dystrophy		RPGR c.1991C>G p.Ser664Ter
+chrX	38287012	T	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1349839521	RPGR c.1987A>G p.Ser663Gly
+chrX	38287016	T	G	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Retinal_dystrophy	2067197665	RPGR c.1983A>C p.Glu661Asp
+chrX	38287017	T	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.1982A>G p.Glu661Gly
+chrX	38287018	C	A	Likely_pathogenic	no_assertion_criteria_provided	RPGR	Retinitis_pigmentosa	527236108	RPGR c.1981G>T p.Glu661Ter
+chrX	38287020	T	TC	Pathogenic	no_assertion_criteria_provided	RPGR	Retinal_dystrophy		RPGR c.1978dup p.Glu660fs
+chrX	38287025	G	A	Likely_benign	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Primary_ciliary_dyskinesia	779788632	RPGR c.1974C>T p.Thr658=
+chrX	38287026	G	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.1973C>A p.Thr658Asn
+chrX	38287032	T	TC	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Retinitis_pigmentosa	2067198376	RPGR c.1966dup p.Asp656fs
+chrX	38287042	C	T	Uncertain_significance	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinal_dystrophy|Primary_ciliary_dyskinesia	902148095	RPGR c.1957G>A p.Gly653Ser
+chrX	38287042	CT	C	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519794592	RPGR c.1956del p.Gly653fs
+chrX	38287045	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2147200398	RPGR c.1954G>A p.Glu652Lys
+chrX	38287046	A	AG	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519794611	RPGR c.1952dup p.Pro651_Glu652insTer
+chrX	38287051	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2067198830	RPGR c.1948G>A p.Gly650Arg
+chrX	38287053	T	A	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	367882990	RPGR c.1946A>T p.Asp649Val
+chrX	38287053	T	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	367882990	RPGR c.1946A>G p.Asp649Gly
+chrX	38287060	C	CCCTCT	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	not_provided	2519794693	RPGR c.1938_1939insAGAGG p.Ala647fs
+chrX	38287066	C	CG	Pathogenic	criteria_provided,_single_submitter	RPGR	not_provided	2147200451	RPGR c.1932_1933insC p.Gly645fs
+chrX	38287071	G	C	Pathogenic	no_assertion_criteria_provided	RPGR	Retinal_dystrophy	869312185	RPGR c.1928C>G p.Ser643Ter
+chrX	38287071	GA	G	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.1927del p.Ser643fs
+chrX	38287072	A	AT	Pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy|not_provided|Retinitis_pigmentosa|Retinitis_pigmentosa_3	2067199347	RPGR c.1926dup p.Ser643fs
+chrX	38287072	AT	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.1926del p.Lys642fs
+chrX	38287073	T	TTTTGC	Pathogenic	no_assertion_criteria_provided	RPGR	Retinal_dystrophy		RPGR c.1921_1925dup p.Ser643fs
+chrX	38287078	C	G	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	371422457	RPGR c.1921G>C p.Ala641Pro
+chrX	38287079	CT	C	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519794763	RPGR c.1919del p.Lys640fs
+chrX	38287081	T	C	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	951100602	RPGR c.1918A>G p.Lys640Glu
+chrX	38287093	C	T	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	RPGR-related_disorder	2519794803	RPGR c.1906G>A p.Val636Met
+chrX	38287101	TTGTC	T	Likely_pathogenic	no_assertion_criteria_provided	RPGR	Retinitis_pigmentosa	1555961964	RPGR c.1894_1897del p.Asp632fs
+chrX	38287107	G	GT	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa_3		RPGR c.1891dup p.Thr631fs
+chrX	38287109	A	G	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.1890T>C p.Leu630=
+chrX	38287117	C	CT	Pathogenic/Likely_pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia|not_provided	2519794898	RPGR c.1881dup p.Asp628fs
+chrX	38287119	G	C	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia	2147200625	RPGR c.1880C>G p.Ser627Ter
+chrX	38287119	G	T	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa_3	2147200625	RPGR c.1880C>A p.Ser627Ter
+chrX	38287124	G	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519794914	RPGR c.1875C>A p.Ile625=
+chrX	38287125	ATC	A	Pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy|not_provided|Retinal_dystrophy|Primary_ciliary_dyskinesia|Retinitis_pigmentosa_3	2067200470	RPGR c.1872_1873del p.Glu624fs
+chrX	38287140	T	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519794957	RPGR c.1859A>G p.Lys620Arg
+chrX	38287147	C	T	Uncertain_significance	no_assertion_criteria_provided	RPGR	Retinal_dystrophy		RPGR c.1852G>A p.Gly618Arg
+chrX	38287155	A	ACCTT	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinal_dystrophy	2067201139	RPGR c.1840_1843dup p.Val615fs
+chrX	38287155	AC	A	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	not_provided	2519795016	RPGR c.1843del p.Val615fs
+chrX	38287158	T	G	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519795032	RPGR c.1841A>C p.Lys614Thr
+chrX	38287162	CA	C	Pathogenic	criteria_provided,_single_submitter	RPGR	not_provided	2067201253	RPGR c.1836del p.Asn612fs
+chrX	38287163	A	AT	Pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy|not_provided	62635014	RPGR c.1835dup p.Asn612fs
+chrX	38287168	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.1831G>A p.Glu611Lys
+chrX	38287173	T	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1555961989	RPGR c.1826A>G p.Asn609Ser
+chrX	38287173	T	G	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.1826A>C p.Asn609Thr
+chrX	38287177	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.1822G>A p.Ala608Thr
+chrX	38287178	T	TTC	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	not_provided	2519795129	RPGR c.1819_1820dup p.Ala608fs
+chrX	38287179	T	TCTACCTCTTGCTC	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519795148	RPGR c.1807_1819dup p.Glu607fs
+chrX	38287184	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.1815G>A p.Glu605=
+chrX	38287186	C	A	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa_3	2519795177	RPGR c.1813G>T p.Glu605Ter
+chrX	38287189	G	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519795201	RPGR c.1810C>T p.Gln604Ter
+chrX	38287189	G	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.1810C>G p.Gln604Glu
+chrX	38287191	TC	T	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinal_dystrophy	2519795233	RPGR c.1807del p.Glu603fs
+chrX	38287196	T	C	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1212278807	RPGR c.1803A>G p.Ile601Met
+chrX	38287197	ATTCCATTTCCTTTTGAATCCTCTGCTCCTTCCTTCTCCTCTGGGATCTCTGACAAGCGATCACATTTAAAATCATACTTTGCCATGGATTTGGATATTATGGGTTTAGTCTCTTTTTCATTTCCTTGTTCAATCAATTTCCTGCCATACCGTATGTTTTGGTCAGTTTCCACTTCATCATCCTCTTTCTCTCCACTACTAAATTCTATTGCCTCAGGCTGCTGGAATCCATCAGCTATACCCTGTTGACTCTCACTTGCACC	A	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519795270	RPGR c.1754-214_1801del
+chrX	38287202	A	AT	Pathogenic	no_assertion_criteria_provided	RPGR	not_provided	2147200895	RPGR c.1796dup p.Asn599fs
+chrX	38287203	T	A	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.1796A>T p.Asn599Ile
+chrX	38287212	G	T	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia|Retinitis_pigmentosa_3	2067202860	RPGR c.1787C>A p.Ser596Ter
+chrX	38287215	T	A	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	761787495	RPGR c.1784A>T p.Asp595Val
+chrX	38287222	C	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1490761121	RPGR c.1777G>A p.Ala593Thr
+chrX	38287229	C	G	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.1770G>C p.Lys590Asn
+chrX	38287229	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.1770G>A p.Lys590=
+chrX	38287231	T	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519795385	RPGR c.1768A>G p.Lys590Glu
+chrX	38287231	TCTC	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2067203132	RPGR c.1762GAG[1] p.Glu589del
+chrX	38287234	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Retinal_dystrophy		RPGR c.1765G>T p.Glu589Ter
+chrX	38287236	T	C	Conflicting_classifications_of_pathogenicity	criteria_provided,_conflicting_classifications	RPGR	Primary_ciliary_dyskinesia	1222240619	RPGR c.1763A>G p.Glu588Gly
+chrX	38287238	T	C	Likely_benign	criteria_provided,_single_submitter	RPGR	not_provided		RPGR c.1761A>G p.Pro587=
+chrX	38287239	G	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.1760C>G p.Pro587Arg
+chrX	38287246	C	CT	Uncertain_significance	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinal_dystrophy|Primary_ciliary_dyskinesia|not_provided	2067203496	RPGR c.1754-2dup
+chrX	38287248	G	C	Pathogenic	reviewed_by_expert_panel	RPGR	Primary_ciliary_dyskinesia|Retinitis_pigmentosa_3|RPGR-related_retinopathy	2147201026	RPGR c.1754-3C>G
+chrX	38287249	ACAAGCGATCAC	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa	2067203546	RPGR c.1754-15_1754-5del
+chrX	38287252	A	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	200174242	RPGR c.1754-7T>G
+chrX	38287254	C	T	Conflicting_classifications_of_pathogenicity	criteria_provided,_conflicting_classifications	RPGR	Primary_ciliary_dyskinesia|Retinal_dystrophy	762495217	RPGR c.1754-9G>A
+chrX	38287255	G	A	Likely_benign	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Primary_ciliary_dyskinesia	368767915	RPGR c.1754-10C>T
+chrX	38287255	G	C	Benign/Likely_benign	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Primary_ciliary_dyskinesia	368767915	RPGR c.1754-10C>G
+chrX	38287258	C	G	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1163126564	RPGR c.1754-13G>C
+chrX	38287348	G	A	Benign	reviewed_by_expert_panel	RPGR	not_provided|RPGR-related_retinopathy	41303691	RPGR c.1754-103C>T
+chrX	38287348	G	GT	Benign	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy|not_provided	754257495	RPGR c.1754-104dup
+chrX	38287625	C	G	Benign	criteria_provided,_single_submitter	RPGR	not_specified		RPGR c.1753+236G>C
+chrX	38287842	A	G	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.1753+19T>C
+chrX	38287859	A	C	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa_3|Retinitis_pigmentosa,_X-linked,_and_sinorespiratory_infections,_with_or_without_deafness|Macular_degeneration,_X-linked_atrophic|X-linked_cone-rod_dystrophy_1	2519797884	RPGR c.1753+2T>G
+chrX	38287861	C	T	Pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy|Retinal_dystrophy	2067215010	RPGR c.1753G>A p.Glu585Lys
+chrX	38287864	C	G	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.1750G>C p.Val584Leu
+chrX	38287865	T	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1060501179	RPGR c.1749A>G p.Glu583=
+chrX	38287866	T	A	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.1748A>T p.Glu583Val
+chrX	38287867	C	A	Likely_pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy|not_provided|Primary_ciliary_dyskinesia	62635013	RPGR c.1747G>T p.Glu583Ter
+chrX	38287868	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519797923	RPGR c.1746G>A p.Glu582=
+chrX	38287878	AATGCTTCG	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519798019	RPGR c.1728_1735del p.Glu577fs
+chrX	38287880	T	C	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	772015036	RPGR c.1734A>G p.Ala578=
+chrX	38287882	C	CT	Likely_pathogenic	no_assertion_criteria_provided	RPGR	Retinitis_pigmentosa	1601926125	RPGR c.1731dup p.Ala578fs
+chrX	38287882	C	G	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.1732G>C p.Ala578Pro
+chrX	38287884	TC	T	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.1729del p.Glu577fs
+chrX	38287885	C	CATGCGTCAT	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Retinal_dystrophy	2519798080	RPGR c.1728_1729insATGACGCAT p.Ile576_Glu577insMetThrHis
+chrX	38287886	G	A	Benign/Likely_benign	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia	145682975	RPGR c.1728C>T p.Ile576=
+chrX	38287886	G	C	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.1728C>G p.Ile576Met
+chrX	38287886	G	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	145682975	RPGR c.1728C>A p.Ile576=
+chrX	38287888	T	A	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Retinal_dystrophy	1242143931	RPGR c.1726A>T p.Ile576Phe
+chrX	38287888	T	C	Conflicting_classifications_of_pathogenicity	criteria_provided,_conflicting_classifications	RPGR	Primary_ciliary_dyskinesia	1242143931	RPGR c.1726A>G p.Ile576Val
+chrX	38287889	A	AATGCTTCATGC	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinal_dystrophy	2519798131	RPGR c.1724_1725insGCATGAAGCAT p.Ile576fs
+chrX	38287892	C	CAT	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinal_dystrophy	2519798169	RPGR c.1721_1722insAT p.Thr574_Thr575insTer
+chrX	38287892	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	372171763	RPGR c.1722G>A p.Thr574=
+chrX	38287893	G	A	Benign	reviewed_by_expert_panel	RPGR	Retinal_dystrophy|RPGR-related_retinopathy|not_provided|Primary_ciliary_dyskinesia	202013664	RPGR c.1721C>T p.Thr574Met
+chrX	38287894	T	A	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Retinal_dystrophy	1363176415	RPGR c.1720A>T p.Thr574Ser
+chrX	38287903	G	A	Likely_pathogenic	no_assertion_criteria_provided	RPGR	Retinitis_pigmentosa_3	2067216516	RPGR c.1711C>T p.Gln571Ter
+chrX	38287904	C	T	Benign/Likely_benign	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Primary_ciliary_dyskinesia	138347728	RPGR c.1710G>A p.Thr570=
+chrX	38287905	G	A	Conflicting_classifications_of_pathogenicity	criteria_provided,_conflicting_classifications	RPGR	not_provided|Primary_ciliary_dyskinesia	202154504	RPGR c.1709C>T p.Thr570Met
+chrX	38287905	G	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.1709C>A p.Thr570Lys
+chrX	38287906	T	C	Conflicting_classifications_of_pathogenicity	criteria_provided,_conflicting_classifications	RPGR	Retinitis_pigmentosa,_X-linked,_and_sinorespiratory_infections,_with_or_without_deafness|X-linked_cone-rod_dystrophy_1|Retinitis_pigmentosa_3|Macular_degeneration,_X-linked_atrophic|not_provided|Primary_ciliary_dyskinesia	768169831	RPGR c.1708A>G p.Thr570Ala
+chrX	38287907	C	A	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519798251	RPGR c.1707G>T p.Met569Ile
+chrX	38287915	T	A	Likely_benign	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy		RPGR c.1699A>T p.Ile567Phe
+chrX	38287917	C	T	Benign	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy|Retinal_dystrophy|not_specified|not_provided|Primary_ciliary_dyskinesia	1801688	RPGR c.1697G>A p.Gly566Glu
+chrX	38287919	T	C	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1315296776	RPGR c.1695A>G p.Gln565=
+chrX	38287921	G	A	Pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy|Primary_ciliary_dyskinesia	757501405	RPGR c.1693C>T p.Gln565Ter
+chrX	38287921	G	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	757501405	RPGR c.1693C>G p.Gln565Glu
+chrX	38287922	T	TG	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinal_dystrophy	2067217398	RPGR c.1691dup p.Gln565fs
+chrX	38287923	GAC	G	Pathogenic	no_assertion_criteria_provided	RPGR	Retinal_dystrophy		RPGR c.1689_1690del p.Ser564fs
+chrX	38287927	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia|RPGR-related_disorder	148334278	RPGR c.1687G>A p.Val563Met
+chrX	38287927	CAT	C	Pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy|Retinal_dystrophy	2067217662	RPGR c.1685_1686del p.His562fs
+chrX	38287928	A	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2067217599	RPGR c.1686T>G p.His562Gln
+chrX	38287928	ATGT	A	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1208778002	RPGR c.1680ACA[1] p.Gln561del
+chrX	38287942	CT	C	Pathogenic	no_assertion_criteria_provided	RPGR	Retinitis_pigmentosa_3	1569238659	RPGR c.1671del p.Ala558fs
+chrX	38287951	C	A	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinal_dystrophy	2067218363	RPGR c.1663G>T p.Glu555Ter
+chrX	38287954	TCATTTCTGA	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	not_provided	1256605683	RPGR c.1651_1659del p.Ser551_Met553del
+chrX	38287957	T	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519798553	RPGR c.1657A>G p.Met553Val
+chrX	38287958	TTC	T	Likely_pathogenic	no_assertion_criteria_provided	RPGR	Retinitis_pigmentosa_40		RPGR c.1654_1655del p.Glu552fs
+chrX	38287961	T	C	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	747017740	RPGR c.1653A>G p.Ser551=
+chrX	38287962	G	GA	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	not_provided	2519798571	RPGR c.1651dup p.Ser551fs
+chrX	38287964	C	T	Uncertain_significance	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Primary_ciliary_dyskinesia	2067218635	RPGR c.1650G>A p.Met550Ile
+chrX	38287964	CA	C	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519798585	RPGR c.1649del p.Met550fs
+chrX	38287972	C	A	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinal_dystrophy	2519798614	RPGR c.1642G>T p.Glu548Ter
+chrX	38287974	T	A	Conflicting_classifications_of_pathogenicity	criteria_provided,_conflicting_classifications	RPGR	Primary_ciliary_dyskinesia|not_provided	750857784	RPGR c.1640A>T p.Tyr547Phe
+chrX	38287978	C	A	Likely_pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy		RPGR c.1636G>T p.Glu546Ter
+chrX	38287984	T	C	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	878853953	RPGR c.1630A>G p.Ser544Gly
+chrX	38287990	C	T	Uncertain_significance	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_provided|Primary_ciliary_dyskinesia	1159969109	RPGR c.1624G>A p.Asp542Asn
+chrX	38287996	CA	C	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519798732	RPGR c.1617del p.Glu540fs
+chrX	38287998	G	A	Conflicting_classifications_of_pathogenicity	criteria_provided,_conflicting_classifications	RPGR	Primary_ciliary_dyskinesia	1464760066	RPGR c.1616C>T p.Thr539Ile
+chrX	38288002	G	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Retinal_dystrophy	2519798766	RPGR c.1612C>G p.Leu538Val
+chrX	38288006	T	A	Benign/Likely_benign	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_specified|not_provided|Primary_ciliary_dyskinesia|RPGR-related_disorder	145089607	RPGR c.1608A>T p.Thr536=
+chrX	38288007	G	A	Conflicting_classifications_of_pathogenicity	criteria_provided,_conflicting_classifications	RPGR	Primary_ciliary_dyskinesia	1380365858	RPGR c.1607C>T p.Thr536Ile
+chrX	38288007	G	GT	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519798838	RPGR c.1606dup p.Thr536fs
+chrX	38288014	G	A	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinitis_pigmentosa_3|Primary_ciliary_dyskinesia	2519798907	RPGR c.1600C>T p.Gln534Ter
+chrX	38288014	G	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519798907	RPGR c.1600C>G p.Gln534Glu
+chrX	38288015	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	368883287	RPGR c.1599G>A p.Thr533=
+chrX	38288016	G	A	Benign	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy|not_specified|not_provided|Primary_ciliary_dyskinesia	41312104	RPGR c.1598C>T p.Thr533Met
+chrX	38288017	T	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2067220112	RPGR c.1597A>G p.Thr533Ala
+chrX	38288019	A	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2147203710	RPGR c.1595T>G p.Leu532Arg
+chrX	38288020	G	A	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Retinal_dystrophy	2067220179	RPGR c.1594C>T p.Leu532=
+chrX	38288023	C	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519798980	RPGR c.1591G>T p.Glu531Ter
+chrX	38288024	C	T	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	375288851	RPGR c.1590G>A p.Gly530=
+chrX	38288026	CA	C	Likely_pathogenic	no_assertion_criteria_provided	RPGR	X-linked_cone-rod_dystrophy	2519799028	RPGR c.1587del p.Ile529fs
+chrX	38288027	A	G	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.1587T>C p.Ile529=
+chrX	38288028	A	T	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	2519799043	RPGR c.1586T>A p.Ile529Asn
+chrX	38288028	ATTGT	A	Pathogenic	reviewed_by_expert_panel	RPGR	Primary_ciliary_dyskinesia|RPGR-related_retinopathy|Retinitis_pigmentosa	2147203790	RPGR c.1582_1585del p.Thr528fs
+chrX	38288029	T	C	Conflicting_classifications_of_pathogenicity	criteria_provided,_conflicting_classifications	RPGR	Primary_ciliary_dyskinesia|not_specified|not_provided	764009509	RPGR c.1585A>G p.Ile529Val
+chrX	38288029	T	G	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	764009509	RPGR c.1585A>C p.Ile529Leu
+chrX	38288032	TTTG	T	Benign/Likely_benign	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	not_specified|not_provided|Primary_ciliary_dyskinesia	62653033	RPGR c.1576CAA[1] p.Gln527del
+chrX	38288035	G	A	Pathogenic	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1601926772	RPGR c.1579C>T p.Gln527Ter
+chrX	38288035	GTTGT	G	not_provided	no_classification_provided	RPGR	not_provided	281865305	RPGR c.1575_1578del p.Lys525fs
+chrX	38288039	T	C	Benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	761895475	RPGR c.1575A>G p.Lys525=
+chrX	38288042	C	T	Pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy|not_provided|Primary_ciliary_dyskinesia	62635010	RPGR c.1573-1G>A
+chrX	38288042	CT	C	Likely_pathogenic	criteria_provided,_single_submitter	RPGR	Retinal_dystrophy	2519799157	RPGR c.1573-2del
+chrX	38288043	T	C	Pathogenic	criteria_provided,_multiple_submitters,_no_conflicts	RPGR	Retinal_dystrophy|not_provided|Primary_ciliary_dyskinesia|X-linked_cone-rod_dystrophy_1	62635009	RPGR c.1573-2A>G
+chrX	38288044	G	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Retinitis_pigmentosa|Primary_ciliary_dyskinesia	1601926845	RPGR c.1573-3C>G
+chrX	38288047	A	C	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.1573-6T>G
+chrX	38288049	T	A	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia		RPGR c.1573-8A>T
+chrX	38288049	T	C	Likely_pathogenic	reviewed_by_expert_panel	RPGR	RPGR-related_retinopathy|not_provided|Primary_ciliary_dyskinesia	62635011	RPGR c.1573-8A>G
+chrX	38288052	T	C	Uncertain_significance	no_assertion_criteria_provided	RPGR	Retinal_dystrophy		RPGR c.1573-11A>G
+chrX	38288053	T	C	Likely_pathogenic	reviewed_by_expert_panel	RPGR	not_provided|Retinal_dystrophy|RPGR-related_retinopathy	2067221066	RPGR c.1573-12A>G
+chrX	38288055	GAAGT	G	Uncertain_significance	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	1569238859	RPGR c.1573-18_1573-15del
+chrX	38288058	G	A	Likely_benign	criteria_provided,_single_submitter	RPGR	Primary_ciliary_dyskinesia	765479363	RPGR c.1573-17C>T

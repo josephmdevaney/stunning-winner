@@ -62,7 +62,15 @@ def classify_d4z4_allele(
     if lower_bound:
         if size > FSHD1_MAX_UNITS:
             return _call("normal", "Not contracted", f"At least {size} units (partially assembled) — above the 1–{FSHD1_MAX_UNITS} contraction range.")
-        return _call("indeterminate", "Indeterminate", f"Only a lower bound of {size} units was assembled, so contraction cannot be excluded.")
+        # Not yet known to be above the range, so the haplotype is read first: one that cannot cause FSHD1 settles
+        # the allele whatever its final size (the same two rules as for an exact size, below).
+        if distal != PATHOGENIC_DISTAL:
+            why = f"the distal haplotype is {distal} and only {PATHOGENIC_DISTAL} alleles can express DUX4"
+        elif chromosome == "chr4" and group == NON_PATHOGENIC_UPSTREAM_GROUP:
+            why = f"it is on the chr4 {group} (4A166) haplotype, which is not pathogenic when contracted"
+        else:
+            return _call("indeterminate", "Indeterminate", f"Only a lower bound of {size} units was assembled, so contraction cannot be excluded.")
+        return _call("normal", "Non-pathogenic haplotype", f"At least {size} units (partially assembled), but {why}, so it is not pathogenic whatever its final size.")
 
     if size > FSHD1_MAX_UNITS:
         return _call("normal", "Not contracted", f"{size} units — above the 1–{FSHD1_MAX_UNITS} contraction range.")
@@ -275,7 +283,9 @@ def parse_vcf(text: str) -> dict:
             allele_columns = line.split("\t")[9:]
         elif line and not line.startswith("#"):
             f = line.split("\t")
-            if len(f) < 10:
+            # With no complete allele Kivvi writes no FORMAT or sample columns at all (8 fields); those records
+            # are still variants, on units no allele carries.
+            if len(f) < 8:
                 continue
             units = []
             for ru in _info_value(f[7], "RU").split(","):

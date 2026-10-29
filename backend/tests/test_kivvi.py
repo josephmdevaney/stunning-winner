@@ -79,6 +79,27 @@ def test_partial_allele_lower_bound():
     assert _classify(8, lower=True) == "indeterminate"
 
 
+@pytest.mark.parametrize(
+    "kwargs",
+    [{"distal": "qB"}, {"distal": "qADisruptedPolyA", "chromosome": "chr10", "group": "Group2.1"}, {"group": "Group2.1"}],
+)
+def test_lower_bound_on_a_non_pathogenic_haplotype_is_settled_by_the_haplotype(kwargs):
+    # The haplotype is read before the size: whatever such an allele's final size, it cannot cause FSHD1.
+    call = parse.classify_d4z4_allele(10, True, **{"chromosome": "chr4", "group": "Group1.1", "distal": "qAIntactPolyA", **kwargs})
+    assert (call["status"], call["label"]) == ("normal", "Non-pathogenic haplotype")
+    assert "whatever its final size" in call["reason"]
+
+
+@pytest.mark.parametrize("chromosome,group", [("chr10", "Group2.1"), ("unknown", None), ("chr4", "Group1.1")])
+def test_lower_bound_on_a_qa_intact_haplotype_stays_indeterminate(chromosome, group):
+    # qAIntactPolyA outside 4A166 could be pathogenic once resolved, on chr4 or not, so it is not settled.
+    assert _classify(10, chromosome=chromosome, group=group, lower=True) == "indeterminate"
+
+
+def test_a_lower_bound_above_the_range_is_not_contracted_on_any_haplotype():
+    assert parse.classify_d4z4_allele(11, True, "chr10", "Group2.1", "qADisruptedPolyA")["label"] == "Not contracted"
+
+
 # --- shaping ----------------------------------------------------------------
 
 def _allele_info(size, chromosome="chr4:Group1.1", distal="qAIntactPolyA", allele_type="assembled", name=None):
@@ -228,6 +249,23 @@ VCF = "\n".join(
         "chr6\t160613800\t.\tCG\tC\t.\tPASS\tRU=34:Unknown:1:1\tGT\t0\t0",
     ]
 )
+
+
+def test_parse_vcf_without_sample_columns_keeps_its_records():
+    # A run that assembled no complete allele has no FORMAT/sample columns; its variants are not dropped.
+    text = "\n".join(
+        [
+            "##kivviVersion=1.1.0",
+            "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO",
+            "d4z4_ref\t11\t.\tA\tAC\t.\tPASS\tRU=50:Unknown:1:1",
+            "d4z4_ref\t31\t.\tC\tT\t.\tPASS\tRU=25:Unknown:4:4,26:Unknown:3:2",
+        ]
+    )
+    vcf = parse.parse_vcf(text)
+    assert vcf["allele_columns"] == []
+    assert [r["pos"] for r in vcf["records"]] == [11, 31]
+    assert all(r["genotypes"] == [] and r["on_assembled_allele"] is False for r in vcf["records"])
+    assert vcf["records"][1]["n_units"] == 2 and vcf["records"][1]["min_vaf"] == pytest.approx(2 / 3)
 
 
 def test_parse_vcf():

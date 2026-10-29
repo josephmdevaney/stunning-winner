@@ -6,7 +6,7 @@ Backend: `backend/kivvi/` (routes under `/api/kivvi`). Frontend: `web/src/kivvi/
 
 ## Data
 
-Samples are found under `$KIVVI_RESULTS_ROOT` (default `~/kivvi_tool/runs`), laid out as `<root>/<sample>/<d4z4|kiv2>/<sample>.kivvi.<target>.{json,vcf,svg}`. Adding a sample is a matter of putting a Kivvi run there. The root lives outside the repository, and real per-participant outputs are never committed.
+Samples are found under `$KIVVI_RESULTS_ROOT` (default `~/kivvi_tool/runs`), laid out as `<root>/<sample>/<d4z4|kiv2>/<sample>.kivvi.<target>.{json,vcf,svg}` (the VCF can also be `.vcf.gz`, read as is; if both exist the plain `.vcf` wins). Adding a sample is a matter of putting a Kivvi run there. The root lives outside the repository, and real per-participant outputs are never committed.
 
 ## What is and is not applied
 

@@ -5,6 +5,7 @@ All inputs are small synthetic Kivvi-shaped files built in tmp_path -- no real
 per-participant output is read or committed.
 """
 
+import gzip
 import json
 
 import pytest
@@ -273,6 +274,37 @@ def test_variant_labels_fall_back_to_vcf_columns(results_root):
     # The fixture JSON has no complete_alleles, so the VCF's own column names are kept.
     labels = client.get("/api/kivvi/target/d4z4").json()["variants"]["allele_labels"]
     assert labels == ["allele1", "allele2"]
+
+
+def _swap_vcf_for_gz(results_root, text=VCF):
+    """Replace the fixture's plain VCF with a bgzip-style one: several concatenated gzip members."""
+    target = results_root / "S1" / "d4z4"
+    (target / "S1.kivvi.d4z4.vcf").unlink()
+    data = text.encode()
+    mid = len(data) // 2
+    (target / "S1.kivvi.d4z4.vcf.gz").write_bytes(gzip.compress(data[:mid]) + gzip.compress(data[mid:]))
+    return target
+
+
+def test_gzipped_vcf_is_read_directly(results_root):
+    _swap_vcf_for_gz(results_root)
+    body = client.get("/api/kivvi/target/d4z4", params={"sample": "S1"}).json()
+    assert body["variants"]["n_total"] == 2 and body["variants"]["n_on_assembled"] == 1
+    assert body["variants"]["allele_columns"] == ["allele1", "allele2"]
+    assert client.get("/api/kivvi/overview").json()["kivvi_version"] == "1.1.0"
+
+
+def test_plain_vcf_wins_when_both_exist(results_root):
+    target = _swap_vcf_for_gz(results_root)
+    plain = VCF.rsplit("\n", 1)[0]  # drop the second record
+    (target / "S1.kivvi.d4z4.vcf").write_text(plain)
+    assert client.get("/api/kivvi/target/d4z4").json()["variants"]["n_total"] == 1
+
+
+def test_no_vcf_yields_no_variants(results_root):
+    (results_root / "S1" / "d4z4" / "S1.kivvi.d4z4.vcf").unlink()
+    variants = client.get("/api/kivvi/target/d4z4").json()["variants"]
+    assert variants["n_total"] == 0 and variants["records"] == []
 
 
 def test_svg_endpoint(results_root):

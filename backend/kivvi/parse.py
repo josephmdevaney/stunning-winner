@@ -19,6 +19,10 @@ PATHOGENIC_DISTAL = "qAIntactPolyA"
 # chr4 upstream group "Group2.1" is the 4A166 haplotype, "not pathogenic when
 # contracted" (Kivvi docs/json.md).
 NON_PATHOGENIC_UPSTREAM_GROUP = "Group2.1"
+# Chen et al. (bioRxiv 2026, the Kivvi preprint) call 11-20 units "the range commonly indicated for FSHD2" and note
+# that Kivvi's accuracy there was not measured. It only labels an allele's size for the FSHD2 evidence view; no call
+# depends on it.
+FSHD2_RANGE = (11, 20)
 # Kivvi's D4Z4 preset "expects four alleles" (two chr4 + two chr10).
 EXPECTED_D4Z4_ALLELES = 4
 EXPECTED_KIV2_ALLELES = 2
@@ -29,11 +33,20 @@ def unit_ids(allele_name: str) -> list[str]:
     return [t for t in allele_name.split("-") if t and t not in FLANKS]
 
 
+_ALLELE_SIZE = re.compile(r"(>=?)?\s*(\d+)")
+
+
 def parse_allele_size(raw: str) -> tuple[int, bool]:
-    """'28' -> (28, False); '>14' -> (14, True) (a lower bound for partial alleles)."""
-    text = str(raw).strip()
-    lower_bound = text.startswith(">")
-    return int(text.lstrip(">")), lower_bound
+    """'28' -> (28, False); '>14' and '>=14' -> (14, True).
+
+    Kivvi writes a lower bound for partial and merged alleles as '>=N' ("at least N") or '>N' ("more than
+    N"); the docs show only '>N'. Both are kept as a lower bound of N, which for '>N' is one unit short, so
+    an allele's size is never overstated. Anything else is refused rather than guessed at.
+    """
+    match = _ALLELE_SIZE.fullmatch(str(raw).strip())
+    if match is None:
+        raise ValueError(f"Unrecognised Kivvi allele_size {raw!r}; expected N, >N or >=N")
+    return int(match.group(2)), match.group(1) is not None
 
 
 def split_chromosome(raw: str) -> tuple[str, Optional[str]]:
@@ -49,7 +62,15 @@ def classify_d4z4_allele(
     if lower_bound:
         if size > FSHD1_MAX_UNITS:
             return _call("normal", "Not contracted", f"At least {size} units (partially assembled) — above the 1–{FSHD1_MAX_UNITS} contraction range.")
-        return _call("indeterminate", "Indeterminate", f"Only a lower bound of {size} units was assembled, so contraction cannot be excluded.")
+        # Not yet known to be above the range, so the haplotype is read first: one that cannot cause FSHD1 settles
+        # the allele whatever its final size (the same two rules as for an exact size, below).
+        if distal != PATHOGENIC_DISTAL:
+            why = f"the distal haplotype is {distal} and only {PATHOGENIC_DISTAL} alleles can express DUX4"
+        elif chromosome == "chr4" and group == NON_PATHOGENIC_UPSTREAM_GROUP:
+            why = f"it is on the chr4 {group} (4A166) haplotype, which is not pathogenic when contracted"
+        else:
+            return _call("indeterminate", "Indeterminate", f"Only a lower bound of {size} units was assembled, so contraction cannot be excluded.")
+        return _call("normal", "Non-pathogenic haplotype", f"At least {size} units (partially assembled), but {why}, so it is not pathogenic whatever its final size.")
 
     if size > FSHD1_MAX_UNITS:
         return _call("normal", "Not contracted", f"{size} units — above the 1–{FSHD1_MAX_UNITS} contraction range.")
@@ -77,6 +98,63 @@ def _methylation_by_allele(data: dict) -> dict[str, list[float]]:
     for name, csv in per_unit.items():
         out[name] = [float(v) for v in str(csv).split(",") if v != ""]
     return out
+
+
+def is_permissive(chromosome: str, group: Optional[str], distal: str) -> bool:
+    """A chr4 qAIntactPolyA allele outside the 4A166 haplotype: the kind that can express DUX4. The same haplotype
+    test as the FSHD1 rule above, without the size condition."""
+    return chromosome == "chr4" and distal == PATHOGENIC_DISTAL and group != NON_PATHOGENIC_UPSTREAM_GROUP
+
+
+def size_range(size: int, lower_bound: bool) -> str:
+    """Where an allele's size sits: 'contracted' (1-10 units, FSHD1 range), 'fshd2_range' (11-20), 'above' (more
+    than 20) or 'unresolved' (a partially assembled allele whose lower bound does not settle it)."""
+    low, high = FSHD2_RANGE
+    if lower_bound:
+        return "above" if size > high else "unresolved"
+    if size <= FSHD1_MAX_UNITS:
+        return "contracted"
+    return "fshd2_range" if size <= high else "above"
+
+
+def shape_fshd2(alleles: list[dict], sample_methylation: Optional[float]) -> dict:
+    """The facts that bear on FSHD2, laid side by side. Nothing is concluded from them.
+
+    Kivvi defines no FSHD2 rule and no methylation cut-off, and its preprint validated it on FSHD1 and control
+    samples only, so this gathers what Kivvi reports (each allele's haplotype, size and methylation, and the sample's
+    overall methylation) and leaves the reading to the reader. Variants in SMCHD1, DNMT3B or LRIF1, the other part of
+    an FSHD2 finding, are not something Kivvi reports and are not assessed.
+    """
+    rows = []
+    for index, a in enumerate(alleles, start=1):
+        rows.append(
+            {
+                "index": index,
+                "size": a["size"],
+                "size_label": a["size_label"],
+                "size_is_lower_bound": a["size_is_lower_bound"],
+                "size_range": size_range(a["size"], a["size_is_lower_bound"]),
+                "chromosome": a["chromosome"],
+                "upstream_group": a["upstream_group"],
+                "distal_haplotype": a["distal_haplotype"],
+                "permissive": is_permissive(a["chromosome"], a["upstream_group"], a["distal_haplotype"]),
+                "methylation": a["methylation"],
+            }
+        )
+    permissive = [r for r in rows if r["permissive"]]
+    levels = [r["methylation"] for r in rows if r["methylation"] is not None]
+    return {
+        "alleles": rows,
+        "sample_methylation": sample_methylation,
+        "summary": {
+            "permissive_alleles": len(permissive),
+            "permissive_contracted": sum(r["size_range"] == "contracted" for r in permissive),
+            "permissive_fshd2_range": sum(r["size_range"] == "fshd2_range" for r in permissive),
+            "alleles_with_methylation": len(levels),
+            "lowest_methylation": min(levels, default=None),
+            "highest_methylation": max(levels, default=None),
+        },
+    }
 
 
 def shape_d4z4(data: dict) -> dict:
@@ -110,6 +188,7 @@ def shape_d4z4(data: dict) -> dict:
     return {
         "alleles": alleles,
         "summary": _d4z4_summary(alleles),
+        "fshd2": shape_fshd2(alleles, additional.get("methylation_all_sites")),
         "overall_methylation": additional.get("methylation_all_sites"),
         "in_cis_arrays": additional.get("d4z4_arrays_in_cis") or [],
         "qc": additional.get("qc_metrics") or {},
@@ -204,7 +283,9 @@ def parse_vcf(text: str) -> dict:
             allele_columns = line.split("\t")[9:]
         elif line and not line.startswith("#"):
             f = line.split("\t")
-            if len(f) < 10:
+            # With no complete allele Kivvi writes no FORMAT or sample columns at all (8 fields); those records
+            # are still variants, on units no allele carries.
+            if len(f) < 8:
                 continue
             units = []
             for ru in _info_value(f[7], "RU").split(","):

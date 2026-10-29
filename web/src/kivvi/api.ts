@@ -53,6 +53,38 @@ export interface D4Z4Summary {
   notes: string[]
 }
 
+// Where an allele's size sits: contracted (1-10 units), the 11-20 range the Kivvi preprint calls commonly
+// indicated for FSHD2, above that, or a partial allele whose lower bound does not settle it.
+export type SizeRange = 'contracted' | 'fshd2_range' | 'above' | 'unresolved'
+
+export interface Fshd2Allele {
+  index: number
+  size: number
+  size_label: string
+  size_is_lower_bound: boolean
+  size_range: SizeRange
+  chromosome: string
+  upstream_group: string | null
+  distal_haplotype: string
+  // chr4, qAIntactPolyA, and not the 4A166 haplotype: an allele that can express DUX4.
+  permissive: boolean
+  methylation: number | null
+}
+
+// The facts that bear on FSHD2, side by side. Kivvi defines no FSHD2 rule or cut-off, so this carries no verdict.
+export interface Fshd2Evidence {
+  alleles: Fshd2Allele[]
+  sample_methylation: number | null
+  summary: {
+    permissive_alleles: number
+    permissive_contracted: number
+    permissive_fshd2_range: number
+    alleles_with_methylation: number
+    lowest_methylation: number | null
+    highest_methylation: number | null
+  }
+}
+
 export interface Kiv2Allele {
   index: number
   name: string
@@ -101,6 +133,7 @@ interface TargetBase {
 export interface D4Z4Detail extends TargetBase {
   alleles: D4Z4Allele[]
   summary: D4Z4Summary
+  fshd2: Fshd2Evidence
   overall_methylation: number | null
   // Kivvi's d4z4_arrays_in_cis calls; empty when no in-cis duplication was found.
   in_cis_arrays: unknown[]

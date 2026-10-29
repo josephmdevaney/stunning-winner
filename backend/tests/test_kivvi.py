@@ -28,6 +28,15 @@ def test_unit_ids_drops_flanks():
 def test_parse_allele_size_lower_bound():
     assert parse.parse_allele_size("28") == (28, False)
     assert parse.parse_allele_size(">14") == (14, True)
+    # Kivvi v1.1.0 writes ">=N" for merged and partial alleles (the docs only show ">N").
+    assert parse.parse_allele_size(">=12") == (12, True)
+    assert parse.parse_allele_size(" >=10 ") == (10, True)
+
+
+@pytest.mark.parametrize("raw", ["", "=12", "~12", "12+", ">", ">=", "1.5", "abc"])
+def test_parse_allele_size_refuses_unknown_formats(raw):
+    with pytest.raises(ValueError, match="allele_size"):
+        parse.parse_allele_size(raw)
 
 
 def test_split_chromosome():
@@ -73,7 +82,7 @@ def test_partial_allele_lower_bound():
 # --- shaping ----------------------------------------------------------------
 
 def _allele_info(size, chromosome="chr4:Group1.1", distal="qAIntactPolyA", allele_type="assembled", name=None):
-    n = int(str(size).lstrip(">"))
+    n = int(str(size).lstrip(">="))
     return {
         "allele_name": name or "LeftFlank-" + "-".join(str(i) for i in range(1, n + 1)) + "-RightFlank",
         "chromosome": chromosome,
@@ -100,6 +109,22 @@ def test_summary_flags_unresolved_alleles():
     shaped = parse.shape_d4z4(_d4z4_json([_allele_info(30), _allele_info(40)]))
     assert shaped["summary"]["status"] == "normal"
     assert "2 of 4" in shaped["summary"]["notes"][0]
+
+
+def test_merged_and_partial_alleles_with_gte_sizes():
+    # The shape of a real v1.1.0 run: one assembled 4-unit chr4 allele plus merged / partial alleles sized ">=N".
+    data = _d4z4_json(
+        [
+            _allele_info(4),
+            _allele_info(">=12", allele_type="merged"),
+            _allele_info(">=10", chromosome="chr10:Group2.1", distal="qADisruptedPolyA", allele_type="partial"),
+        ]
+    )
+    alleles = parse.shape_d4z4(data)["alleles"]
+    assert [(a["size"], a["size_label"], a["size_is_lower_bound"]) for a in alleles] == [(4, "4", False), (12, "≥12", True), (10, "≥10", True)]
+    assert [a["allele_type"] for a in alleles] == ["assembled", "merged", "partial"]
+    assert alleles[0]["interpretation"]["status"] == "pathogenic"
+    assert alleles[1]["interpretation"]["status"] == "normal"  # at least 12 units: above the 1-10 range
 
 
 def test_summary_with_no_alleles_is_indeterminate():

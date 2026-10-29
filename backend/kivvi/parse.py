@@ -33,11 +33,20 @@ def unit_ids(allele_name: str) -> list[str]:
     return [t for t in allele_name.split("-") if t and t not in FLANKS]
 
 
+_ALLELE_SIZE = re.compile(r"(>=?)?\s*(\d+)")
+
+
 def parse_allele_size(raw: str) -> tuple[int, bool]:
-    """'28' -> (28, False); '>14' -> (14, True) (a lower bound for partial alleles)."""
-    text = str(raw).strip()
-    lower_bound = text.startswith(">")
-    return int(text.lstrip(">")), lower_bound
+    """'28' -> (28, False); '>14' and '>=14' -> (14, True).
+
+    Kivvi writes a lower bound for partial and merged alleles as '>=N' ("at least N") or '>N' ("more than
+    N"); the docs show only '>N'. Both are kept as a lower bound of N, which for '>N' is one unit short, so
+    an allele's size is never overstated. Anything else is refused rather than guessed at.
+    """
+    match = _ALLELE_SIZE.fullmatch(str(raw).strip())
+    if match is None:
+        raise ValueError(f"Unrecognised Kivvi allele_size {raw!r}; expected N, >N or >=N")
+    return int(match.group(2)), match.group(1) is not None
 
 
 def split_chromosome(raw: str) -> tuple[str, Optional[str]]:

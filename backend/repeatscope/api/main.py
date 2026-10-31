@@ -160,6 +160,13 @@ app.include_router(kivvi_router)
 
 # Runs of Homozygosity is another sibling product, served under /api/roh.
 # Self-contained -- its own sample registry and reference data (roh/analysis.py).
+# Small variants (SNV/indel): genome-wide review of a DeepVariant call set, annotated with
+# ClinVar, gnomAD and HPRC frequencies, served under /api/smallvar. Self-contained -- reads
+# its own VCFs and builds a per-sample SQLite index outside the repo (smallvar/samples.py).
+from smallvar.router import router as smallvar_router  # noqa: E402
+
+app.include_router(smallvar_router)
+
 from roh.router import router as roh_router  # noqa: E402
 
 app.include_router(roh_router)

@@ -1,0 +1,6 @@
+{
+  "label": "HG002 · GIAB v4.2.1 truth set (chr22)",
+  "sex": "male",
+  "sex_source": "GIAB sample metadata: HG002 (NA24385) is male",
+  "caller": "GIAB v4.2.1 benchmark truth set, a consensus of several callers (not a DeepVariant callset)"
+}

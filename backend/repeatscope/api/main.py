@@ -60,6 +60,7 @@ from ..paraphase import (
     load_sawfish_calls,
 )
 from ..rexprt import RexprtScore, load_rexprt_scores
+from ..sc_etr import load_sc_etr_annotations, locus_annotation
 from ..strchive import STATUS_INTERMEDIATE, STATUS_PATHOGENIC
 from ..trgt import TrgtIndex, sample_names, trgt_version
 
@@ -77,6 +78,13 @@ GENES_BED = os.environ.get("REPEATSCOPE_GENES_BED", str(REPO_ROOT / "project" / 
 REXPRT_SCORES_TSV = os.environ.get(
     "REPEATSCOPE_REXPRT_SCORES", str(REPO_ROOT / "project" / "uploads" / "rexprt_scores.hg38.tsv")
 )
+# Expression annotations for the disease panel, derived from the TenK10K paper's released
+# tables (CC BY-NC-ND 4.0, so not redistributed with the repo). Built by
+# scripts/real_data/build_sc_etr_disease_annotation.py; the feature is off when absent.
+SC_ETR_ANNOTATIONS_JSON = os.environ.get(
+    "REPEATSCOPE_SC_ETR_ANNOTATIONS",
+    str(Path.home() / "sc_etr_annotations" / "disease_panel.hg38.json"),
+)
 
 # Genomic gene-body positions, RExPRT scores, and the raw genome-wide catalog
 # itself don't depend on mode/sample, unlike everything else cached below --
@@ -84,6 +92,8 @@ REXPRT_SCORES_TSV = os.environ.get(
 _gene_index: Optional[GeneIndex] = None
 _rexprt_scores: Optional[dict] = None
 _catalog_index: Optional[CatalogIndex] = None
+# (path, mtime_ns) -> parsed annotation file, so rebuilding the file is picked up live.
+_sc_etr_cache: dict[tuple, dict] = {}
 
 
 def _get_gene_index() -> Optional[GeneIndex]:
@@ -573,7 +583,28 @@ def get_locus(locus_id: str, mode: Optional[str] = None, sample: Optional[str] =
         else "unavailable"
     )
     d["caller"] = _caller_label(_modes[m]["sample_paths"][s])
+    d["expression_effects"] = _expression_effects(locus_id)
     return d
+
+
+def _expression_effects(locus_id: str) -> Optional[dict]:
+    """The TenK10K expression annotation for a disease-panel locus.
+
+    None when the annotation file isn't there (the feature is off) or has no entry for the
+    locus. An unreadable or wrong-version file comes back as {"available": False, "error"}
+    so the screen says so, rather than the locus page failing over an optional extra."""
+    path = Path(SC_ETR_ANNOTATIONS_JSON)
+    if not path.is_file():
+        return None
+    key = (str(path), path.stat().st_mtime_ns)
+    if key not in _sc_etr_cache:
+        try:
+            parsed = load_sc_etr_annotations(path)
+        except ValueError as e:
+            return {"available": False, "error": str(e)}
+        _sc_etr_cache.clear()
+        _sc_etr_cache[key] = parsed
+    return locus_annotation(_sc_etr_cache[key], locus_id)
 
 
 @app.get("/api/gene-finding")

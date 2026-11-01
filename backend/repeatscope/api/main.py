@@ -160,6 +160,14 @@ app.include_router(kivvi_router)
 
 # Runs of Homozygosity is another sibling product, served under /api/roh.
 # Self-contained -- its own sample registry and reference data (roh/analysis.py).
+# Structural variants: genome-wide review of a family's SV calls (sawfish, pbsv, sniffles), annotated
+# with MANE gene models, population SV catalogs and genome tracks, served under /api/structvar.
+# Self-contained -- reads its own VCFs and builds a per-call-set SQLite index outside the repo
+# (structvar/samples.py).
+from structvar.router import router as structvar_router  # noqa: E402
+
+app.include_router(structvar_router)
+
 from roh.router import router as roh_router  # noqa: E402
 
 app.include_router(roh_router)

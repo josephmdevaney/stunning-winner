@@ -35,8 +35,8 @@ spec.loader.exec_module(build_genes)
 # ---------------------------------------------------------------- normalisation
 def test_chromosomes_and_size_bins():
     assert canon_chrom("1") == "chr1" and canon_chrom("MT") == "chrM"
-    assert [size_bin(n) for n in (50, 99, 100, 999, 1000, 99_999, 100_000, 999_999, 1_000_000, None)] == [
-        "50–99", "50–99", "100–299", "300–999", "1–10 kb", "10–100 kb", "100 kb–1 Mb", "100 kb–1 Mb", "> 1 Mb", None,
+    assert [size_bin(n) for n in (15, 49, 50, 99, 100, 999, 1000, 99_999, 100_000, 999_999, 1_000_000, None)] == [
+        "< 50", "< 50", "50–99", "50–99", "100–299", "300–999", "1–10 kb", "10–100 kb", "100 kb–1 Mb", "100 kb–1 Mb", "> 1 Mb", None,
     ]
 
 
@@ -776,6 +776,20 @@ def test_a_haploid_carrier_is_hemizygous_not_heterozygous(env):
     assert rows["x_hemi"]["focus"]["ploidy"] == 1 and rows["x_hemi"]["focus"]["copies"] == 1
     assert rows["a_het"]["focus"]["ploidy"] == 2
     assert [x["label"] for x in run(c, zygosity="hom", explain=True)["funnel"]][-1] == "homozygous or hemizygous"
+
+
+def test_calls_under_50_bp_have_their_own_size_bin(env):
+    root = samples.RESULTS_ROOT
+    (root / "SMALL").mkdir()
+    write_vcf(root / "SMALL" / "small.vcf", [
+        rec("chr1", 1000, "del15", "T" + "C" * 15, "T", "PASS", "SVTYPE=DEL;END=1015;SVLEN=-15", ["0/1"], fmt="GT"),
+        rec("chr1", 2000, "ins35", "T", "T" + "A" * 35, "PASS", "SVTYPE=INS;END=2000;SVLEN=35", ["0/1"], fmt="GT"),
+        rec("chr1", 3000, "ins60", "T", "T" + "A" * 60, "PASS", "SVTYPE=INS;END=3000;SVLEN=60", ["0/1"], fmt="GT"),
+    ], header=HAPLOID_HEADER)
+    bins = {b["bin"]: b for b in samples.overview(build("SMALL"))["qc"]["size_bins"]}
+    assert (bins["< 50"]["DEL"], bins["< 50"]["INS"]) == (1, 1) and (bins["50–99"]["DEL"], bins["50–99"]["INS"]) == (0, 1)
+    # a callset with nothing under 50 bp shows no empty bar for it
+    assert "< 50" not in [b["bin"] for b in samples.overview(build("FAM"))["qc"]["size_bins"]]
 
 
 # ---------------------------------------------------------------- the GIAB HG002 truth set (committed, chr22 only)

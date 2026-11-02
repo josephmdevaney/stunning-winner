@@ -9,8 +9,9 @@ CHROM_ORDER.update({"chrX": 23, "chrY": 24, "chrM": 25})
 
 SV_TYPES = ("DEL", "DUP", "INS", "INV", "CNV", "BND")
 
-# (upper bound in bp, label); the last bin is open
-SIZE_BINS = ((100, "50–99"), (300, "100–299"), (1_000, "300–999"), (10_000, "1–10 kb"), (100_000, "10–100 kb"), (1_000_000, "100 kb–1 Mb"))
+# (upper bound in bp, label); the last bin is open. Callers differ in their smallest SV (sawfish keeps deletions from 15 bp and
+# insertions from 35 bp), so calls under 50 bp get their own bin instead of being counted as 50–99.
+SIZE_BINS = ((50, "< 50"), (100, "50–99"), (300, "100–299"), (1_000, "300–999"), (10_000, "1–10 kb"), (100_000, "10–100 kb"), (1_000_000, "100 kb–1 Mb"))
 LAST_BIN = "> 1 Mb"
 
 

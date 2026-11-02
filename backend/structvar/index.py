@@ -28,7 +28,7 @@ from .genes import GeneModels, impacts
 from .normalize import SIZE_BINS, LAST_BIN, SV_TYPES, chrom_order, size_bin
 from .tracks import Tracks
 
-BUILDER_VERSION = 3
+BUILDER_VERSION = 4
 BATCH = 20_000
 MAX_GENES_JSON = 25
 MIN_TRIO_SITES = 200
@@ -265,6 +265,8 @@ def build_index(
     con.executescript(INDEXES)
 
     bins = [b for _, b in SIZE_BINS] + [LAST_BIN]
+    if not any(qc_sizes.get("< 50", Counter()).values()):
+        bins.remove("< 50")  # most callers stop at 50 bp: no empty bar for them
     qc = {
         "records": stats.records, "skipped": stats.skipped, "invalid_records": stats.invalid, "source": stats.source, "samples": names,
         "by_type_all": {t: qc_all_types[t] for t in SV_TYPES}, "by_type_pass": {t: qc_pass_types[t] for t in SV_TYPES},

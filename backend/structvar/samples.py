@@ -2,8 +2,9 @@
 
 A call set is one SV VCF (a joint call across a family, or a single sample) under
 ``$STRUCTVAR_RESULTS_ROOT`` (default ``~/sv_data/samples``) as ``<root>/<callset>/<name>.vcf[.gz]``, with
-an optional ``sample.json``: ``{"label", "caller", "proband", "parents": [..]}``. Real families stay outside
-the repo; the suite ships no sample data.
+an optional ``sample.json``: ``{"label", "caller", "support", "proband", "parents": [..]}`` (``support`` names what AD counts when it is not reads). Real families stay outside
+the repo. A small slice of the public HG002 GIAB v5.0q SV benchmark ships in ``backend/fixtures`` so the
+suite works on a fresh checkout.
 
 Each VCF is read once into a SQLite index (index.py) on a background thread; the screens poll ``status``
 and mount when it is ready. The annotation resources (gene models, population catalogs, genome tracks)
@@ -29,6 +30,8 @@ from .index import Progress
 from .normalize import SV_TYPES, canon_chrom
 from .tracks import Tracks
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+FIXTURE_DIR = REPO_ROOT / "backend" / "fixtures" / "hg002_structvar"
 DATA_ROOT = Path(os.environ.get("STRUCTVAR_DATA", Path.home() / "sv_data"))
 RESULTS_ROOT = Path(os.environ.get("STRUCTVAR_RESULTS_ROOT", DATA_ROOT / "samples"))
 CACHE_DIR = Path(os.environ.get("STRUCTVAR_CACHE", DATA_ROOT / "cache"))
@@ -67,6 +70,8 @@ def _find_vcf(directory: Path) -> Optional[Path]:
 
 def discover() -> List[Callset]:
     out: List[Callset] = []
+    if FIXTURE_DIR.is_dir() and _find_vcf(FIXTURE_DIR):
+        out.append(Callset("HG002_chr22", str(_find_vcf(FIXTURE_DIR)), _read_info(FIXTURE_DIR)))
     if RESULTS_ROOT.is_dir():
         for d in sorted(RESULTS_ROOT.iterdir()):
             vcf = _find_vcf(d) if d.is_dir() else None
@@ -287,10 +292,11 @@ def _clauses(f: Filters, have_pop: bool, have_genes: bool, have_tracks: bool, tr
         c.append((f"size ≤ {f.max_size:,} bp", "(size IS NULL OR size <= ?)", [f.max_size]))
     if f.carried:
         c.append(("carried by the proband", "f_copies > 0", []))
+    # a haploid call (chrX/chrY outside the PARs in a male) that carries the variant is hemizygous: counted with homozygous
     if f.zygosity == "het":
-        c.append(("heterozygous", "f_copies = 1", []))
+        c.append(("heterozygous", "f_copies = 1 AND f_ploidy >= 2", []))
     elif f.zygosity == "hom":
-        c.append(("homozygous", "f_copies >= 2", []))
+        c.append(("homozygous or hemizygous", "(f_copies >= 2 OR (f_copies = 1 AND f_ploidy = 1))", []))
     if trio and f.inheritance in ("de_novo", "inherited", "unknown"):
         label = {"de_novo": "de novo candidate", "inherited": "inherited", "unknown": "inheritance unknown"}[f.inheritance]
         c.append((label, "inh = ?", [f.inheritance]))
@@ -333,7 +339,7 @@ def _row(r: sqlite3.Row) -> Dict[str, Any]:
         "id": r["id"], "vid": r["vid"], "chrom": r["chrom"], "pos": r["pos"], "end": r["end"], "svtype": r["svtype"], "size": r["size"],
         "filter": r["filter"], "passed": bool(r["passed"]), "qual": r["qual"], "imprecise": bool(r["imprecise"]), "symbolic": bool(r["symbolic"]),
         "mate": {"chrom": r["mate_chrom"], "pos": r["mate_pos"]} if r["mate_chrom"] else None, "event": r["event"],
-        "focus": {"gt": r["f_gt"], "copies": r["f_copies"], "gq": r["f_gq"], "alt": r["f_alt"], "dp": r["f_dp"], "cn": r["f_cn"]},
+        "focus": {"gt": r["f_gt"], "copies": r["f_copies"], "ploidy": r["f_ploidy"], "gq": r["f_gq"], "alt": r["f_alt"], "dp": r["f_dp"], "cn": r["f_cn"]},
         "inheritance": r["inh"], "parent_min_dp": r["p_min_dp"], "family": json.loads(r["family"]) if r["family"] else [],
         "n_genes": r["n_genes"], "genes": json.loads(r["gene_json"]) if r["gene_json"] else [], "impact": r["impact"],
         "population": json.loads(r["pop_json"]) if r["pop_json"] else {}, "pop_af_max": r["pop_af_max"], "pop_n": r["pop_n"],
@@ -381,6 +387,7 @@ def query_svs(c: Callset, f: Filters, sort: str = "position", order: str = "asc"
     return {
         "total_all": total_all, "total_matching": matching, "page": page, "page_size": page_size, "rows": [_row(r) for r in rows],
         "funnel": funnel, "ignored_filters": ignored, "population_installed": have_pop, "genes_installed": have_genes,
+        "support_unit": c.info.get("support") or "reads",
         "tracks_installed": have_tracks, "trio": trio,
     }
 
@@ -437,6 +444,11 @@ _overview_cache: Dict[str, Dict[str, Any]] = {}
 
 
 def overview(c: Callset) -> Dict[str, Any]:
+    # the caller named in sample.json is read per request: it is not part of what the index is built from
+    return {**_overview(c), "caller": c.info.get("caller")}
+
+
+def _overview(c: Callset) -> Dict[str, Any]:
     meta = _require_ready(c)
     cached = _overview_cache.get(c.key)
     if cached is not None and cached["_built"] == meta["built"]:

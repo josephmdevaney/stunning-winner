@@ -70,6 +70,7 @@ export interface Resource {
 
 export interface Overview {
   sample: string
+  caller: string | null
   qc: Qc
   funnel: { label: string; count: number }[]
   top_genes: { gene: string; count: number }[]
@@ -105,6 +106,7 @@ export interface FamilyMember {
   role: 'proband' | 'parent' | 'member'
   gt: string
   copies: number
+  ploidy: number
   partial: boolean
   gq: number | null
   alt: number | null
@@ -128,7 +130,7 @@ export interface Sv {
   symbolic: boolean
   mate: { chrom: string; pos: number } | null
   event: string | null
-  focus: { gt: string | null; copies: number | null; gq: number | null; alt: number | null; dp: number | null; cn: number | null }
+  focus: { gt: string | null; copies: number | null; ploidy: number | null; gq: number | null; alt: number | null; dp: number | null; cn: number | null }
   inheritance: 'de_novo' | 'inherited' | 'unknown' | null
   parent_min_dp: number | null
   family: FamilyMember[]
@@ -153,6 +155,7 @@ export interface SvsResponse {
   funnel: { label: string; count: number }[] | null
   ignored_filters: string[]
   population_installed: boolean
+  support_unit: string
   genes_installed: boolean
   tracks_installed: boolean
   trio: boolean

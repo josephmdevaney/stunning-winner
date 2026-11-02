@@ -90,6 +90,21 @@ def test_reader_normalises_each_callers_conventions(tmp_path):
     assert inv.samples[0].copies == 2 and inv.samples[1].copies == 1  # phased genotypes read the same way
 
 
+def test_reader_records_ploidy_so_a_haploid_call_is_not_heterozygous(tmp_path):
+    p = tmp_path / "s.vcf"
+    write_vcf(p, [
+        rec("chrX", 100, "hemi", "T", "T" + "A" * 99, "PASS", "SVTYPE=INS;END=100;SVLEN=100", ["1", "0", "0|1"], fmt="GT"),
+        rec("chrX", 200, "hemiref", "T", "T" + "A" * 99, "PASS", "SVTYPE=INS;END=200;SVLEN=100", ["0", "1", "1|1"], fmt="GT"),
+        rec("chr1", 300, "diploid", "T", "T" + "A" * 99, "PASS", "SVTYPE=INS;END=300;SVLEN=100", ["0|1", "1/1", "1|."], fmt="GT"),
+        rec("chrY", 400, "nocall", "T", "T" + "A" * 99, "PASS", "SVTYPE=INS;END=400;SVLEN=100", [".", "./.", "0|."], fmt="GT"),
+    ])
+    hemi, hemiref, diploid, nocall = vcf.iter_calls(str(p), vcf.ReadStats())
+    assert [(g.copies, g.ploidy) for g in hemi.samples] == [(1, 1), (0, 1), (1, 2)]
+    assert [(g.copies, g.ploidy) for g in hemiref.samples] == [(0, 1), (1, 1), (2, 2)]
+    assert [(g.copies, g.ploidy, g.partial) for g in diploid.samples] == [(1, 2, False), (2, 2, False), (1, 2, True)]
+    assert [g.copies for g in nocall.samples] == [-1, -1, 0]  # a no-call carries nothing, and a half-called reference is still a reference call
+
+
 def test_reader_skips_and_counts_records_with_invalid_alleles(tmp_path):
     p = tmp_path / "s.vcf"
     write_vcf(p, [
@@ -485,6 +500,7 @@ def env(tmp_path, monkeypatch, bundle):
     write_genes(tmp_path / "genes.tsv.gz")
     write_catalog(tmp_path / "cat.tsv.gz")
     monkeypatch.setattr(samples, "RESULTS_ROOT", root)
+    monkeypatch.setattr(samples, "FIXTURE_DIR", tmp_path / "no_fixture")
     monkeypatch.setattr(samples, "CACHE_DIR", tmp_path / "cache")
     monkeypatch.setattr(samples, "GENES_PATH", str(tmp_path / "genes.tsv.gz"))
     monkeypatch.setattr(samples, "CATALOGS_PATH", str(tmp_path / "cat.tsv.gz"))
@@ -527,7 +543,7 @@ def test_index_reads_the_family_and_assigns_roles(env):
 def test_default_view_is_the_proband_s_passing_non_breakend_calls(env):
     c = build()
     r = run(c, page_size=300)
-    assert r["total_all"] == 410 and r["total_matching"] == 207 and r["trio"]
+    assert r["total_all"] == 410 and r["total_matching"] == 207 and r["trio"] and r["support_unit"] == "reads"
     ids = {x["vid"] for x in r["rows"]} & set("abcdefghij")
     assert ids == {"a", "b", "c", "d", "e", "f", "i"}  # g is a breakend, h fails its FILTER, j is not the proband's
     assert run(c, include_bnd=True)["total_matching"] == 208 and run(c, pass_only=False)["total_matching"] == 208
@@ -736,3 +752,98 @@ def test_api_answers_503_until_the_index_is_built(env, monkeypatch):
         release.set()
         samples._threads["FAM"].join(timeout=60)
         assert client.get("/api/structvar/svs").status_code == 200
+
+
+HAPLOID_HEADER = "##fileformat=VCFv4.2\n##source=assembly-truth 1.0\n#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tHG002\n"
+
+
+def test_a_haploid_carrier_is_hemizygous_not_heterozygous(env):
+    root = samples.RESULTS_ROOT
+    (root / "MALE").mkdir()
+    ins = "T" + "A" * 99
+    write_vcf(root / "MALE" / "truth.vcf", [
+        rec("chrX", 1000, "x_hemi", "T", ins, "PASS", "SVTYPE=INS;END=1000;SVLEN=100", ["1"], fmt="GT"),
+        rec("chrX", 2000, "x_ref", "T", ins, "PASS", "SVTYPE=INS;END=2000;SVLEN=100", ["0"], fmt="GT"),
+        rec("chr1", 3000, "a_het", "T", ins, "PASS", "SVTYPE=INS;END=3000;SVLEN=100", ["0|1"], fmt="GT"),
+        rec("chr1", 4000, "a_hom", "T", ins, "PASS", "SVTYPE=INS;END=4000;SVLEN=100", ["1|1"], fmt="GT"),
+        rec("chr1", 5000, "a_half", "T", ins, "PASS", "SVTYPE=INS;END=5000;SVLEN=100", ["1|."], fmt="GT"),
+    ], header=HAPLOID_HEADER)
+    c = build("MALE")
+    assert {r["vid"] for r in run(c, zygosity="het", page_size=50)["rows"]} == {"a_het", "a_half"}
+    assert {r["vid"] for r in run(c, zygosity="hom", page_size=50)["rows"]} == {"x_hemi", "a_hom"}
+    rows = by_vid(run(c, page_size=50))
+    assert set(rows) == {"x_hemi", "a_het", "a_hom", "a_half"}  # the haploid reference call does not carry the variant
+    assert rows["x_hemi"]["focus"]["ploidy"] == 1 and rows["x_hemi"]["focus"]["copies"] == 1
+    assert rows["a_het"]["focus"]["ploidy"] == 2
+    assert [x["label"] for x in run(c, zygosity="hom", explain=True)["funnel"]][-1] == "homozygous or hemizygous"
+
+
+# ---------------------------------------------------------------- the GIAB HG002 truth set (committed, chr22 only)
+TRUTH_VCF = next(iter(sorted((Path(__file__).resolve().parents[1] / "fixtures" / "hg002_structvar").glob("*.vcf.gz"))), None)
+
+
+def truth_counts():
+    """Counts read straight from the VCF text, independent of the suite's reader."""
+    n = {"records": 0, "DEL": 0, "INS": 0, "pass": 0, "carrier": 0, "carrier_pass": 0, "filters": {}}
+    with gzip.open(TRUTH_VCF, "rt") as f:
+        for line in f:
+            if line.startswith("#"):
+                continue
+            p = line.rstrip("\n").split("\t")
+            info = dict(kv.split("=", 1) for kv in p[7].split(";") if "=" in kv)
+            alleles = p[9].split(":")[0].replace("|", "/").split("/")
+            carrier = any(a not in ("0", ".") for a in alleles)
+            ok = p[6] in ("PASS", ".")
+            n["records"] += 1
+            n[info["SVTYPE"]] += 1
+            n["pass"] += ok
+            n["carrier"] += carrier
+            n["carrier_pass"] += carrier and ok
+            for name in p[6].split(";"):
+                n["filters"][name] = n["filters"].get(name, 0) + 1
+    return n
+
+
+@pytest.fixture
+def truth_env(tmp_path, monkeypatch):
+    monkeypatch.setattr(samples, "RESULTS_ROOT", tmp_path / "samples")
+    monkeypatch.setattr(samples, "CACHE_DIR", tmp_path / "cache")
+    for name in ("GENES_PATH", "CATALOGS_PATH", "BUNDLE_PATH"):
+        monkeypatch.setattr(samples, name, str(tmp_path / "absent"))
+    for reg in (samples._resources, samples._overview_cache, samples._threads, samples._progress, samples._errors):
+        reg.clear()
+
+
+@pytest.mark.skipif(TRUTH_VCF is None, reason="the committed HG002 chr22 fixture is not present")
+def test_the_committed_hg002_truth_set_is_discovered_and_reconciles_with_the_file(truth_env):
+    assert [x.key for x in samples.discover()] == ["HG002_chr22"] and samples.default_sample() == "HG002_chr22"
+    c = build("HG002_chr22")
+    raw = truth_counts()
+    qc = samples.overview(c)["qc"]
+    assert samples.overview(c)["caller"].startswith("GIAB v5.0q truth set") and qc["source"] is None  # the VCF has no ##source; sample.json names the caller
+    assert raw["records"] == 2276 and raw["DEL"] + raw["INS"] == 2276  # the fixture is chr22 deletions and insertions of the v5.0q set
+    assert qc["records"] == raw["records"] and qc["invalid_records"] == 0 and qc["skipped"] == 0
+    assert qc["samples"] == ["HG002"] and qc["roles"]["proband"] == "HG002" and qc["roles"]["parents"] == [] and qc["roles"]["source"] == "none"
+    assert qc["by_type_all"]["DEL"] == raw["DEL"] and qc["by_type_all"]["INS"] == raw["INS"]
+    assert qc["by_type_pass"]["DEL"] + qc["by_type_pass"]["INS"] == raw["pass"] == qc["pass_non_bnd"]
+    # the callability flags are FILTER values; a call carrying two of them (HET1;HET2) counts under each
+    flags = {f["filter"]: f["count"] for f in qc["filters"]}
+    assert all(flags.get(k) == v for k, v in raw["filters"].items() if k not in (".", "PASS")) and raw["filters"]["HET2"] == 754
+    default = run(c, page_size=200)
+    assert default["support_unit"] == "haplotype calls"  # AD in an assembly-derived set is not read depth
+    assert default["total_all"] == raw["records"] and default["total_matching"] == raw["carrier_pass"]
+    assert run(c, pass_only=False)["total_matching"] == raw["carrier"]
+    # without parents there is no inheritance, and every annotation resource is reported as absent rather than evaluated
+    assert not default["trio"] and all(r["inheritance"] is None for r in default["rows"])
+    res = {x["key"]: x["installed"] for x in samples.overview(c)["resources"]}
+    assert not any(res.values())
+
+
+@pytest.mark.skipif(TRUTH_VCF is None, reason="the committed HG002 chr22 fixture is not present")
+def test_truth_set_partial_genotypes_still_carry_the_variant(truth_env):
+    c = build("HG002_chr22")
+    rows = run(c, pass_only=False, page_size=200, sort="pos")["rows"]
+    partial = [r for r in rows if r["focus"]["gt"] in ("1|.", ".|1")]
+    assert partial and all(r["focus"]["copies"] == 1 for r in partial)
+    # '0|.' says nothing about the other haplotype: it is a reference call on one, not a carrier
+    assert all(r["focus"]["copies"] != 0 for r in rows)

@@ -30,7 +30,10 @@ function CallSetCard({ o }: { o: Overview }) {
   const maxBin = Math.max(1, ...q.size_bins.map((b) => SIZE_TYPES.reduce((n, t) => n + (b[t] ?? 0), 0)))
   return (
     <div style={cardStyle}>
-      <SectionTitle title="Call set" sub={`${q.source ?? 'Unknown caller'}. Counts are read from the VCF, which holds every family member's calls.`} />
+      <SectionTitle
+        title="Call set"
+        sub={`${q.source ?? o.caller ?? 'Unknown caller'}. Counts are read from the VCF${q.samples.length > 1 ? ", which holds every family member's calls" : ''}.`}
+      />
       {(q.invalid_records > 0 || q.skipped > 0) && (
         <div style={{ background: colors.interpBg.intermediate, color: colors.interpColor.intermediate, borderRadius: 8, padding: '8px 12px', fontSize: 12.5, marginBottom: 14, lineHeight: 1.5 }}>
           {q.invalid_records > 0 && (
@@ -69,7 +72,9 @@ function CallSetCard({ o }: { o: Overview }) {
           <SubHead style={{ marginTop: 18 }}>FILTER values</SubHead>
           {q.filters.slice(0, 8).map((f) => (
             <div key={f.filter} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12.5, padding: '4px 0', borderBottom: `1px solid ${colors.borderSoftest}` }}>
-              <span style={{ fontFamily: mono }}>{f.filter}</span>
+              <span style={{ fontFamily: mono }}>
+                {f.filter === '.' ? '. (not set, counted as PASS)' : f.filter}
+              </span>
               <span style={{ fontFamily: mono, color: colors.textSecondary }}>{fmtInt(f.count)}</span>
             </div>
           ))}

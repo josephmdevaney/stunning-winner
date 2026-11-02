@@ -81,7 +81,7 @@ export function SvsScreen({ sample, initial }: { sample: string; initial: Filter
             </div>
           </Field>
           <Field label="Genotype">
-            <Select value={form.zygosity} onChange={(v) => set('zygosity', v as FilterState['zygosity'])} options={[['any', 'Any'], ['het', 'Heterozygous'], ['hom', 'Homozygous']]} />
+            <Select value={form.zygosity} onChange={(v) => set('zygosity', v as FilterState['zygosity'])} options={[['any', 'Any'], ['het', 'Heterozygous'], ['hom', 'Homozygous or hemizygous']]} />
           </Field>
           <Field label="Gene impact">
             <Select value={form.impact} onChange={(v) => set('impact', v as FilterState['impact'])} options={[
@@ -101,7 +101,7 @@ export function SvsScreen({ sample, initial }: { sample: string; initial: Filter
           <Field label="Parents' depth ≥">
             <input type="number" min={0} value={form.minParentDp} placeholder="any" disabled={!trio} onChange={(e) => set('minParentDp', e.target.value)} onKeyDown={(e) => e.key === 'Enter' && apply()} style={inputStyle} />
           </Field>
-          <Field label="Supporting reads ≥">
+          <Field label={`Supporting ${resp?.support_unit ?? 'reads'} ≥`}>
             <input type="number" min={0} value={form.minAlt} placeholder="any" onChange={(e) => set('minAlt', e.target.value)} onKeyDown={(e) => e.key === 'Enter' && apply()} style={inputStyle} />
           </Field>
           <Field label="Min GQ">
@@ -133,7 +133,12 @@ export function SvsScreen({ sample, initial }: { sample: string; initial: Filter
         </div>
         <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'center', marginTop: 10 }}>
           <Check label="In no population catalog" checked={form.novel} onChange={(v) => set('novel', v)} />
-          <Check label="Not mostly repeat" checked={form.noRepeat} onChange={(v) => set('noRepeat', v)} />
+          <Check
+            label="Not mostly repeat"
+            checked={form.noRepeat}
+            onChange={(v) => set('noRepeat', v)}
+            hint="Most SVs sit in annotated repeats (on the GIAB HG002 truth set about 94% of deletions and 90% of insertions), so this removes most calls. It suits screening for false de novo calls, not browsing."
+          />
           <Check label="Not in a gap, telomere, PAR or V(D)J region" checked={form.noOdd} onChange={(v) => set('noOdd', v)} />
           <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
             <Button onClick={reset}>Reset</Button>
@@ -192,7 +197,7 @@ export function SvsScreen({ sample, initial }: { sample: string; initial: Filter
         </div>
 
         {resp?.rows.map((sv) => (
-          <Row key={sv.id} sv={sv} open={open === sv.id} onToggle={() => setOpen(open === sv.id ? null : sv.id)} sample={sample} popInstalled={resp.population_installed} />
+          <Row key={sv.id} sv={sv} open={open === sv.id} onToggle={() => setOpen(open === sv.id ? null : sv.id)} sample={sample} popInstalled={resp.population_installed} unit={resp.support_unit} />
         ))}
 
         {resp && total === 0 && <Empty resp={resp} />}
@@ -244,9 +249,9 @@ function Select({ value, onChange, options, disabled = false }: { value: string;
   )
 }
 
-function Check({ label, checked, onChange, color }: { label: string; checked: boolean; onChange: (v: boolean) => void; color?: string }) {
+function Check({ label, checked, onChange, color, hint }: { label: string; checked: boolean; onChange: (v: boolean) => void; color?: string; hint?: string }) {
   return (
-    <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12.5, cursor: 'pointer', color: color ?? colors.textPrimary, fontWeight: color ? 600 : 400 }}>
+    <label title={hint} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12.5, cursor: 'pointer', color: color ?? colors.textPrimary, fontWeight: color ? 600 : 400 }}>
       <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
       {label}
     </label>
@@ -272,9 +277,9 @@ function exonText(h: GeneHit): string {
 
 const INH_LABEL: Record<string, string> = { de_novo: 'de novo candidate', inherited: 'inherited', unknown: 'unknown' }
 
-function Row({ sv, open, onToggle, sample, popInstalled }: { sv: Sv; open: boolean; onToggle: () => void; sample: string; popInstalled: boolean }) {
+function Row({ sv, open, onToggle, sample, popInstalled, unit }: { sv: Sv; open: boolean; onToggle: () => void; sample: string; popInstalled: boolean; unit: string }) {
   const top = sv.genes[0]
-  const zyg = sv.focus.copies == null ? '—' : sv.focus.copies >= 2 ? 'hom' : sv.focus.copies === 1 ? 'het' : sv.focus.copies === 0 ? 'ref' : 'no call'
+  const zyg = sv.focus.copies == null ? '—' : sv.focus.copies >= 2 ? 'hom' : sv.focus.copies === 1 ? (sv.focus.ploidy === 1 ? 'hemizygous' : 'het') : sv.focus.copies === 0 ? 'ref' : 'no call'
   return (
     <>
       <div
@@ -300,7 +305,7 @@ function Row({ sv, open, onToggle, sample, popInstalled }: { sv: Sv; open: boole
         </div>
         <div style={{ fontFamily: mono }}>
           {zyg}
-          {sv.focus.alt != null && <span style={{ color: colors.textTertiary }}> · {sv.focus.alt} reads</span>}
+          {sv.focus.alt != null && <span style={{ color: colors.textTertiary }}> · {sv.focus.alt} {unit}</span>}
           {sv.focus.cn != null && <span style={{ color: colors.textTertiary }}> · CN {sv.focus.cn}</span>}
         </div>
         <div>
@@ -337,7 +342,7 @@ function Row({ sv, open, onToggle, sample, popInstalled }: { sv: Sv; open: boole
         </div>
         <div style={{ fontFamily: mono, color: colors.textSecondary }}>{sv.focus.gq ?? '—'}</div>
       </div>
-      {open && <Detail sv={sv} sample={sample} />}
+      {open && <Detail sv={sv} sample={sample} unit={unit} />}
     </>
   )
 }
@@ -350,7 +355,7 @@ function Flag({ children, warn = false }: { children: React.ReactNode; warn?: bo
   )
 }
 
-function Detail({ sv, sample }: { sv: Sv; sample: string }) {
+function Detail({ sv, sample, unit }: { sv: Sv; sample: string; unit: string }) {
   const [gene, setGene] = useState<string | null>(sv.genes[0]?.symbol ?? null)
   const loc = sv.svtype === 'BND' && sv.mate ? `${sv.chrom}:${fmtInt(sv.pos)} ↔ ${sv.mate.chrom}:${fmtInt(sv.mate.pos)}` : sv.svtype === 'INS' ? `${sv.chrom}:${fmtInt(sv.pos)}` : `${sv.chrom}:${fmtInt(sv.pos)}–${fmtInt(sv.end)}`
   return (
@@ -364,7 +369,7 @@ function Detail({ sv, sample }: { sv: Sv; sample: string }) {
           {sv.svtype === 'BND' && <KV k="Breakend" v="One end of a rearrangement; it is not a call of its own and many are artifacts." />}
         </Block>
         <Block title="Family genotypes">
-          <FamilyTable family={sv.family} />
+          <FamilyTable family={sv.family} unit={unit} />
           {sv.inheritance === 'de_novo' && (
             <div style={{ marginTop: 8, padding: '8px 10px', borderRadius: 6, background: colors.interpBg.uncertain, color: colors.interpColor.uncertain, lineHeight: 1.5 }}>
               Neither parent has a call here
@@ -429,7 +434,7 @@ function Detail({ sv, sample }: { sv: Sv; sample: string }) {
   )
 }
 
-function FamilyTable({ family }: { family: FamilyMember[] }) {
+function FamilyTable({ family, unit }: { family: FamilyMember[]; unit: string }) {
   const cols = '1.2fr 0.8fr 0.7fr 1fr 0.5fr'
   return (
     <div>
@@ -437,7 +442,7 @@ function FamilyTable({ family }: { family: FamilyMember[] }) {
         <div>Sample</div>
         <div>Role</div>
         <div>GT</div>
-        <div>Reads (alt / ref)</div>
+        <div style={{ textTransform: 'none' }}>{unit.charAt(0).toUpperCase() + unit.slice(1)} (alt / ref)</div>
         <div>GQ</div>
       </div>
       {family.map((m) => (

@@ -28,7 +28,7 @@ from .genes import GeneModels, impacts
 from .normalize import SIZE_BINS, LAST_BIN, SV_TYPES, chrom_order, size_bin
 from .tracks import Tracks
 
-BUILDER_VERSION = 2
+BUILDER_VERSION = 3
 BATCH = 20_000
 MAX_GENES_JSON = 25
 MIN_TRIO_SITES = 200
@@ -40,7 +40,7 @@ CREATE TABLE svs (
     vid TEXT, chrom TEXT NOT NULL, chrom_order INTEGER NOT NULL, pos INTEGER NOT NULL, end INTEGER NOT NULL,
     svtype TEXT NOT NULL, size INTEGER, size_bin TEXT, filter TEXT, passed INTEGER NOT NULL, qual REAL,
     imprecise INTEGER NOT NULL, symbolic INTEGER NOT NULL, mate_chrom TEXT, mate_pos INTEGER, event TEXT,
-    f_gt TEXT, f_copies INTEGER, f_gq INTEGER, f_alt INTEGER, f_dp INTEGER, f_cn REAL,
+    f_gt TEXT, f_copies INTEGER, f_ploidy INTEGER, f_gq INTEGER, f_alt INTEGER, f_dp INTEGER, f_cn REAL,
     p1_copies INTEGER, p1_dp INTEGER, p2_copies INTEGER, p2_dp INTEGER, inh TEXT, p_min_dp INTEGER,
     family TEXT,
     n_genes INTEGER NOT NULL, genes TEXT, impact TEXT NOT NULL, impact_rank INTEGER NOT NULL, gene_json TEXT,
@@ -206,7 +206,7 @@ def build_index(
         if inh == "de_novo" and counted:
             n_denovo += 1
         family = json.dumps([
-            {"sample": names[i], "role": role_of[i], "gt": g.gt, "copies": g.copies, "partial": g.partial, "gq": g.gq,
+            {"sample": names[i], "role": role_of[i], "gt": g.gt, "copies": g.copies, "ploidy": g.ploidy, "partial": g.partial, "gq": g.gq,
              "alt": g.ad_alt, "ref": g.ad_ref, "dp": g.dp, "cn": g.cn}
             for i, g in enumerate(c.samples)
         ])
@@ -242,7 +242,7 @@ def build_index(
         rows.append((
             sv_id, c.vid, c.chrom, chrom_order(c.chrom), c.pos, c.end, c.svtype, c.size, size_bin(c.size), c.filter, int(c.passed), c.qual,
             int(c.imprecise), int(c.symbolic), c.mate_chrom, c.mate_pos, c.event,
-            f.gt if f else None, f.copies if f else None, f.gq if f else None, f.ad_alt if f else None, f.dp if f else None, f.cn if f else None,
+            f.gt if f else None, f.copies if f else None, f.ploidy if f else None, f.gq if f else None, f.ad_alt if f else None, f.dp if f else None, f.cn if f else None,
             p[0].copies if len(p) == 2 else None, p[0].dp if len(p) == 2 else None, p[1].copies if len(p) == 2 else None, p[1].dp if len(p) == 2 else None,
             inh, p_min_dp, family,
             len(hits), ",".join(str(h["symbol"]) for h in hits[:8]) or None, str(best["relation"]) if best else "none", int(best["rank"]) if best else 0,
@@ -250,11 +250,11 @@ def build_index(
             len(matches), pop_max, g_af, g_pm, h_af, pop_json, segdup, odd, None, None,
         ))
         if len(rows) >= BATCH:
-            con.executemany(f"INSERT INTO svs VALUES ({','.join('?' * 45)})", rows)
+            con.executemany(f"INSERT INTO svs VALUES ({','.join('?' * 46)})", rows)
             con.executemany("INSERT INTO sv_genes VALUES (?, ?, ?, ?)", gene_rows)
             rows, gene_rows = [], []
     if rows:
-        con.executemany(f"INSERT INTO svs VALUES ({','.join('?' * 45)})", rows)
+        con.executemany(f"INSERT INTO svs VALUES ({','.join('?' * 46)})", rows)
         con.executemany("INSERT INTO sv_genes VALUES (?, ?, ?, ?)", gene_rows)
 
     if tracks is not None and tracks.has_repeats and repeat_spans:

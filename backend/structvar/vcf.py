@@ -12,7 +12,7 @@ normalises what the review screens need:
 
 A genotype is kept per sample. ``copies`` is the number of ALT alleles the genotype carries: 0 reference,
 1 heterozygous, 2 homozygous, and -1 for a no-call. A half-called genotype such as ``./1`` still carries
-the variant (copies 1, ``partial`` set). A record whose REF or ALT is not valid VCF (one pbsv insertion at a contig end in the data this was built on
+the variant (copies 1, ``partial`` set). A haploid call (a bare ``1``) has ploidy 1 and is hemizygous, not heterozygous. A record whose REF or ALT is not valid VCF (one pbsv insertion at a contig end in the data this was built on
 has a NUL byte for REF) is skipped and counted, not read as if it were sound. Support comes from whichever fields the caller wrote: AD (ref,alt),
 DV/DR (sniffles), DP, GQ, and CN for copy-number events.
 """
@@ -37,6 +37,7 @@ class Genotype(NamedTuple):
     gt: str
     copies: int
     partial: bool
+    ploidy: int  # alleles written in GT: 1 for a haploid call (chrX/chrY outside the PARs in a male)
     gq: Optional[int]
     ad_ref: Optional[int]
     ad_alt: Optional[int]
@@ -128,7 +129,7 @@ def parse_genotype(sample: str, keys: Dict[str, int]) -> Genotype:
     dp = _int(get("DP"))
     if dp is None and ad_ref is not None and ad_alt is not None:
         dp = ad_ref + ad_alt
-    return Genotype(gt, copies, partial, _int(get("GQ")) if get("GQ") is not None else _int(get("CNQ")), ad_ref, ad_alt, dp, _float(get("CN")))
+    return Genotype(gt, copies, partial, len(alleles), _int(get("GQ")) if get("GQ") is not None else _int(get("CNQ")), ad_ref, ad_alt, dp, _float(get("CN")))
 
 
 def iter_calls(path: str, stats: Optional[ReadStats] = None) -> Iterator[SvCall]:

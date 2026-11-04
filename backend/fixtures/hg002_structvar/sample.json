@@ -1,0 +1,5 @@
+{
+  "label": "HG002 · GIAB v5.0q SV benchmark (chr22)",
+  "caller": "GIAB v5.0q truth set, derived from the HG002 diploid assembly (not a read-based caller)",
+  "support": "haplotype calls"
+}

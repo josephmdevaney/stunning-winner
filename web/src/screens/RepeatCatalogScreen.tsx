@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { api, type CatalogResponse, type CatalogRow, type RexprtPathogenicity } from '../api'
+import { api, type CatalogResponse, type CatalogRow, type CatalogsResponse, type RexprtPathogenicity } from '../api'
 import { colors, mono } from '../theme'
 import { StatCard, StatGrid } from '../components/StatCard'
 
@@ -67,6 +67,9 @@ function PathogenicityBadge({ pathogenicity }: { pathogenicity: CatalogRow['path
 
 export function RepeatCatalogScreen({ mode, sample }: { mode: string; sample: string }) {
   const [data, setData] = useState<CatalogResponse | null>(null)
+  const [catalogs, setCatalogs] = useState<CatalogsResponse | null>(null)
+  // null until the user picks one: the server's default catalog is what loads first.
+  const [catalog, setCatalog] = useState<string | null>(null)
   const [chrom, setChrom] = useState('all')
   const [motif, setMotif] = useState('')
   const [minLen, setMinLen] = useState('')
@@ -74,14 +77,25 @@ export function RepeatCatalogScreen({ mode, sample }: { mode: string; sample: st
   const [page, setPage] = useState(0)
 
   useEffect(() => {
+    api.catalogs().then(setCatalogs)
+  }, [])
+
+  useEffect(() => {
     setData(null)
     api
       .catalog({
-        mode, sample, chrom, motif, minLen: minLen ? Number(minLen) : undefined,
+        mode, sample, catalog: catalog ?? undefined, chrom, motif, minLen: minLen ? Number(minLen) : undefined,
         rexprtPathogenicOnly, page, pageSize: PAGE_SIZE,
       })
       .then(setData)
-  }, [mode, sample, chrom, motif, minLen, rexprtPathogenicOnly, page])
+  }, [mode, sample, catalog, chrom, motif, minLen, rexprtPathogenicOnly, page])
+
+  // Each catalog has its own chromosomes and loci, so a filter from one doesn't carry to the next.
+  const chooseCatalog = (id: string) => {
+    if (id === (catalog ?? catalogs?.default)) return
+    setCatalog(id)
+    clearFilters()
+  }
 
   const clearFilters = () => {
     setChrom('all')
@@ -95,7 +109,7 @@ export function RepeatCatalogScreen({ mode, sample }: { mode: string; sample: st
     return (
       <div style={{ padding: 28 }}>
         <div style={{ background: 'white', border: `1px solid ${colors.border}`, borderRadius: 12, padding: '60px 24px', textAlign: 'center', color: colors.textSecondary, fontSize: 14 }}>
-          Loading genome-wide repeat catalog…
+          Loading {catalogs?.catalogs.find((c) => c.id === (catalog ?? catalogs.default))?.label ?? 'genome-wide repeat catalog'}…
         </div>
       </div>
     )
@@ -107,14 +121,60 @@ export function RepeatCatalogScreen({ mode, sample }: { mode: string; sample: st
 
   return (
     <div style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {catalogs && catalogs.catalogs.length > 1 && (
+        <div style={{ background: 'white', border: `1px solid ${colors.border}`, borderRadius: 12, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+          <Field label="Catalog">
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {catalogs.catalogs.map((c) => {
+                const selected = c.id === data.catalog.id
+                return (
+                  <div
+                    key={c.id}
+                    role="button"
+                    aria-pressed={selected}
+                    onClick={() => chooseCatalog(c.id)}
+                    style={{
+                      padding: '8px 14px',
+                      borderRadius: 7,
+                      border: `1px solid ${selected ? colors.textPrimary : colors.borderInput}`,
+                      fontSize: 13,
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      background: selected ? colors.textPrimary : 'transparent',
+                      color: selected ? 'white' : colors.textBody,
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {c.label} · {c.total.toLocaleString()}
+                  </div>
+                )
+              })}
+            </div>
+          </Field>
+          <div style={{ flex: 1, minWidth: 260, fontSize: 12, color: colors.textSecondary, lineHeight: 1.5, alignSelf: 'end' }}>{data.catalog.description}</div>
+        </div>
+      )}
+
+      {!data.genotypes_available && (
+        <div style={{ background: colors.interpBg.uncertain, border: `1px solid ${colors.statusUncertain}`, borderRadius: 12, padding: '12px 20px', fontSize: 12, color: colors.textBody, lineHeight: 1.5 }}>
+          <strong style={{ color: colors.interpColor.uncertain }}>No genotypes for this sample</strong> — this sample has no genome-wide TRGT
+          run against the {data.catalog.label}'s loci, so A1, A2 and Depth are empty because nothing was genotyped, not because
+          the alleles are absent.
+        </div>
+      )}
+
       <StatGrid>
-        <StatCard label="Total repeat regions" value={data.total_all.toLocaleString()} sub="Genome-wide, TRGT calls for this sample" />
+        <StatCard
+          label="Total repeat regions"
+          value={data.total_all.toLocaleString()}
+          sub={data.genotypes_available ? 'Genome-wide, TRGT calls for this sample' : 'No TRGT calls for this sample'}
+        />
         <StatCard label="Unique motifs" value={data.unique_motifs.toLocaleString()} sub="Distinct motif sequences" />
         <StatCard label="Chromosomes covered" value={String(data.chromosomes.length - 1)} sub="Autosomes + X/Y" />
         <StatCard
           label="RExPRT predicted pathogenic"
-          value={data.n_rexprt_predicted_pathogenic.toLocaleString()}
-          sub={`Of ${data.n_rexprt_evaluated.toLocaleString()} evaluated (research signal, not diagnostic)`}
+          value={data.n_catalog_rexprt_predicted_pathogenic.toLocaleString()}
+          sub={`${data.n_catalog_rexprt_evaluated.toLocaleString()} of this catalog's loci evaluated (research signal, not diagnostic)`}
         />
       </StatGrid>
 

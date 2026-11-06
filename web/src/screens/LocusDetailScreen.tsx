@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { api, type LocusDetail } from '../api'
 import { colors, interpBg, interpColor, mono } from '../theme'
 import { Card, CardHeading } from '../components/Card'
+import { ExpressionEffectsCard } from '../components/ExpressionEffectsCard'
 import { Pileup } from '../charts/Pileup'
 import { AlleleHistogram } from '../charts/AlleleHistogram'
 import { MethylationPanel } from '../charts/MethylationPanel'
@@ -85,6 +86,8 @@ export function LocusDetailScreen({
             <MethylationPanel a1Methylation={locus.a1_methylation} a2Methylation={locus.a2_methylation} genotyped={locus.genotyped} />
           </Card>
         </div>
+
+        {locus.expression_effects && <ExpressionEffectsCard data={locus.expression_effects} motif={locus.motif} />}
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>

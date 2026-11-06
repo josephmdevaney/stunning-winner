@@ -1,0 +1,887 @@
+{
+  "source": {
+    "title": "Multi-locus imprinting disturbance (MLID): interim joint statement for clinical and molecular diagnosis",
+    "journal": "Clinical Epigenetics 2024",
+    "pmcid": "PMC11295890",
+    "table": "Table 1",
+    "genome_build": "GRCh38",
+    "license": "CC BY 4.0 (open access)",
+    "coordinates": "start is 0-based, end exclusive (bed convention); the paper prints 1-based inclusive"
+  },
+  "regions": [
+    {
+      "id": "ppiel-ex1-dmr",
+      "name": "PPIEL:Ex1-DMR",
+      "aliases": [],
+      "disorders": [],
+      "disorder_notes": [],
+      "chrom": "chr1",
+      "start": 39558952,
+      "end": 39559868,
+      "n_cpgs_published": 39,
+      "category": "NC",
+      "primary_diagnostic": false,
+      "imprint_origin": "Oocyte_gDMR",
+      "methylated_allele": "maternal",
+      "methylated_allele_source": "imprint origin"
+    },
+    {
+      "id": "diras3-ex2-dmr",
+      "name": "DIRAS3:Ex2-DMR",
+      "aliases": [],
+      "disorders": [],
+      "disorder_notes": [],
+      "chrom": "chr1",
+      "start": 68046820,
+      "end": 68047803,
+      "n_cpgs_published": 88,
+      "category": "NC",
+      "primary_diagnostic": false,
+      "imprint_origin": "Oocyte_gDMR",
+      "methylated_allele": "maternal",
+      "methylated_allele_source": "imprint origin"
+    },
+    {
+      "id": "diras3-tss-dmr",
+      "name": "DIRAS3:TSS-DMR",
+      "aliases": [],
+      "disorders": [],
+      "disorder_notes": [],
+      "chrom": "chr1",
+      "start": 68049748,
+      "end": 68051862,
+      "n_cpgs_published": 39,
+      "category": "NC",
+      "primary_diagnostic": false,
+      "imprint_origin": "Oocyte_gDMR",
+      "methylated_allele": "maternal",
+      "methylated_allele_source": "imprint origin"
+    },
+    {
+      "id": "gpr1-as-tss-dmr",
+      "name": "GPR1-AS:TSS-DMR",
+      "aliases": [],
+      "disorders": [],
+      "disorder_notes": [],
+      "chrom": "chr2",
+      "start": 206202241,
+      "end": 206204721,
+      "n_cpgs_published": 86,
+      "category": "X",
+      "primary_diagnostic": false,
+      "imprint_origin": "Oocyte_gDMR",
+      "methylated_allele": "maternal",
+      "methylated_allele_source": "imprint origin"
+    },
+    {
+      "id": "zdbf2-gpr1-ig-dmr",
+      "name": "ZDBF2/GPR1:IG-DMR",
+      "aliases": [],
+      "disorders": [],
+      "disorder_notes": [],
+      "chrom": "chr2",
+      "start": 206249857,
+      "end": 206271820,
+      "n_cpgs_published": 439,
+      "category": "NC",
+      "primary_diagnostic": false,
+      "imprint_origin": "Sperm_gDMR-secondary_DMR",
+      "methylated_allele": null,
+      "methylated_allele_source": null
+    },
+    {
+      "id": "nap1l5-tss-dmr",
+      "name": "NAP1L5:TSS-DMR",
+      "aliases": [],
+      "disorders": [],
+      "disorder_notes": [],
+      "chrom": "chr4",
+      "start": 88697031,
+      "end": 88698086,
+      "n_cpgs_published": 57,
+      "category": "NC",
+      "primary_diagnostic": false,
+      "imprint_origin": "Oocyte_gDMR",
+      "methylated_allele": "maternal",
+      "methylated_allele_source": "imprint origin"
+    },
+    {
+      "id": "vtrna2-1-dmr",
+      "name": "VTRNA2-1:DMR",
+      "aliases": [],
+      "disorders": [],
+      "disorder_notes": [],
+      "chrom": "chr5",
+      "start": 136079111,
+      "end": 136080956,
+      "n_cpgs_published": 76,
+      "category": "X",
+      "primary_diagnostic": false,
+      "imprint_origin": "Oocyte_gDMR",
+      "methylated_allele": "maternal",
+      "methylated_allele_source": "imprint origin"
+    },
+    {
+      "id": "fam50b-tss-dmr",
+      "name": "FAM50B:TSS-DMR",
+      "aliases": [],
+      "disorders": [],
+      "disorder_notes": [],
+      "chrom": "chr6",
+      "start": 3848846,
+      "end": 3850125,
+      "n_cpgs_published": 90,
+      "category": "NC",
+      "primary_diagnostic": false,
+      "imprint_origin": "Oocyte_gDMR",
+      "methylated_allele": "maternal",
+      "methylated_allele_source": "imprint origin"
+    },
+    {
+      "id": "plagl1-alt-tss-dmr",
+      "name": "PLAGL1:alt-TSS-DMR",
+      "aliases": [
+        "PLAGL1",
+        "ZAC1",
+        "6q24"
+      ],
+      "disorders": [
+        "Transient neonatal diabetes mellitus type 1"
+      ],
+      "disorder_notes": [],
+      "chrom": "chr6",
+      "start": 144006939,
+      "end": 144008751,
+      "n_cpgs_published": 143,
+      "category": "CA",
+      "primary_diagnostic": false,
+      "imprint_origin": "Oocyte_gDMR",
+      "methylated_allele": "maternal",
+      "methylated_allele_source": "imprint origin",
+      "core": {
+        "chrom": "chr6",
+        "start": 144007779,
+        "end": 144008709
+      }
+    },
+    {
+      "id": "igf2r-int2-dmr",
+      "name": "IGF2R:Int2-DMR",
+      "aliases": [],
+      "disorders": [],
+      "disorder_notes": [],
+      "chrom": "chr6",
+      "start": 160005524,
+      "end": 160006529,
+      "n_cpgs_published": 74,
+      "category": "NC",
+      "primary_diagnostic": false,
+      "imprint_origin": "Oocyte_gDMR",
+      "methylated_allele": "maternal",
+      "methylated_allele_source": "imprint origin"
+    },
+    {
+      "id": "wdr27-int13-dmr",
+      "name": "WDR27:Int13-DMR",
+      "aliases": [],
+      "disorders": [],
+      "disorder_notes": [],
+      "chrom": "chr6",
+      "start": 169654406,
+      "end": 169655522,
+      "n_cpgs_published": 58,
+      "category": "X",
+      "primary_diagnostic": false,
+      "imprint_origin": "Oocyte_gDMR",
+      "methylated_allele": "maternal",
+      "methylated_allele_source": "imprint origin"
+    },
+    {
+      "id": "grb10-alt-tss-dmr",
+      "name": "GRB10:alt-TSS-DMR",
+      "aliases": [
+        "GRB10"
+      ],
+      "disorders": [
+        "Silver-Russell syndrome"
+      ],
+      "disorder_notes": [
+        "MLID (ZFP57)",
+        "upd[7]mat"
+      ],
+      "chrom": "chr7",
+      "start": 50781027,
+      "end": 50783615,
+      "n_cpgs_published": 171,
+      "category": "CA",
+      "primary_diagnostic": false,
+      "imprint_origin": "Oocyte_gDMR",
+      "methylated_allele": "maternal",
+      "methylated_allele_source": "imprint origin",
+      "core": {
+        "chrom": "chr7",
+        "start": 50782055,
+        "end": 50783174
+      }
+    },
+    {
+      "id": "peg10-tss-dmr",
+      "name": "PEG10:TSS-DMR",
+      "aliases": [],
+      "disorders": [],
+      "disorder_notes": [],
+      "chrom": "chr7",
+      "start": 94656223,
+      "end": 94658648,
+      "n_cpgs_published": 119,
+      "category": "NC",
+      "primary_diagnostic": false,
+      "imprint_origin": "Oocyte_gDMR",
+      "methylated_allele": "maternal",
+      "methylated_allele_source": "imprint origin"
+    },
+    {
+      "id": "mest-alt-tss-dmr",
+      "name": "MEST:alt-TSS-DMR",
+      "aliases": [
+        "MEST"
+      ],
+      "disorders": [
+        "Silver-Russell syndrome"
+      ],
+      "disorder_notes": [
+        "upd(7)mat"
+      ],
+      "chrom": "chr7",
+      "start": 130490279,
+      "end": 130494547,
+      "n_cpgs_published": 226,
+      "category": "CA",
+      "primary_diagnostic": false,
+      "imprint_origin": "Oocyte_gDMR",
+      "methylated_allele": "maternal",
+      "methylated_allele_source": "imprint origin",
+      "core": {
+        "chrom": "chr7",
+        "start": 130490898,
+        "end": 130493270
+      }
+    },
+    {
+      "id": "svopl-alt-tss-dmr",
+      "name": "SVOPL:alt-TSS-DMR",
+      "aliases": [],
+      "disorders": [],
+      "disorder_notes": [],
+      "chrom": "chr7",
+      "start": 138663371,
+      "end": 138664324,
+      "n_cpgs_published": 74,
+      "category": "NC",
+      "primary_diagnostic": false,
+      "imprint_origin": "Oocyte_gDMR",
+      "methylated_allele": "maternal",
+      "methylated_allele_source": "imprint origin"
+    },
+    {
+      "id": "htr5a-tss-dmr",
+      "name": "HTR5A:TSS-DMR",
+      "aliases": [],
+      "disorders": [],
+      "disorder_notes": [],
+      "chrom": "chr7",
+      "start": 155071007,
+      "end": 155071672,
+      "n_cpgs_published": 55,
+      "category": "NC",
+      "primary_diagnostic": false,
+      "imprint_origin": "Oocyte_gDMR",
+      "methylated_allele": "maternal",
+      "methylated_allele_source": "imprint origin"
+    },
+    {
+      "id": "erlin2-int6-dmr",
+      "name": "ERLIN2:Int6-DMR",
+      "aliases": [],
+      "disorders": [],
+      "disorder_notes": [],
+      "chrom": "chr8",
+      "start": 37747472,
+      "end": 37748570,
+      "n_cpgs_published": 37,
+      "category": "NC",
+      "primary_diagnostic": false,
+      "imprint_origin": "Oocyte_gDMR",
+      "methylated_allele": "maternal",
+      "methylated_allele_source": "imprint origin"
+    },
+    {
+      "id": "peg13-tss-dmr",
+      "name": "PEG13:TSS-DMR",
+      "aliases": [],
+      "disorders": [],
+      "disorder_notes": [],
+      "chrom": "chr8",
+      "start": 140098046,
+      "end": 140100982,
+      "n_cpgs_published": 193,
+      "category": "NC",
+      "primary_diagnostic": false,
+      "imprint_origin": "Oocyte_gDMR",
+      "methylated_allele": "maternal",
+      "methylated_allele_source": "imprint origin"
+    },
+    {
+      "id": "fancc-int1-dmr",
+      "name": "FANCC:Int1-DMR",
+      "aliases": [],
+      "disorders": [],
+      "disorder_notes": [],
+      "chrom": "chr9",
+      "start": 95313116,
+      "end": 95313462,
+      "n_cpgs_published": 26,
+      "category": "NC",
+      "primary_diagnostic": false,
+      "imprint_origin": "Oocyte_gDMR",
+      "methylated_allele": "maternal",
+      "methylated_allele_source": "imprint origin"
+    },
+    {
+      "id": "inpp5f-int2-dmr",
+      "name": "INPP5F:Int2-DMR",
+      "aliases": [],
+      "disorders": [],
+      "disorder_notes": [],
+      "chrom": "chr10",
+      "start": 119818532,
+      "end": 119819215,
+      "n_cpgs_published": 52,
+      "category": "X",
+      "primary_diagnostic": false,
+      "imprint_origin": "Oocyte_gDMR",
+      "methylated_allele": "maternal",
+      "methylated_allele_source": "imprint origin"
+    },
+    {
+      "id": "h19-igf2-ig-dmr-tss-dmr",
+      "name": "H19/IGF2:IG-DMR & TSS-DMR",
+      "aliases": [
+        "IC1",
+        "H19"
+      ],
+      "disorders": [
+        "Silver-Russell syndrome",
+        "Beckwith-Wiedemann syndrome"
+      ],
+      "disorder_notes": [],
+      "chrom": "chr11",
+      "start": 1997580,
+      "end": 2003510,
+      "n_cpgs_published": 250,
+      "category": "CA",
+      "primary_diagnostic": true,
+      "imprint_origin": "Sperm_gDMR",
+      "methylated_allele": "paternal",
+      "methylated_allele_source": "imprint origin",
+      "core": {
+        "chrom": "chr11",
+        "start": 1998200,
+        "end": 2003508
+      }
+    },
+    {
+      "id": "igf2-ex9-dmr",
+      "name": "IGF2:Ex9-DMR",
+      "aliases": [],
+      "disorders": [
+        "Silver-Russell syndrome",
+        "Beckwith-Wiedemann syndrome"
+      ],
+      "disorder_notes": [],
+      "chrom": "chr11",
+      "start": 2132759,
+      "end": 2133882,
+      "n_cpgs_published": 63,
+      "category": "CA",
+      "primary_diagnostic": false,
+      "imprint_origin": "secondary_DMR",
+      "methylated_allele": null,
+      "methylated_allele_source": null
+    },
+    {
+      "id": "igf2-alt-tss-dmr",
+      "name": "IGF2:alt-TSS-DMR",
+      "aliases": [],
+      "disorders": [
+        "Silver-Russell syndrome"
+      ],
+      "disorder_notes": [],
+      "chrom": "chr11",
+      "start": 2147101,
+      "end": 2148538,
+      "n_cpgs_published": 33,
+      "category": "CA",
+      "primary_diagnostic": false,
+      "imprint_origin": "Sperm_gDMR",
+      "methylated_allele": "paternal",
+      "methylated_allele_source": "imprint origin"
+    },
+    {
+      "id": "kcnq1ot1-tss-dmr",
+      "name": "KCNQ1OT1:TSS-DMR",
+      "aliases": [
+        "IC2",
+        "KvDMR"
+      ],
+      "disorders": [
+        "Beckwith-Wiedemann syndrome"
+      ],
+      "disorder_notes": [],
+      "chrom": "chr11",
+      "start": 2698716,
+      "end": 2701029,
+      "n_cpgs_published": 192,
+      "category": "CA",
+      "primary_diagnostic": false,
+      "imprint_origin": "Oocyte_gDMR",
+      "methylated_allele": "maternal",
+      "methylated_allele_source": "imprint origin",
+      "core": {
+        "chrom": "chr11",
+        "start": 2699180,
+        "end": 2700857
+      }
+    },
+    {
+      "id": "rb1-int2-dmr",
+      "name": "RB1:Int2-DMR",
+      "aliases": [],
+      "disorders": [],
+      "disorder_notes": [],
+      "chrom": "chr13",
+      "start": 48318203,
+      "end": 48321627,
+      "n_cpgs_published": 195,
+      "category": "NC",
+      "primary_diagnostic": false,
+      "imprint_origin": "Oocyte_gDMR",
+      "methylated_allele": "maternal",
+      "methylated_allele_source": "imprint origin"
+    },
+    {
+      "id": "meg3-dlk1-ig-dmr",
+      "name": "MEG3/DLK1:IG-DMR",
+      "aliases": [
+        "IG-DMR"
+      ],
+      "disorders": [
+        "Temple syndrome",
+        "Kagami-Ogata syndrome"
+      ],
+      "disorder_notes": [],
+      "chrom": "chr14",
+      "start": 100809088,
+      "end": 100811721,
+      "n_cpgs_published": 64,
+      "category": "CA",
+      "primary_diagnostic": false,
+      "imprint_origin": "Sperm_gDMR",
+      "methylated_allele": "paternal",
+      "methylated_allele_source": "imprint origin",
+      "coordinate_notes": "The 2022 multi-locus testing consensus (Clin Epigenet, PMC9641836, Table 2) gives chr14:100,811,001-100,811,037 (determined by a different study); this 2024 table gives chr14:100,809,089-100,811,721. The wider 2024 interval is used."
+    },
+    {
+      "id": "meg3-tss-dmr",
+      "name": "MEG3:TSS-DMR",
+      "aliases": [
+        "MEG3"
+      ],
+      "disorders": [
+        "Temple syndrome",
+        "Kagami-Ogata syndrome"
+      ],
+      "disorder_notes": [],
+      "chrom": "chr14",
+      "start": 100824185,
+      "end": 100827641,
+      "n_cpgs_published": 188,
+      "category": "CA",
+      "primary_diagnostic": true,
+      "imprint_origin": "secondary_DMR",
+      "methylated_allele": "paternal",
+      "methylated_allele_source": "Ivashchenko 2025 Table S3 (Joshi 2016)",
+      "core": {
+        "chrom": "chr14",
+        "start": 100825706,
+        "end": 100826764
+      }
+    },
+    {
+      "id": "meg8-int2-dmr",
+      "name": "MEG8:Int2-DMR",
+      "aliases": [],
+      "disorders": [],
+      "disorder_notes": [],
+      "chrom": "chr14",
+      "start": 100904402,
+      "end": 100905082,
+      "n_cpgs_published": 43,
+      "category": "X",
+      "primary_diagnostic": false,
+      "imprint_origin": "secondary_DMR",
+      "methylated_allele": null,
+      "methylated_allele_source": null
+    },
+    {
+      "id": "mkrn3-tss-dmr",
+      "name": "MKRN3:TSS-DMR",
+      "aliases": [],
+      "disorders": [],
+      "disorder_notes": [],
+      "chrom": "chr15",
+      "start": 23561937,
+      "end": 23567348,
+      "n_cpgs_published": 109,
+      "category": "X",
+      "primary_diagnostic": false,
+      "imprint_origin": "Oocyte_gDMR-secondary_DMR",
+      "methylated_allele": null,
+      "methylated_allele_source": null
+    },
+    {
+      "id": "magel2-tss-dmr",
+      "name": "MAGEL2:TSS-DMR",
+      "aliases": [],
+      "disorders": [],
+      "disorder_notes": [],
+      "chrom": "chr15",
+      "start": 23647276,
+      "end": 23648882,
+      "n_cpgs_published": 51,
+      "category": "NC",
+      "primary_diagnostic": false,
+      "imprint_origin": "secondary_DMR",
+      "methylated_allele": "maternal",
+      "methylated_allele_source": "Ivashchenko 2025 Table S3 (Joshi 2016)"
+    },
+    {
+      "id": "ndn-tss-dmr",
+      "name": "NDN:TSS-DMR",
+      "aliases": [],
+      "disorders": [],
+      "disorder_notes": [],
+      "chrom": "chr15",
+      "start": 23686302,
+      "end": 23687612,
+      "n_cpgs_published": 108,
+      "category": "NC",
+      "primary_diagnostic": false,
+      "imprint_origin": "secondary_DMR",
+      "methylated_allele": "maternal",
+      "methylated_allele_source": "Ivashchenko 2025 Table S3 (Joshi 2016)"
+    },
+    {
+      "id": "snrpn-alt-tss-dmr",
+      "name": "SNRPN:alt-TSS-DMR",
+      "aliases": [],
+      "disorders": [],
+      "disorder_notes": [],
+      "chrom": "chr15",
+      "start": 24823415,
+      "end": 24824334,
+      "n_cpgs_published": 19,
+      "category": "NC",
+      "primary_diagnostic": false,
+      "imprint_origin": "secondary_DMR",
+      "methylated_allele": "maternal",
+      "methylated_allele_source": "Ivashchenko 2025 Table S3 (Joshi 2016)"
+    },
+    {
+      "id": "snurf-tss-dmr",
+      "name": "SNURF:TSS-DMR",
+      "aliases": [
+        "SNRPN"
+      ],
+      "disorders": [
+        "Prader-Willi syndrome",
+        "Angelman syndrome"
+      ],
+      "disorder_notes": [],
+      "chrom": "chr15",
+      "start": 24954855,
+      "end": 24956829,
+      "n_cpgs_published": 113,
+      "category": "CA",
+      "primary_diagnostic": false,
+      "imprint_origin": "Oocyte_gDMR",
+      "methylated_allele": "maternal",
+      "methylated_allele_source": "imprint origin",
+      "core": {
+        "chrom": "chr15",
+        "start": 24954888,
+        "end": 24955906
+      }
+    },
+    {
+      "id": "igf1r-int2-dmr",
+      "name": "IGF1R:Int2-DMR",
+      "aliases": [],
+      "disorders": [],
+      "disorder_notes": [],
+      "chrom": "chr15",
+      "start": 98865265,
+      "end": 98866421,
+      "n_cpgs_published": 55,
+      "category": "NC",
+      "primary_diagnostic": false,
+      "imprint_origin": "Oocyte_gDMR",
+      "methylated_allele": "maternal",
+      "methylated_allele_source": "imprint origin"
+    },
+    {
+      "id": "znf597-3-dmr",
+      "name": "ZNF597:3-DMR",
+      "aliases": [],
+      "disorders": [],
+      "disorder_notes": [],
+      "chrom": "chr16",
+      "start": 3431799,
+      "end": 3432388,
+      "n_cpgs_published": 29,
+      "category": "NC",
+      "primary_diagnostic": false,
+      "imprint_origin": "Oocyte_gDMR",
+      "methylated_allele": "maternal",
+      "methylated_allele_source": "imprint origin"
+    },
+    {
+      "id": "znf597-tss-dmr",
+      "name": "ZNF597:TSS-DMR",
+      "aliases": [],
+      "disorders": [],
+      "disorder_notes": [
+        "upd(16)mat"
+      ],
+      "chrom": "chr16",
+      "start": 3442826,
+      "end": 3444463,
+      "n_cpgs_published": 76,
+      "category": "NC",
+      "primary_diagnostic": false,
+      "imprint_origin": "secondary_DMR",
+      "methylated_allele": "paternal",
+      "methylated_allele_source": "Ivashchenko 2025 Table S3 (Joshi 2016)"
+    },
+    {
+      "id": "znf331-alt-tss-dmr1",
+      "name": "ZNF331:alt-TSS-DMR1",
+      "aliases": [],
+      "disorders": [],
+      "disorder_notes": [],
+      "chrom": "chr19",
+      "start": 53537254,
+      "end": 53538958,
+      "n_cpgs_published": 125,
+      "category": "NC",
+      "primary_diagnostic": false,
+      "imprint_origin": "Oocyte_gDMR",
+      "methylated_allele": "maternal",
+      "methylated_allele_source": "imprint origin"
+    },
+    {
+      "id": "znf331-alt-tss-dmr2",
+      "name": "ZNF331:alt-TSS-DMR2",
+      "aliases": [],
+      "disorders": [],
+      "disorder_notes": [],
+      "chrom": "chr19",
+      "start": 53553830,
+      "end": 53555171,
+      "n_cpgs_published": 102,
+      "category": "NC",
+      "primary_diagnostic": false,
+      "imprint_origin": "Oocyte_gDMR",
+      "methylated_allele": "maternal",
+      "methylated_allele_source": "imprint origin"
+    },
+    {
+      "id": "peg3-tss-dmr",
+      "name": "PEG3:TSS-DMR",
+      "aliases": [],
+      "disorders": [],
+      "disorder_notes": [
+        "MLID (ZFP57)"
+      ],
+      "chrom": "chr19",
+      "start": 56837123,
+      "end": 56841903,
+      "n_cpgs_published": 221,
+      "category": "CA",
+      "primary_diagnostic": false,
+      "imprint_origin": "Oocyte_gDMR",
+      "methylated_allele": "maternal",
+      "methylated_allele_source": "imprint origin"
+    },
+    {
+      "id": "mcts2p-tss-dmr",
+      "name": "MCTS2P:TSS-DMR",
+      "aliases": [],
+      "disorders": [],
+      "disorder_notes": [],
+      "chrom": "chr20",
+      "start": 31546858,
+      "end": 31548130,
+      "n_cpgs_published": 47,
+      "category": "NC",
+      "primary_diagnostic": false,
+      "imprint_origin": "Oocyte_gDMR",
+      "methylated_allele": "maternal",
+      "methylated_allele_source": "imprint origin"
+    },
+    {
+      "id": "nnat-tss-dmr",
+      "name": "NNAT:TSS-DMR",
+      "aliases": [],
+      "disorders": [],
+      "disorder_notes": [],
+      "chrom": "chr20",
+      "start": 37520200,
+      "end": 37522126,
+      "n_cpgs_published": 135,
+      "category": "NC",
+      "primary_diagnostic": false,
+      "imprint_origin": "Oocyte_gDMR",
+      "methylated_allele": "maternal",
+      "methylated_allele_source": "imprint origin"
+    },
+    {
+      "id": "l3mbtl1-alt-tss-dmr",
+      "name": "L3MBTL1:alt-TSS-DMR",
+      "aliases": [],
+      "disorders": [],
+      "disorder_notes": [],
+      "chrom": "chr20",
+      "start": 43513723,
+      "end": 43515400,
+      "n_cpgs_published": 84,
+      "category": "NC",
+      "primary_diagnostic": false,
+      "imprint_origin": "Oocyte_gDMR",
+      "methylated_allele": "maternal",
+      "methylated_allele_source": "imprint origin"
+    },
+    {
+      "id": "gnas-nesp-tss-dmr",
+      "name": "GNAS-NESP:TSS-DMR",
+      "aliases": [],
+      "disorders": [
+        "Pseudohypoparathyroidism type 1B"
+      ],
+      "disorder_notes": [],
+      "chrom": "chr20",
+      "start": 58838982,
+      "end": 58843557,
+      "n_cpgs_published": 257,
+      "category": "CA",
+      "primary_diagnostic": false,
+      "imprint_origin": "secondary_DMR",
+      "methylated_allele": "paternal",
+      "methylated_allele_source": "Ivashchenko 2025 Table S3 (Joshi 2016)"
+    },
+    {
+      "id": "gnas-as1-tss-dmr",
+      "name": "GNAS-AS1:TSS-DMR",
+      "aliases": [
+        "NESP-AS"
+      ],
+      "disorders": [
+        "Pseudohypoparathyroidism type 1B"
+      ],
+      "disorder_notes": [
+        "upd(20)mat"
+      ],
+      "chrom": "chr20",
+      "start": 58850592,
+      "end": 58852978,
+      "n_cpgs_published": 128,
+      "category": "CA",
+      "primary_diagnostic": false,
+      "imprint_origin": "Oocyte_gDMR",
+      "methylated_allele": "maternal",
+      "methylated_allele_source": "imprint origin"
+    },
+    {
+      "id": "gnas-xl-ex1-dmr",
+      "name": "GNAS-XL:Ex1-DMR",
+      "aliases": [],
+      "disorders": [
+        "Pseudohypoparathyroidism type 1B"
+      ],
+      "disorder_notes": [],
+      "chrom": "chr20",
+      "start": 58853848,
+      "end": 58856408,
+      "n_cpgs_published": 200,
+      "category": "CA",
+      "primary_diagnostic": false,
+      "imprint_origin": "Oocyte_gDMR",
+      "methylated_allele": "maternal",
+      "methylated_allele_source": "imprint origin"
+    },
+    {
+      "id": "gnas-a-b-tss-dmr",
+      "name": "GNAS-A/B:TSS-DMR",
+      "aliases": [
+        "GNAS A/B"
+      ],
+      "disorders": [
+        "Pseudohypoparathyroidism type 1B"
+      ],
+      "disorder_notes": [
+        "upd(20)mat"
+      ],
+      "chrom": "chr20",
+      "start": 58888208,
+      "end": 58890146,
+      "n_cpgs_published": 198,
+      "category": "CA",
+      "primary_diagnostic": true,
+      "imprint_origin": "secondary_DMR",
+      "methylated_allele": "maternal",
+      "methylated_allele_source": "Ivashchenko 2025 Table S3 (Joshi 2016)"
+    },
+    {
+      "id": "wrb-alt-tss-dmr",
+      "name": "WRB:alt-TSS-DMR",
+      "aliases": [],
+      "disorders": [],
+      "disorder_notes": [],
+      "chrom": "chr21",
+      "start": 39385582,
+      "end": 39386350,
+      "n_cpgs_published": 43,
+      "category": "NC",
+      "primary_diagnostic": false,
+      "imprint_origin": "Oocyte_gDMR",
+      "methylated_allele": "maternal",
+      "methylated_allele_source": "imprint origin"
+    },
+    {
+      "id": "snu13-alt-tss-dmr",
+      "name": "SNU13:alt-TSS-DMR",
+      "aliases": [],
+      "disorders": [],
+      "disorder_notes": [],
+      "chrom": "chr22",
+      "start": 41681768,
+      "end": 41682869,
+      "n_cpgs_published": 63,
+      "category": "NC",
+      "primary_diagnostic": false,
+      "imprint_origin": "Oocyte_gDMR",
+      "methylated_allele": "maternal",
+      "methylated_allele_source": "imprint origin"
+    }
+  ]
+}

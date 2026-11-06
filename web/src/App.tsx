@@ -7,6 +7,7 @@ import ParaphaseApp from './paraphase/ParaphaseApp'
 import KivviApp from './kivvi/KivviApp'
 import ROHApp from './roh/ROHApp'
 import EpigeneticsApp from './epigenetics/EpigeneticsApp'
+import SmallVarApp from './smallvar/SmallVarApp'
 import CohortApp from './cohort/CohortApp'
 import type { Product } from './components/ProductSwitcher'
 
@@ -15,7 +16,7 @@ import type { Product } from './components/ProductSwitcher'
 // assay-mode apps (GenomeWideApp, PureTargetV2App, CarrierApp -- each its own
 // component, not one app internally reassigning its mode), MitoLR (MitoApp),
 // Paraphase Annotation (ParaphaseApp), Kivvi (KivviApp), and Runs of
-// Homozygosity (ROHApp), and Epigenetics (EpigeneticsApp). Switching `product` swaps which tool is mounted.
+// Homozygosity (ROHApp), Epigenetics (EpigeneticsApp), and Small variants (SmallVarApp). Switching `product` swaps which tool is mounted.
 export default function App() {
   const [product, setProduct] = useState<Product>('genome_wide')
 
@@ -30,6 +31,8 @@ export default function App() {
       return <ROHApp product={product} onSwitchProduct={setProduct} />
     case 'epigenetics':
       return <EpigeneticsApp product={product} onSwitchProduct={setProduct} />
+    case 'smallvar':
+      return <SmallVarApp product={product} onSwitchProduct={setProduct} />
     case 'cohort':
       return <CohortApp product={product} onSwitchProduct={setProduct} />
     case 'puretarget_v2':

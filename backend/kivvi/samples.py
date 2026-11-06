@@ -1,7 +1,8 @@
 """Sample registry and data shaping for the Kivvi suite.
 
 Kivvi writes `<prefix>.kivvi.<target>.{json,vcf,svg,bam}` per target (`kiv2`,
-`d4z4`). Samples are discovered from a results root laid out as
+`d4z4`); the VCF may be bgzipped (`.vcf.gz`). Samples are discovered from a results
+root laid out as
 
     <root>/<sample>/<target>/<sample>.kivvi.<target>.json
 
@@ -13,6 +14,7 @@ never committed (like the other real samples in this project) -- and defaults to
 
 from __future__ import annotations
 
+import gzip
 import json
 import os
 from pathlib import Path
@@ -84,13 +86,30 @@ def _load_json(sample: str, target: str) -> Optional[dict]:
     return _json_cache[key]
 
 
+def _vcf_path(sample: str, target: str) -> Optional[Path]:
+    """Kivvi's VCF, plain (`.vcf`) or bgzipped (`.vcf.gz`, as the GeneDx pipeline writes it)."""
+    for ext in ("vcf", "vcf.gz"):
+        path = _file(sample, target, ext)
+        if path.is_file():
+            return path
+    return None
+
+
+def _read_vcf(path: Path) -> str:
+    # bgzip is a series of concatenated gzip members, which gzip reads as one stream.
+    if path.suffix == ".gz":
+        with gzip.open(path, "rt", encoding="utf-8") as f:
+            return f.read()
+    return path.read_text()
+
+
 def _load_vcf(sample: str, target: str) -> Optional[dict]:
-    path = _file(sample, target, "vcf")
-    if not path.is_file():
+    path = _vcf_path(sample, target)
+    if path is None:
         return None
     key = _stamp(path)
     if key not in _vcf_cache:
-        _vcf_cache[key] = parse.parse_vcf(path.read_text())
+        _vcf_cache[key] = parse.parse_vcf(_read_vcf(path))
     return _vcf_cache[key]
 
 

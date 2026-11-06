@@ -31,6 +31,7 @@ up GT's two allele indices into these arrays, not just taking their first two va
 
 from __future__ import annotations
 
+import bisect
 import gzip
 from dataclasses import dataclass
 from pathlib import Path
@@ -280,6 +281,18 @@ class TrgtCall:
         return sum(vals) if vals else None
 
 
+def trgt_version(path: str | Path) -> str | None:
+    """The TRGT version recorded in a VCF's own header (`##trgtVersion=5.1.0-ec66463` -> "5.1.0"),
+    or None when the header has no such line. Never guessed: callers show plain "TRGT" for None."""
+    with _open_text(path) as fh:
+        for line in fh:
+            if not line.startswith("##"):
+                break
+            if line.startswith("##trgtVersion="):
+                return line.split("=", 1)[1].strip().split("-")[0] or None
+    return None
+
+
 def sample_names(path: str | Path) -> list[str]:
     with _open_text(path) as f:
         for line in f:
@@ -354,23 +367,32 @@ class TrgtIndex:
         self._starts: dict[str, list[int]] = {
             chrom: [c.pos for c in chrom_calls] for chrom, chrom_calls in self._by_chrom.items()
         }
+        # Bounds how far back an overlap scan must look on each chromosome: no call
+        # starting earlier than (query_start - max_span) can still reach forward into
+        # the query, since no call on this chromosome spans more than max_span bp.
+        # A fixed-size backward scan (the previous approach here) assumed calls were
+        # non-overlapping and evenly sparse, which real catalogs don't guarantee --
+        # e.g. TRExplorer v2.0's variation-cluster regions have runs of over a
+        # thousand consecutive overlapping entries, where a small fixed window
+        # would silently miss a real overlap rather than erroring. Same technique
+        # as GeneIndex.annotate in genes.py, which handles genuinely overlapping
+        # gene bodies correctly for the same reason.
+        self._max_span: dict[str, int] = {
+            chrom: max((c.end - c.pos for c in chrom_calls), default=0)
+            for chrom, chrom_calls in self._by_chrom.items()
+        }
 
     def find_overlap(self, chrom: str, start: int, stop: int) -> Optional[TrgtCall]:
-        """Find a call overlapping [start, stop) on chrom, if any, by binary search on pos."""
-        import bisect
-
+        """Find a call overlapping [start, stop) on chrom, if any."""
         starts = self._starts.get(chrom)
         if not starts:
             return None
         calls = self._by_chrom[chrom]
-        i = bisect.bisect_right(starts, stop)
-        # Scan backward from the first call starting at or before `stop` looking for overlap;
-        # repeat regions in these catalogs are non-overlapping and sorted, so a short
-        # backward scan is sufficient.
-        for j in range(i - 1, max(i - 5, -1), -1):
+        max_span = self._max_span[chrom]
+        lo = bisect.bisect_left(starts, start - max_span)
+        hi = bisect.bisect_right(starts, stop)
+        for j in range(hi - 1, lo - 1, -1):
             call = calls[j]
-            if call.end < start:
-                break
             if call.pos <= stop and call.end >= start:
                 return call
         return None

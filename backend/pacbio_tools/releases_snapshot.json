@@ -1,0 +1,103 @@
+{
+  "fetched_at": "2026-10-25T17:59:40+00:00",
+  "releases": {
+    "paraphase": {
+      "tag": "v4.1.0",
+      "version": "4.1.0",
+      "published": "2026-09-25",
+      "name": "Version 4.1.0",
+      "url": "https://github.com/PacificBiosciences/paraphase/releases/tag/v4.1.0"
+    },
+    "trgt": {
+      "tag": "v5.1.0",
+      "version": "5.1.0",
+      "published": "2026-06-10",
+      "name": "TRGT v5.1.0",
+      "url": "https://github.com/PacificBiosciences/trgt/releases/tag/v5.1.0"
+    },
+    "sawfish": {
+      "tag": "v2.3.0",
+      "version": "2.3.0",
+      "published": "2026-10-21",
+      "name": "sawfish v2.3.0",
+      "url": "https://github.com/PacificBiosciences/sawfish/releases/tag/v2.3.0"
+    },
+    "mitorsaw": {
+      "tag": "v0.2.14",
+      "version": "0.2.14",
+      "published": "2026-08-17",
+      "name": "Mitorsaw v0.2.14",
+      "url": "https://github.com/PacificBiosciences/mitorsaw/releases/tag/v0.2.14"
+    },
+    "ptcp": {
+      "tag": "3.2.1",
+      "version": "3.2.1",
+      "published": "2026-02-25",
+      "name": "PTCP v3.2.1",
+      "url": "https://github.com/PacificBiosciences/ptcp/releases/tag/3.2.1"
+    },
+    "pbmm2": {
+      "tag": "v26.2.0",
+      "version": "26.2.0",
+      "published": "2026-06-30",
+      "name": "Version 26.2.0",
+      "url": "https://github.com/PacificBiosciences/pbmm2/releases/tag/v26.2.0"
+    },
+    "hiphase": {
+      "tag": "v1.7.0",
+      "version": "1.7.0",
+      "published": "2026-05-27",
+      "name": "HiPhase v1.7.0",
+      "url": "https://github.com/PacificBiosciences/HiPhase/releases/tag/v1.7.0"
+    },
+    "pb-cpg-tools": {
+      "tag": "v3.0.0",
+      "version": "3.0.0",
+      "published": "2025-01-28",
+      "name": "pb-CpG-tools v3.0.0",
+      "url": "https://github.com/PacificBiosciences/pb-CpG-tools/releases/tag/v3.0.0"
+    },
+    "pbsv": {
+      "tag": "v2.11.0",
+      "version": "2.11.0",
+      "published": "2025-02-26",
+      "name": "Version 2.11.0",
+      "url": "https://github.com/PacificBiosciences/pbsv/releases/tag/v2.11.0"
+    },
+    "hificnv": {
+      "tag": "v1.0.1",
+      "version": "1.0.1",
+      "published": "2024-10-22",
+      "name": "HiFiCNV v1.0.1",
+      "url": "https://github.com/PacificBiosciences/HiFiCNV/releases/tag/v1.0.1"
+    },
+    "pb-starphase": {
+      "tag": "v2.2.0",
+      "version": "2.2.0",
+      "published": "2026-07-30",
+      "name": "StarPhase v2.2.0",
+      "url": "https://github.com/PacificBiosciences/pb-StarPhase/releases/tag/v2.2.0"
+    },
+    "pbaa": {
+      "tag": "1.2.0",
+      "version": "1.2.0",
+      "published": "2025-02-26",
+      "name": "Version 1.2.0",
+      "url": "https://github.com/PacificBiosciences/pbAA/releases/tag/1.2.0"
+    },
+    "pbfusion": {
+      "tag": "0.5.1",
+      "version": "0.5.1",
+      "published": "2024-12-13",
+      "name": "Version 0.5.1",
+      "url": "https://github.com/PacificBiosciences/pbfusion/releases/tag/0.5.1"
+    },
+    "pbtk": {
+      "tag": "v3.5.0",
+      "version": "3.5.0",
+      "published": "2025-02-26",
+      "name": "Version 3.5.0",
+      "url": "https://github.com/PacificBiosciences/pbtk/releases/tag/v3.5.0"
+    }
+  }
+}

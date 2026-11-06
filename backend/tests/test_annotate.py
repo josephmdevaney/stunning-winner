@@ -6,11 +6,13 @@ from repeatscope.annotate import (
     resolve_panel_locus_ids,
     simulate_pileup_reads,
 )
+from repeatscope.rexprt import load_rexprt_scores
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 FIXTURE_VCF = REPO_ROOT / "backend" / "fixtures" / "synthetic_trgt.vcf"
 STRCHIVE_JSON = REPO_ROOT / "project" / "uploads" / "STRchive-loci.json"
 CATALOG_BED = REPO_ROOT / "project" / "uploads" / "repeat_catalog.hg38.bed"
+REXPRT_TSV = REPO_ROOT / "project" / "uploads" / "rexprt_scores.hg38.tsv"
 GV01_VCF = REPO_ROOT / "backend" / "fixtures" / "gv_puretarget_panel_v2" / "trgt_vcfs" / "GV-01.trgt.vcf"
 PURETARGET_V2_BED = REPO_ROOT / "backend" / "fixtures" / "panels" / "puretarget_v2.repeat_definitions.hg38.bed"
 CARRIER_BED = REPO_ROOT / "backend" / "fixtures" / "panels" / "carrier_screen.repeat_definitions.hg38.bed"
@@ -21,9 +23,9 @@ def _panel():
     return annotate_strchive_panel(FIXTURE_VCF, STRCHIVE_JSON)
 
 
-def test_annotate_strchive_panel_covers_all_80_loci():
+def test_annotate_strchive_panel_covers_all_82_loci():
     panel = _panel()
-    assert len(panel) == 80
+    assert len(panel) == 82
 
 
 def test_genotyped_loci_classified_correctly():
@@ -82,17 +84,41 @@ def test_simulate_pileup_empty_when_not_genotyped():
 
 
 def test_iter_annotated_catalog_matches_generic_and_strchive_regions():
+    """Catalog regions and the sample's own VCF calls come from different tools/sources
+    with different boundary-calling conventions, so this deliberately doesn't require an
+    exact coordinate match -- see TrgtIndex.find_overlap. The fixture's synthetic HD_HTT
+    call (chr4:3,074,876-3,074,933, TRID "HD_HTT") doesn't share an ID with this real
+    catalog's own wider chr4:3,074,876-3,075,049 variation-cluster region for the same
+    repeat, so this genuinely exercises overlap-fallback matching, not a TRID hit."""
     regions = list(iter_annotated_catalog(CATALOG_BED, FIXTURE_VCF))
-    assert len(regions) == 171_146
+    assert len(regions) == 24_956
 
     by_coords = {(r.chrom, r.start, r.stop): r for r in regions}
-    hit = by_coords[("chr1", 44835, 44867)]
+    hit = by_coords[("chr4", 3_074_876, 3_075_049)]
     assert hit.genotyped
-    assert {hit.a1, hit.a2} == {8, 9}
+    assert {hit.a1, hit.a2} == {18, 44}
 
-    miss = by_coords[("chr1", 165954, 165962)]
+    miss = by_coords[("chr1", 14069, 14081)]
     assert miss.genotyped is False
     assert miss.a1 is None
+
+
+def test_iter_annotated_catalog_attaches_real_rexprt_pathogenicity():
+    """Full pipeline, real data end-to-end: the FMR1 CGG repeat's catalog region
+    gets a real RExPRT pathogenicity prediction attached. The genome-wide
+    catalog is now scoped to RExPRT-predicted-pathogenic regions only (see
+    project/uploads/README.md), so every region here has one by construction
+    -- repeatscope/rexprt.py's "never fabricate an unmatched score" behavior
+    is covered directly there instead, against a region genuinely outside
+    this catalog's scope."""
+    scores = load_rexprt_scores(REXPRT_TSV)
+    regions = list(iter_annotated_catalog(CATALOG_BED, FIXTURE_VCF, rexprt_scores=scores))
+    by_coords = {(r.chrom, r.start, r.stop): r for r in regions}
+
+    fmr1 = by_coords[("chrX", 147_912_049, 147_912_198)]
+    assert fmr1.pathogenicity is not None
+    assert fmr1.pathogenicity.gene == "FMR1"
+    assert fmr1.pathogenicity.ensemble_binary is True
 
 
 def test_rfc1_real_gv01_call_not_misclassified_pathogenic():
@@ -125,11 +151,24 @@ def test_annotate_strchive_panel_scoped_to_puretarget_v2():
     assert all(l.genotyped for l in panel)
 
 
-# A prior real carrier-panel run (bc2113, since replaced) demonstrated trgt's
-# hemizygous chrX calling (GT="1", a single allele index) via a genuine FXS_FMR1
-# full-mutation expansion. The current carrier_panel_v2 dataset's 96 real samples
-# were all called diploid on chrX (no hemizygous zygosity anywhere in the panel),
-# so that regression case has no real fixture backing it right now -- removed
-# rather than left stale or faked. The hemizygous-parsing code path itself
-# (repeatscope/trgt.py) is unchanged; re-add this test if/when a real hemizygous
-# male chrX sample becomes available.
+def test_hg002_real_fmr1_hemizygous_with_methylation():
+    """A real hemizygous male chrX sample is available again: HG002's FXS_FMR1
+    record was replaced with the true hemizygous call (GT="1", a single allele
+    index) from a separate, genuinely genome-wide TRGT run for this donor
+    (fixtures/hg002_real_genomewide/) -- swapped in specifically because that
+    run also carries real 5mCpG methylation (TRGT's AM field), which the
+    original padded-reference run for this fixture never captured (AM="." for
+    every locus there). See fixtures/hg002_real/README.md's "FXS_FMR1 real
+    methylation" section. A prior real carrier-panel run (bc2113, since
+    replaced) demonstrated the same hemizygous-parsing code path; that
+    regression case had no real fixture backing it for a while -- this
+    replaces it with current real data rather than a since-removed one."""
+    panel = {l.id: l for l in annotate_strchive_panel(HG002_VCF, STRCHIVE_JSON, sample="HG002")}
+    fmr1 = panel["FXS_FMR1"]
+    assert fmr1.genotyped
+    assert fmr1.a1 == 29
+    assert fmr1.a2 is None
+    assert fmr1.zygosity == "Hemizygous"
+    assert fmr1.status == "Normal"
+    assert fmr1.a1_methylation == 0.12
+    assert fmr1.a2_methylation is None

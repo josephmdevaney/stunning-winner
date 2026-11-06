@@ -138,6 +138,34 @@ def test_index_lookup_by_trid_and_overlap():
     assert index.find_overlap("chr4", 999_999_999, 999_999_999 + 10) is None
 
 
+def _synthetic_call(chrom: str, pos: int, end: int, trid: str) -> TrgtCall:
+    return TrgtCall(
+        chrom=chrom, pos=pos, end=end, trid=trid, motifs=["A"], struc="<TR>",
+        ref="N", alt=["<a>"], hap1_idx=None, hap2_idx=None, phased=False, hemizygous=True,
+        allele_length=[None], allele_length_range=[None], allele_support=[None],
+        motif_count=[None], allele_purity=[None], allele_methylation=[None],
+    )
+
+
+def test_find_overlap_beyond_a_short_fixed_window():
+    """Regression test: find_overlap must not assume a short fixed backward scan
+    is enough to find a real overlap. A single wide call (early_call, pos=1000,
+    end=2000) is the only one that overlaps a later query -- but 20 narrow calls
+    sorted in between it and the query's own position push it more than 5 slots
+    back from where a fixed-size scan would start, which previously caused a real
+    overlap to be silently missed (e.g. TRExplorer v2.0's variation-cluster
+    regions, which have runs of 1000+ consecutive nearby entries)."""
+    calls = [_synthetic_call("chr1", 1000, 2000, "early_call")]
+    for i in range(20):
+        # Narrow, non-overlapping-with-query calls sorted after early_call by
+        # start position, occupying index slots between it and the query.
+        calls.append(_synthetic_call("chr1", 1001 + i, 1002 + i, f"filler_{i}"))
+    index = TrgtIndex(calls)
+
+    call = index.find_overlap("chr1", 1500, 1500)
+    assert call is not None and call.trid == "early_call"
+
+
 def test_dominant_motifs_real_rfc1_call():
     """Regression test using GV-01's real RFC1 call (real PacBio PureTarget panel data):
     GT=0/1, MOTIFS=AAGGG,ACAGG,AGGGC,AAGGC,AGAGG,AAAAG,AAAGG,AAGAG,AAAGGG,
@@ -159,3 +187,29 @@ def test_dominant_motifs_real_rfc1_call():
 
     units1, units2 = call.repeat_units()
     assert (units1, units2) == (11, 90)
+
+
+# --- TRGT version comes from the VCF's own header ---------------------------------------------
+
+def test_trgt_version_is_read_from_the_header(tmp_path):
+    import gzip
+
+    from repeatscope.trgt import trgt_version
+
+    plain = tmp_path / "with_version.vcf"
+    plain.write_text("##fileformat=VCFv4.2\n##trgtVersion=5.1.0-ec66463\n#CHROM\tPOS\n")
+    assert trgt_version(plain) == "5.1.0"  # the commit suffix is dropped
+
+    zipped = tmp_path / "with_version.vcf.gz"
+    with gzip.open(zipped, "wt") as f:
+        f.write("##fileformat=VCFv4.2\n##trgtVersion=3.0.0-d49a4dd\n#CHROM\tPOS\n")
+    assert trgt_version(zipped) == "3.0.0"
+
+
+def test_trgt_version_is_none_when_the_header_has_none(tmp_path):
+    from repeatscope.trgt import trgt_version
+
+    vcf = tmp_path / "no_version.vcf"
+    vcf.write_text("##fileformat=VCFv4.2\n#CHROM\tPOS\n##trgtVersion=9.9.9\n")  # after #CHROM: not a header line
+    assert trgt_version(vcf) is None
+    assert trgt_version(FIXTURE) is None  # the synthetic fixture claims no version

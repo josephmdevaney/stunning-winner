@@ -7,6 +7,7 @@ export interface MitoMeta {
   reference: string
   run_date: string
   caller: string
+  tissue: string | null
 }
 
 export interface GnomadHit {
@@ -48,7 +49,9 @@ export interface RegionalConstraintRow {
 export interface VariantConstraint {
   source: string
   gene_rows: GeneConstraintRow[]
-  regional: RegionalConstraintRow | null
+  // A variant inside one of mtDNA's overlapping reading frames (MT-ATP8/MT-ATP6,
+  // MT-ND4L/MT-ND4) can fall in more than one gene's flagged regional hotspot.
+  regional: RegionalConstraintRow[]
 }
 
 export interface AcmgEvidence {
@@ -114,6 +117,9 @@ export interface OverviewResponse extends MitoMeta {
     pathogenic_findings: number
     haplogroup: string
     qc_status: string
+    qc_summary: string
+    mtdna_mean_coverage: number | null
+    mtdna_coverage_source: string | null
   }
   variants: Variant[]
   haplogroup: Haplogroup

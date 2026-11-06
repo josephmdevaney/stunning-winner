@@ -1,18 +1,17 @@
 import { useEffect, useState } from 'react'
-import { Sidebar } from './components/Sidebar'
-import { TopBar } from './components/TopBar'
-import type { Product } from './components/ProductSwitcher'
-import { colors } from './theme'
-import { api, type ModesResponse } from './api'
-import { OverviewScreen } from './screens/OverviewScreen'
-import { LocusDetailScreen } from './screens/LocusDetailScreen'
-import { GeneFindingScreen } from './screens/GeneFindingScreen'
-import { SampleQCScreen } from './screens/SampleQCScreen'
-import { RunQCScreen } from './screens/RunQCScreen'
-import { RepeatCatalogScreen } from './screens/RepeatCatalogScreen'
-import { ROHScreen } from './screens/ROHScreen'
+import { Sidebar } from '../components/Sidebar'
+import { TopBar } from '../components/TopBar'
+import type { Product } from '../components/ProductSwitcher'
+import { colors } from '../theme'
+import { api, type LocusSummary, type ModesResponse } from '../api'
+import { OverviewScreen } from '../screens/OverviewScreen'
+import { LocusDetailScreen } from '../screens/LocusDetailScreen'
+import { GeneFindingScreen } from '../screens/GeneFindingScreen'
+import { SampleQCScreen } from '../screens/SampleQCScreen'
+import { RunQCScreen } from '../screens/RunQCScreen'
+import { RepeatCatalogScreen } from '../screens/RepeatCatalogScreen'
 
-export type Screen = 'overview' | 'locus' | 'gene-finding' | 'qc' | 'runqc' | 'catalog' | 'roh'
+export type Screen = 'overview' | 'locus' | 'gene-finding' | 'qc' | 'runqc' | 'catalog'
 
 const TITLES: Record<Screen, string> = {
   overview: 'Overview',
@@ -21,13 +20,25 @@ const TITLES: Record<Screen, string> = {
   qc: 'Sample QC Dashboard',
   runqc: 'Run QC Dashboard',
   catalog: 'Repeat Catalog',
-  roh: 'Runs of Homozygosity',
 }
 
-export default function RepeatScopeApp({
+export type RepeatScopeMode = 'genome_wide' | 'puretarget_v2' | 'carrier'
+
+// The shell shared by RepeatScope's three separate assay-mode apps (see
+// GenomeWideApp / PureTargetV2App / CarrierApp) -- each mounts this with its
+// own fixed `mode` and `screens`, so switching modes in the Suite switcher
+// unmounts one app and mounts another rather than one app internally
+// reassigning its mode. That means every piece of per-mode state below
+// (`screen`, `sample`, etc.) is naturally fresh per mode via useState's
+// initializer -- no explicit reset-on-mode-change effect needed.
+export function AssayModeShell({
+  mode,
+  screens,
   product,
   onSwitchProduct,
 }: {
+  mode: RepeatScopeMode
+  screens: Screen[]
   product: Product
   onSwitchProduct: (p: Product) => void
 }) {
@@ -36,22 +47,17 @@ export default function RepeatScopeApp({
   const [selectedGene, setSelectedGene] = useState<string>('')
 
   const [modesInfo, setModesInfo] = useState<ModesResponse | null>(null)
-  const [mode, setMode] = useState('')
   const [samples, setSamples] = useState<string[]>([])
   const [sample, setSample] = useState('')
   const [caller, setCaller] = useState('')
   const [sex, setSex] = useState<string | null>(null)
+  const [loci, setLoci] = useState<LocusSummary[]>([])
 
   useEffect(() => {
-    api.modes().then((m) => {
-      setModesInfo(m)
-      setMode(m.default)
-    })
+    api.modes().then(setModesInfo)
   }, [])
 
-  // Whenever the mode changes, load that mode's sample list and pick its default.
   useEffect(() => {
-    if (!mode) return
     api.samples(mode).then((s) => {
       setSamples(s.samples)
       setSample(s.default)
@@ -59,11 +65,19 @@ export default function RepeatScopeApp({
   }, [mode])
 
   useEffect(() => {
-    if (!mode || !sample) return
+    if (!sample) return
     api.meta(mode, sample).then((m) => {
       setCaller(m.caller)
       setSex(m.sex)
     })
+  }, [mode, sample])
+
+  // Independent of the OverviewScreen's own overview fetch: the TopBar search
+  // box lives above the screen switch below, so it needs the sample's loci
+  // list regardless of which screen is currently showing.
+  useEffect(() => {
+    if (!sample) return
+    api.overview(mode, sample).then((o) => setLoci(o.loci))
   }, [mode, sample])
 
   const goToLocus = (id: string) => {
@@ -76,19 +90,6 @@ export default function RepeatScopeApp({
     setScreen('gene-finding')
   }
 
-  // Clearing `sample`/`selectedLocusId`/`selectedGene` here (rather than in the
-  // `[mode]` effect above) matters: React batches state updates from the same
-  // handler into one render, so the still-mounted screen below never sees a (new
-  // mode, stale sample) pair -- e.g. requesting Carrier's overview with
-  // Genome-wide's sample, which 404s until the effect above catches up a render
-  // later.
-  const selectMode = (newMode: string) => {
-    setSample('')
-    setSelectedLocusId('')
-    setSelectedGene('')
-    setMode(newMode)
-  }
-
   const activeModeLabel = modesInfo?.modes.find((m) => m.key === mode)?.label ?? ''
 
   return (
@@ -98,9 +99,7 @@ export default function RepeatScopeApp({
         onSwitchProduct={onSwitchProduct}
         screen={screen}
         onNavigate={setScreen}
-        modes={modesInfo?.modes ?? []}
-        mode={mode}
-        onSelectMode={selectMode}
+        availableScreens={screens}
         sample={sample}
         samples={samples}
         onSelectSample={setSample}
@@ -108,10 +107,18 @@ export default function RepeatScopeApp({
       />
 
       <div className="app-main" style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        <TopBar title={TITLES[screen]} sample={sample} modeLabel={activeModeLabel} sex={sex} />
+        <TopBar
+          title={TITLES[screen]}
+          sample={sample}
+          modeLabel={activeModeLabel}
+          sex={sex}
+          loci={loci}
+          onSelectLocus={goToLocus}
+          onSelectGeneFinding={goToGeneFinding}
+        />
 
         <div className="app-screenbody" style={{ flex: 1, overflowY: 'auto' }}>
-          {!sample && mode && (
+          {!sample && (
             <div style={{ padding: 28, color: colors.textSecondary }}>
               No samples available for {activeModeLabel} yet.
             </div>
@@ -124,7 +131,6 @@ export default function RepeatScopeApp({
           {sample && screen === 'qc' && <SampleQCScreen mode={mode} sample={sample} />}
           {sample && screen === 'runqc' && <RunQCScreen mode={mode} sample={sample} />}
           {sample && screen === 'catalog' && <RepeatCatalogScreen mode={mode} sample={sample} />}
-          {sample && screen === 'roh' && <ROHScreen sample={sample} />}
         </div>
       </div>
     </div>

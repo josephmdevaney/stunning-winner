@@ -20,6 +20,7 @@ export function MitoSidebar({
   onSelectSample,
   caller,
   instrumentLine,
+  tissue,
 }: {
   product: Product
   onSwitchProduct: (p: Product) => void
@@ -30,6 +31,7 @@ export function MitoSidebar({
   onSelectSample: (s: string) => void
   caller: string
   instrumentLine: string
+  tissue?: string | null
 }) {
   const activeLabel = samples.find((s) => s.key === sample)?.label ?? sample
   return (
@@ -105,6 +107,11 @@ export function MitoSidebar({
         )}
         <div style={{ color: colors.sidebarTextSub, fontSize: 11.5, fontFamily: mono, marginTop: 6 }}>{instrumentLine}</div>
         {caller && <div style={{ color: colors.sidebarTextMuted, fontSize: 11, fontFamily: mono, marginTop: 2 }}>{caller}</div>}
+        {tissue && (
+          <div style={{ color: colors.sidebarTextMuted, fontSize: 11, fontFamily: mono, marginTop: 2, textTransform: 'capitalize' }}>
+            Tissue: {tissue}
+          </div>
+        )}
       </div>
     </div>
   )

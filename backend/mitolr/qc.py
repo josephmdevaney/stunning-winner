@@ -11,9 +11,10 @@ under ``unavailable_metrics`` rather than fabricated -- mirroring RepeatScope.
 from __future__ import annotations
 
 import math
+from typing import Optional
 
 from .generate import seeded_rand
-from .reference import GENOME_LENGTH, MT_FEATURES, feature_for_pos
+from .reference import GENOME_LENGTH, MT_FEATURES, features_for_pos
 
 # Region lengths (bp) for gating the strand-balance metric: it is approximated
 # from read midpoints, which is unreliable for loci too small to catch enough
@@ -22,13 +23,36 @@ _REGION_LEN = {f["name"]: f["stop"] - f["start"] + 1 for f in MT_FEATURES}
 _REGION_LEN["D-loop"] = (GENOME_LENGTH - 16024 + 1) + 576
 _STRAND_MIN_LEN = 200
 
+# Minimum mean depth (x) a region (BAM-derived QC) or called site (VCF-derived QC) needs to pass.
+# One value for every QC path here, and the default of scripts/real_data/build_mito_bam_qc.py.
+MIN_REQUIRED_COVERAGE = 150
 
-def build_bam_qc(bam: dict) -> dict:
+
+def mtdna_coverage_from_mosdepth(path: str) -> Optional[float]:
+    """Real, whole-genome (all 16,569 bp of chrM) mean depth from a mosdepth
+    `*.mosdepth.summary.txt` -- the same per-chromosome table RepeatScope's
+    roh/sex_inference.py reads for chrX/chrY, just the chrM row here."""
+    try:
+        with open(path, encoding="utf-8") as f:
+            header = f.readline().rstrip("\n").split("\t")
+            for line in f:
+                row = dict(zip(header, line.rstrip("\n").split("\t")))
+                if row.get("chrom") == "chrM":
+                    return float(row["mean"])
+    except OSError:
+        return None
+    return None
+
+
+def build_bam_qc(bam: dict, caller: Optional[str] = None) -> dict:
     """Rich Sample QC from an aligned-BAM stats JSON (see scripts/real_data/
     build_mito_bam_qc.py). Read-length distribution, per-base coverage, mapQ,
     read quality, and per-region depth are all real; only a few run-level
     metrics remain out of reach from an mtDNA-only BAM slice."""
-    n_pass = sum(1 for r in bam["regions"] if r["flag"] == "Pass")
+    # Pass / Low-depth is judged here against this app's floor, not trusted from the JSON: the
+    # file's own flags reflect whatever floor the script that wrote it ran with.
+    min_required = MIN_REQUIRED_COVERAGE
+    n_pass = sum(1 for r in bam["regions"] if r["depth"] >= min_required)
     n_reg = len(bam["regions"])
     cov_max = bam.get("coverage_max") or 1000
     mean_len_kb = (bam["mean_read_length_bp"] / 1000) if bam.get("mean_read_length_bp") else None
@@ -38,7 +62,7 @@ def build_bam_qc(bam: dict) -> dict:
         length = _REGION_LEN.get(r["region"], 999)
         # Suppress the midpoint-approximated strand balance for tiny tRNA loci.
         strand = r["strandBalance"] if length >= _STRAND_MIN_LEN else "—"
-        regions.append({**r, "strandBalance": strand})
+        regions.append({**r, "strandBalance": strand, "flag": "Pass" if r["depth"] >= min_required else "Low depth"})
 
     return {
         "overall_status": "Pass" if n_pass == n_reg else "Review",
@@ -46,7 +70,7 @@ def build_bam_qc(bam: dict) -> dict:
             {
                 "label": "Overall status",
                 "value": "Pass" if n_pass == n_reg else "Review",
-                "sub": f"{n_pass}/{n_reg} regions ≥ {bam['min_required']}x",
+                "sub": f"{n_pass}/{n_reg} regions ≥ {min_required}x",
                 "dotColor": "oklch(0.55 0.14 150)" if n_pass == n_reg else "oklch(0.62 0.15 75)",
             },
             {
@@ -73,9 +97,9 @@ def build_bam_qc(bam: dict) -> dict:
         "coverage_note": "Per-base read depth across chrM, from the aligned HiFi BAM",
         "genome_length": bam["length"],
         "regions": regions,
-        "min_required": bam["min_required"],
+        "min_required": min_required,
         "instrument": [
-            {"label": "Caller", "value": "mitorsaw 0.2.3-cba3800"},
+            {"label": "Caller", "value": caller or "Not recorded"},
             {"label": "Reference", "value": "GRCh38 chrM (rCRS)"},
             {"label": "Mean HiFi read length", "value": f"{bam['mean_read_length_bp']:,} bp" if bam.get("mean_read_length_bp") else "—"},
             {"label": "Mean HiFi read Q", "value": bam.get("mean_read_q") or "—"},
@@ -132,7 +156,7 @@ def _coverage_track(rng) -> list[dict]:
     return pts
 
 
-def build_vcf_qc(variants: list[dict]) -> dict:
+def build_vcf_qc(variants: list[dict], caller: Optional[str] = None) -> dict:
     """Sample QC honestly derived from a variant-call VCF.
 
     A VCF carries per-call read depth (DP) but not read-length distributions,
@@ -140,7 +164,7 @@ def build_vcf_qc(variants: list[dict]) -> dict:
     aligned BAM (or MitoRSaw's --output-hap-stats JSON). So this reports the
     depth-at-called-sites it *can* compute and lists the rest as unavailable,
     rather than fabricating a coverage track."""
-    MIN_REQUIRED = 500
+    MIN_REQUIRED = MIN_REQUIRED_COVERAGE
     depths = [v["depth"] for v in variants if v.get("depth") is not None]
     mean_depth = round(sum(depths) / len(depths)) if depths else None
     low_sites = [v for v in variants if (v.get("depth") or 0) < MIN_REQUIRED]
@@ -154,14 +178,17 @@ def build_vcf_qc(variants: list[dict]) -> dict:
     ]
     cov_max = max((c["depth"] for c in coverage), default=1000)
 
-    # Per-region adequacy: aggregate called-site depth by rCRS feature.
+    # Per-region adequacy: aggregate called-site depth by rCRS feature. A site
+    # inside an overlapping reading frame (MT-ATP8/MT-ATP6, MT-ND4L/MT-ND4)
+    # counts toward both genes' coverage adequacy, not just the first-listed one.
     by_region: dict[str, list[int]] = {}
     for v in variants:
         if v.get("depth") is None:
             continue
-        feat = feature_for_pos(v["pos"])
-        name = "D-loop" if (feat and feat["name"] == "MT-CR") else (feat["name"] if feat else "Intergenic")
-        by_region.setdefault(name, []).append(v["depth"])
+        feats = features_for_pos(v["pos"])
+        names = ["D-loop" if f["name"] == "MT-CR" else f["name"] for f in feats] or ["Intergenic"]
+        for name in names:
+            by_region.setdefault(name, []).append(v["depth"])
     regions = []
     for name, ds in sorted(by_region.items(), key=lambda kv: -max(kv[1])):
         mean = round(sum(ds) / len(ds))
@@ -206,7 +233,7 @@ def build_vcf_qc(variants: list[dict]) -> dict:
         "regions": regions,
         "min_required": MIN_REQUIRED,
         "instrument": [
-            {"label": "Caller", "value": "mitorsaw 0.2.3-cba3800"},
+            {"label": "Caller", "value": caller or "Not recorded"},
             {"label": "Reference", "value": "GRCh38 chrM (rCRS)"},
             {"label": "Contig length", "value": f"{GENOME_LENGTH:,} bp"},
             {"label": "Mean call depth", "value": f"{mean_depth}x" if mean_depth is not None else "—"},
@@ -252,7 +279,7 @@ def build_qc() -> dict:
         "coverage_note": "Linear depth track, position 1–16,569 (rCRS)",
         "genome_length": GENOME_LENGTH,
         "regions": _QC_REGIONS,
-        "min_required": 1000,
+        "min_required": MIN_REQUIRED_COVERAGE,
         "instrument": _INSTRUMENT,
         "coverage_y_axis_max_default": 6000,
         "unavailable_metrics": [

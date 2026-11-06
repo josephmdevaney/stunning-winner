@@ -1,0 +1,5 @@
+{
+  "samples": {
+    "HG002": "/path/to/paraphase_out/HG002.paraphase.json"
+  }
+}

@@ -1,30 +1,21 @@
 import { colors } from '../theme'
-import type { Screen } from '../RepeatScopeApp'
+import type { Screen } from '../repeatscope/AssayModeShell'
 import { ProductSwitcher, type Product } from './ProductSwitcher'
 
 const NAV_ITEMS: { screen: Screen; label: string }[] = [
   { screen: 'overview', label: 'Overview' },
   { screen: 'locus', label: 'Locus Detail' },
-  { screen: 'roh', label: 'Runs of Homozygosity' },
   { screen: 'qc', label: 'Sample QC' },
   { screen: 'runqc', label: 'Run QC' },
   { screen: 'catalog', label: 'Repeat Catalog' },
 ]
-
-export interface ModeInfo {
-  key: string
-  label: string
-  sample_count: number
-}
 
 export function Sidebar({
   product,
   onSwitchProduct,
   screen,
   onNavigate,
-  modes,
-  mode,
-  onSelectMode,
+  availableScreens,
   sample,
   samples,
   onSelectSample,
@@ -34,9 +25,7 @@ export function Sidebar({
   onSwitchProduct: (p: Product) => void
   screen: Screen
   onNavigate: (s: Screen) => void
-  modes: ModeInfo[]
-  mode: string
-  onSelectMode: (m: string) => void
+  availableScreens: Screen[]
   sample: string
   samples: string[]
   onSelectSample: (s: string) => void
@@ -74,49 +63,10 @@ export function Sidebar({
           padding: '10px 10px 6px',
         }}
       >
-        Assay
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginBottom: 10 }}>
-        {modes.map((m) => (
-          <div
-            key={m.key}
-            onClick={() => onSelectMode(m.key)}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '8px 12px',
-              borderRadius: 7,
-              cursor: 'pointer',
-              fontSize: 13,
-              fontWeight: 600,
-              background: mode === m.key ? colors.accentButtonBg : 'transparent',
-              color: mode === m.key ? 'white' : colors.sidebarTextItem,
-              opacity: m.sample_count === 0 ? 0.5 : 1,
-            }}
-          >
-            <span>{m.label}</span>
-            <span style={{ fontSize: 11, fontFamily: "'IBM Plex Mono'", opacity: 0.75 }}>
-              {m.sample_count === 0 ? 'no data' : m.sample_count}
-            </span>
-          </div>
-        ))}
-      </div>
-
-      <div
-        style={{
-          color: colors.sidebarTextMuted,
-          fontSize: 11,
-          fontWeight: 600,
-          letterSpacing: '0.08em',
-          textTransform: 'uppercase',
-          padding: '10px 10px 6px',
-        }}
-      >
         Sample
       </div>
 
-      {NAV_ITEMS.map((item) => (
+      {NAV_ITEMS.filter((item) => availableScreens.includes(item.screen)).map((item) => (
         <NavRow key={item.screen} active={screen === item.screen} label={item.label} onClick={() => onNavigate(item.screen)} />
       ))}
 

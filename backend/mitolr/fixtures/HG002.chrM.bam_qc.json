@@ -1030,7 +1030,7 @@
       "flag": "Pass"
     }
   ],
-  "min_required": 500,
+  "min_required": 150,
   "variants": {
     "chrM_263_A_G": {
       "depth": 1110,

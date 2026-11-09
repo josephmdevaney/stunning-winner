@@ -22,7 +22,40 @@ The screen shows:
 - **Hypomethylation**: a sample is **positive** when its sample methylation is below **30%** (negative at 30% or above, no data when Kivvi reports none). The 30% cut-off was set for this tool by the project team; it is not from Kivvi or the preprint, and it is applied to the sample-level value, not to individual alleles.
 - **Each allele**: size, chromosome, distal haplotype and methylation (Kivvi's per-allele value, which covers the allele's last three repeat units), and whether it is *permissive*: chr4, `qAIntactPolyA`, and not the 4A166 haplotype, the kind that can express DUX4.
 - **Where each size sits**: 1–10 units (the FSHD1 range), 11–20 (the range the preprint calls commonly indicated for FSHD2), above 20, or not resolved for a partly assembled allele whose lower bound does not settle it. These labels describe a size; nothing depends on them.
-- **What a finding rests on**: a permissive allele (shown), hypomethylation across D4Z4 including non-permissive alleles (scored against the 30% cut-off), and a pathogenic variant in SMCHD1, DNMT3B or LRIF1, which is **not assessed**: Kivvi does not report those genes, and the screen does not look for them.
+- **What a finding rests on**: a permissive allele, hypomethylation across D4Z4 (scored against the 30% cut-off), and a variant in SMCHD1, DNMT3B or LRIF1 (supplied by you, see below). The evidence tier counts how many of the three a sample shows.
+
+### Evidence tiers
+
+The tiers are a research view of how much of an FSHD2 picture a sample shows, not a diagnosis. FSHD2 needs a DUX4-permissive allele plus a second hit that lowers D4Z4 methylation, so the permissive allele is a gate:
+
+| Tier | Meaning |
+| --- | --- |
+| **1 · all three findings** | permissive allele, hypomethylation (below 30%) and a counting variant |
+| **2 · permissive allele and one other finding** | permissive allele plus either hypomethylation or a counting variant |
+| **3 · permissive allele only** | a permissive allele with neither |
+| **Not supported · no permissive allele found** | no tier, however low the methylation or damaging the variant |
+
+A variant **counts** when it is in SMCHD1, DNMT3B or LRIF1 and is either loss-of-function (frameshift, nonsense or canonical ±1/2 splice, read from its HGVS notation) or classified pathogenic / likely pathogenic in ClinVar. A missense variant of uncertain significance is shown but does not count. A sample missing from the variants file is **not assessed**, which is not the same as none found, so its tier may still rise (the screen says so). "No permissive allele found" means none among the alleles Kivvi assembled: with fewer than four resolved, or an allele Kivvi could not place on a chromosome, a permissive allele may be missing from the data, and the screen notes it.
+
+### Supplying the variants
+
+Kivvi reports D4Z4 only, so the variants come from you, as a JSON file at `$KIVVI_FSHD2_VARIANTS` or, by default, `fshd2_variants.json` in the results root (outside the repo; it holds participant data and is never committed):
+
+```json
+{
+  "samples": {
+    "SAMPLE_A": {"variants": [
+      {"gene": "SMCHD1", "hgvs_c": "c.181dup", "hgvs_p": "p.(C61Lfs*9)",
+       "chrom": "chr18", "pos": 2656255, "build": "hg38", "genotype": "heterozygous",
+       "clinvar_url": "https://www.ncbi.nlm.nih.gov/clinvar/variation/<id>/",
+       "clinvar_classification": "Pathogenic", "note": "optional free text"}
+    ]},
+    "SAMPLE_B": {"variants": []}
+  }
+}
+```
+
+`gene`, `hgvs_c` and (when there is one) `hgvs_p` are what the tiers read; the rest is shown. An empty list means the sample was checked and none was found; leave a sample out if it was not checked. The file is reread when it changes.
 
 Cautions from the preprint are on the screen: the six candidate SMCHD1 samples had unknown FSHD status; Kivvi's accuracy in the 11–20 range was not measured; about 10% of FSHD2 cases carry a permissive allele of 8–10 units; a contracted permissive allele with low methylation can mean FSHD1 and FSHD2 together; the preprint left cell lines out of its methylation analysis because methylation in lymphoblastoid cell lines can be unreliable.
 

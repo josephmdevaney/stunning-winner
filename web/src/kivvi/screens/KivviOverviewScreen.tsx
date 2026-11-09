@@ -1,7 +1,7 @@
 import { colors, fmtPct, mono } from '../theme'
 import { kivviApi, type OverviewResponse } from '../api'
 import type { KivviScreen } from '../KivviSidebar'
-import { LoadState, Notes, SectionTitle, StatusPill } from '../components/ui'
+import { LoadState, Notes, SectionTitle, StatusPill, TierPill } from '../components/ui'
 import { cardStyle, pageStyle } from '../components/styles'
 import { useLoad } from '../useLoad'
 
@@ -49,8 +49,11 @@ function D4Z4Card({ data, onOpen }: { data: OverviewResponse; onOpen: () => void
         <SectionTitle title="D4Z4 (FSHD)" sub="Contraction to 1–10 units on a chr4 qA haplotype with an intact PolyA signal is FSHD1-range." />
         <OpenLink onClick={onOpen} />
       </div>
-      <div style={{ margin: '4px 0 14px' }}>
+      <div style={{ margin: '4px 0 14px', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
         <StatusPill status={d.summary.status} label={d.summary.label} />
+        <span style={{ fontSize: 12, color: colors.textSecondary }}>FSHD2 evidence:</span>
+        <TierPill status={d.fshd2.status} label={d.fshd2.label} />
+        {d.fshd2.pending_variant && <span style={{ fontSize: 12, color: colors.textTertiary }}>variant not assessed</span>}
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: cols, gap: 10, padding: '8px 0', fontSize: 10.5, fontWeight: 600, color: colors.textSecondary, letterSpacing: '0.04em', textTransform: 'uppercase', borderBottom: `1px solid ${colors.borderSofter}` }}>

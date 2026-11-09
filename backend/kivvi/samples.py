@@ -20,6 +20,7 @@ import os
 from pathlib import Path
 from typing import Optional
 
+from . import fshd2 as fshd2_evidence
 from . import parse
 
 TARGETS = ("d4z4", "kiv2")
@@ -30,6 +31,27 @@ RESULTS_ROOT = Path(os.environ.get("KIVVI_RESULTS_ROOT", Path.home() / "kivvi_to
 # (path, mtime_ns) -> parsed file, so re-running Kivvi invalidates on its own.
 _json_cache: dict[tuple, dict] = {}
 _vcf_cache: dict[tuple, dict] = {}
+_variants_cache: dict[tuple, dict] = {}
+
+
+def _fshd2_variants_file() -> Path:
+    """Where the user's FSHD2-gene variant calls live: $KIVVI_FSHD2_VARIANTS, else `fshd2_variants.json` in the
+    results root (outside the repo, like the Kivvi outputs). Not a sample directory, so discovery skips it."""
+    override = os.environ.get("KIVVI_FSHD2_VARIANTS")
+    return Path(override) if override else RESULTS_ROOT / "fshd2_variants.json"
+
+
+def fshd2_variants(sample: str) -> Optional[list[dict]]:
+    """The variants supplied for a sample in the FSHD2 genes. An empty list means the sample was checked and none was
+    found; None means it is not in the file (never assessed), which is not the same thing."""
+    path = _fshd2_variants_file()
+    if not path.is_file():
+        return None
+    key = _stamp(path)
+    if key not in _variants_cache:
+        _variants_cache[key] = json.loads(path.read_text())
+    entry = (_variants_cache[key].get("samples") or {}).get(sample)
+    return None if entry is None else list(entry.get("variants") or [])
 
 
 def _target_dir(sample: str, target: str) -> Path:
@@ -181,6 +203,8 @@ def target_detail(sample: str, target: str) -> Optional[dict]:
     if data is None:
         return None
     shaped = parse.shape_d4z4(data) if target == "d4z4" else parse.shape_kiv2(data)
+    if target == "d4z4":
+        shaped["fshd2"]["evidence"] = fshd2_evidence.evidence(shaped["fshd2"], fshd2_variants(sample))
     return {
         "sample": sample,
         "target": target,
@@ -201,6 +225,10 @@ def overview(sample: str) -> dict:
         else {
             "summary": d4z4["summary"],
             "overall_methylation": d4z4["overall_methylation"],
+            "fshd2": {
+                k: d4z4["fshd2"]["evidence"][k]
+                for k in ("status", "tier", "label", "pending_variant")
+            },
             "alleles": [
                 {
                     "size_label": a["size_label"],

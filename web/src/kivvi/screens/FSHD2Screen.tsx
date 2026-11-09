@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { colors, fmtPct, mono } from '../theme'
-import { kivviApi, type Fshd2Allele, type Fshd2Evidence, type SizeRange } from '../api'
-import { LoadState, SectionTitle } from '../components/ui'
+import { kivviApi, type Fshd2Allele, type Fshd2Evidence, type Fshd2Variant, type SizeRange } from '../api'
+import { LoadState, SectionTitle, TierPill } from '../components/ui'
 import { cardStyle, pageStyle } from '../components/styles'
 import { useLoad } from '../useLoad'
 
@@ -20,6 +20,13 @@ const SIZE_RANGE_HELP: Record<SizeRange, string> = {
 }
 
 // Permissive alleles in the accent colour, the rest in grey; neither means "normal" or "abnormal".
+const VARIANT_STATE = {
+  met: 'Reported',
+  uncertain: 'Reported, uncertain',
+  none_reported: 'None reported',
+  not_assessed: 'Not assessed',
+} as const
+
 const PERMISSIVE = colors.accentButtonBg
 const OTHER = colors.statusUnknown
 
@@ -27,7 +34,8 @@ export function FSHD2Screen({ sample }: { sample: string }) {
   const { data, error } = useLoad(() => kivviApi.d4z4(sample), sample)
   if (!data) return <LoadState data={data} error={error} />
   const { fshd2 } = data
-  const { summary, hypomethylation } = fshd2
+  const { summary, hypomethylation, evidence } = fshd2
+  const { criteria } = evidence
   const hypo = hypomethylation.positive
   const cutoffLabel = `${Math.round(hypomethylation.cutoff * 100)}%`
 
@@ -38,11 +46,18 @@ export function FSHD2Screen({ sample }: { sample: string }) {
           <div>
             <div style={{ fontSize: 17, fontWeight: 600 }}>FSHD2 evidence</div>
             <div style={{ fontSize: 13, color: colors.textBody, marginTop: 6, maxWidth: 760, lineHeight: 1.55 }}>
-              What Kivvi reports that bears on FSHD2, side by side. Hypomethylation is scored against a {cutoffLabel} sample-methylation cut-off. No FSHD2 call is made: Kivvi defines no FSHD2 rule, its preprint validated it on FSHD1 and control samples, not on confirmed FSHD2 cases, and the variant evidence is not assessed here.
+              How many of the three findings an FSHD2 case rests on this sample shows: a permissive D4Z4 allele, hypomethylation (below {cutoffLabel} sample methylation) and a variant in SMCHD1, DNMT3B or LRIF1. A research view, not a diagnosis: Kivvi defines no FSHD2 rule, its preprint validated it on FSHD1 and control samples, not on confirmed FSHD2 cases, and the {cutoffLabel} cut-off and the variant calls are supplied by this project, not by Kivvi.
             </div>
           </div>
-          <span style={{ padding: '3px 10px', borderRadius: 999, fontSize: 11.5, fontWeight: 600, color: colors.textSecondary, background: colors.chipBg, whiteSpace: 'nowrap' }}>No call made</span>
+          <TierPill status={evidence.status} label={evidence.label} />
         </div>
+        {(evidence.notes.length > 0 || evidence.pending_variant) && (
+          <ul style={{ margin: '12px 0 0', paddingLeft: 18, fontSize: 12.5, color: colors.textBody, lineHeight: 1.6 }}>
+            {evidence.notes.map((n) => (
+              <li key={n}>{n}</li>
+            ))}
+          </ul>
+        )}
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: 16 }}>
@@ -86,8 +101,8 @@ export function FSHD2Screen({ sample }: { sample: string }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <Item
             title="A permissive D4Z4 allele"
-            state={`${summary.permissive_alleles} found`}
-            text="Only chr4 qA alleles with an intact PolyA signal can express DUX4. They are marked in the table above."
+            state={summary.permissive_alleles ? `${summary.permissive_alleles} found` : 'None found'}
+            text="Only chr4 qA alleles with an intact PolyA signal can express DUX4. They are marked in the table above. A sample without one has no tier."
           />
           <Item
             title="Hypomethylation across D4Z4, including alleles that are not permissive"
@@ -96,8 +111,15 @@ export function FSHD2Screen({ sample }: { sample: string }) {
           />
           <Item
             title="A pathogenic variant in SMCHD1, DNMT3B or LRIF1"
-            state="Not assessed"
-            text="Kivvi reports D4Z4 and nothing else, and this view does not look for variants in these genes. They have to be checked in the genome's small-variant calls."
+            state={VARIANT_STATE[criteria.variant.state]}
+            text={
+              <>
+                {criteria.variant.state === 'not_assessed'
+                  ? 'Kivvi reports D4Z4 and nothing else, and no variant calls were supplied for this sample, so this is unknown rather than negative.'
+                  : 'Supplied by this project, not called by Kivvi. A variant counts when it is loss-of-function (frameshift, nonsense, canonical splice) or ClinVar pathogenic / likely pathogenic.'}
+                {evidence.variants.length > 0 && <VariantTable variants={evidence.variants} />}
+              </>
+            }
           />
         </div>
       </div>
@@ -132,6 +154,61 @@ function Stat({ label, value, sub, accent = false }: { label: string; value: str
       <div style={{ fontSize: 12, fontWeight: 600, color: colors.textSecondary }}>{label}</div>
       <div style={{ fontSize: 26, fontWeight: 700, marginTop: 8, color: accent ? PERMISSIVE : undefined }}>{value}</div>
       <div style={{ fontSize: 12, color: colors.textTertiary, marginTop: 4, lineHeight: 1.5 }}>{sub}</div>
+    </div>
+  )
+}
+
+function VariantTable({ variants }: { variants: Fshd2Variant[] }) {
+  return (
+    <div style={{ overflowX: 'auto', marginTop: 10, border: `1px solid ${colors.borderSofter}`, borderRadius: 8 }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <thead>
+          <tr>
+            <th style={th}>Gene</th>
+            <th style={th}>Variant</th>
+            <th style={th}>Consequence</th>
+            <th style={th}>Position (hg38)</th>
+            <th style={th}>Zygosity</th>
+            <th style={th}>ClinVar</th>
+            <th style={th}>Counts</th>
+          </tr>
+        </thead>
+        <tbody>
+          {variants.map((v) => (
+            <tr key={`${v.gene}-${v.hgvs_c}`}>
+              <td style={{ ...td, fontWeight: 600 }}>{v.gene}</td>
+              <td style={{ ...td, fontFamily: mono, fontSize: 12.5 }}>
+                {v.hgvs_c}
+                {v.hgvs_p && <div style={{ color: colors.textSecondary }}>{v.hgvs_p}</div>}
+              </td>
+              <td style={td}>{v.consequence_label}</td>
+              <td style={{ ...td, fontFamily: mono, fontSize: 12.5 }}>{v.chrom && v.pos ? `${v.chrom}:${v.pos.toLocaleString('en-US')}` : '—'}</td>
+              <td style={{ ...td, textTransform: 'capitalize' }}>{v.genotype ?? '—'}</td>
+              <td style={td}>
+                {v.clinvar_url ? (
+                  <a href={v.clinvar_url} target="_blank" rel="noreferrer" style={{ color: colors.accentButtonBg }}>
+                    {v.clinvar_classification ?? 'ClinVar'}
+                  </a>
+                ) : (
+                  <span style={{ color: colors.textTertiary }}>No link</span>
+                )}
+              </td>
+              <td style={{ ...td, fontWeight: 600, color: v.counts ? PERMISSIVE : colors.textSecondary }} title={v.counts_reason}>
+                {v.counts ? 'Yes' : 'No'}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {variants.some((v) => v.note) && (
+        <div style={{ padding: '8px 14px', fontSize: 12, color: colors.textSecondary, borderTop: `1px solid ${colors.borderSoftest}`, lineHeight: 1.5 }}>
+          {variants.filter((v) => v.note).map((v) => (
+            <div key={v.hgvs_c}>
+              <b>{v.gene} {v.hgvs_c}:</b> {v.note}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -200,9 +277,9 @@ const H = 230
 const PAD = { left: 44, right: 118, top: 14, bottom: 46 }
 
 // Each allele's methylation as a point on a 0-100% axis, the permissive ones in the accent colour, with the sample's
-// overall methylation as a dashed line. No threshold is drawn: none is defined.
+// overall methylation as a dashed line and the project's hypomethylation cut-off as a dotted one.
 function MethylationPlot({ evidence }: { evidence: Fshd2Evidence }) {
-  const { alleles, sample_methylation } = evidence
+  const { alleles, sample_methylation, hypomethylation } = evidence
   if (!alleles.length) return null
   const x = (i: number) => PAD.left + ((i + 0.5) / alleles.length) * (W - PAD.left - PAD.right)
   const y = (v: number) => PAD.top + (1 - v) * (H - PAD.top - PAD.bottom)
@@ -217,6 +294,12 @@ function MethylationPlot({ evidence }: { evidence: Fshd2Evidence }) {
             </text>
           </g>
         ))}
+        <g>
+          <line x1={PAD.left} x2={W - PAD.right} y1={y(hypomethylation.cutoff)} y2={y(hypomethylation.cutoff)} stroke={colors.statusPathogenic} strokeDasharray="1.5 3" strokeWidth={1.5} />
+          <text x={PAD.left + 4} y={y(hypomethylation.cutoff) + 13} fontSize={10.5} fill={colors.statusPathogenic}>
+            {Math.round(hypomethylation.cutoff * 100)}% cut-off
+          </text>
+        </g>
         {sample_methylation != null && (
           <g>
             <line x1={PAD.left} x2={W - PAD.right} y1={y(sample_methylation)} y2={y(sample_methylation)} stroke={colors.textQuaternary} strokeDasharray="4 3" />

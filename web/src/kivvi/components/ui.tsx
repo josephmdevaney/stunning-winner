@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { callBg, callColor, colors } from '../theme'
-import type { CallStatus } from '../api'
+import type { CallStatus, Fshd2Status } from '../api'
 import { cardStyle } from './styles'
 
 export function StatusPill({ status, label }: { status: CallStatus; label: string }) {
@@ -20,6 +20,12 @@ export function StatusPill({ status, label }: { status: CallStatus; label: strin
       {label}
     </span>
   )
+}
+
+// The FSHD2 evidence tier as a pill: tiers 1 and 2 are coloured, tier 3 and "not supported" are grey.
+export function TierPill({ status, label }: { status: Fshd2Status; label: string }) {
+  const call: CallStatus = status === 'all_three' ? 'pathogenic' : status === 'two_of_three' ? 'review' : 'indeterminate'
+  return <StatusPill status={call} label={label} />
 }
 
 export function SectionTitle({ title, sub }: { title: string; sub?: ReactNode }) {

@@ -79,12 +79,61 @@ export interface Hypomethylation {
   positive: boolean | null
 }
 
-// The facts that bear on FSHD2, side by side. Kivvi defines no FSHD2 rule, so this carries no FSHD2 verdict; the
-// hypomethylation result scores one strand of the evidence.
+// How many of the three FSHD2 findings a sample shows. A permissive allele is required: without one there is no tier.
+export type Fshd2Status = 'all_three' | 'two_of_three' | 'permissive_only' | 'no_permissive'
+
+// A variant in SMCHD1, DNMT3B or LRIF1 supplied by the user, with its consequence class and whether it counts as a hit
+// (loss-of-function, or ClinVar pathogenic / likely pathogenic).
+export interface Fshd2Variant {
+  gene: string
+  hgvs_c: string
+  hgvs_p: string | null
+  chrom?: string
+  pos?: number
+  build?: string
+  genotype?: string
+  clinvar_id?: string
+  clinvar_url?: string
+  clinvar_classification?: string
+  clinvar_checked?: string
+  source?: string
+  note?: string
+  consequence: string
+  consequence_label: string
+  in_fshd2_gene: boolean
+  counts: boolean
+  counts_reason: string
+}
+
+export interface Fshd2Criterion {
+  met: boolean
+  summary: string
+}
+
+export interface Fshd2Tier {
+  status: Fshd2Status
+  tier: 1 | 2 | 3 | null
+  label: string
+  criteria: {
+    permissive_allele: Fshd2Criterion
+    hypomethylation: Fshd2Criterion
+    // not_assessed: no variant calls were supplied for the sample; none_reported: it was checked and none was found.
+    variant: Fshd2Criterion & { state: 'met' | 'uncertain' | 'none_reported' | 'not_assessed' }
+  }
+  variants: Fshd2Variant[]
+  // True when the variant criterion is not assessed and could still change the tier.
+  pending_variant: boolean
+  permissive_alleles: number
+  notes: string[]
+}
+
+// The facts that bear on FSHD2, side by side. Kivvi defines no FSHD2 rule: the hypomethylation result and the tier are
+// this project's reading of the evidence, a research view and not a diagnosis.
 export interface Fshd2Evidence {
   alleles: Fshd2Allele[]
   sample_methylation: number | null
   hypomethylation: Hypomethylation
+  evidence: Fshd2Tier
   summary: {
     permissive_alleles: number
     permissive_contracted: number
@@ -162,6 +211,7 @@ export interface OverviewResponse extends KivviMeta {
   d4z4: {
     summary: D4Z4Summary
     overall_methylation: number | null
+    fshd2: Pick<Fshd2Tier, 'status' | 'tier' | 'label' | 'pending_variant'>
     alleles: {
       size_label: string
       chromosome: string

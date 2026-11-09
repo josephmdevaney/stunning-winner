@@ -160,6 +160,12 @@ app.include_router(kivvi_router)
 
 # Runs of Homozygosity is another sibling product, served under /api/roh.
 # Self-contained -- its own sample registry and reference data (roh/analysis.py).
+# Small variants (SNV/indel): genome-wide review of a DeepVariant call set, annotated with
+# ClinVar, gnomAD and HPRC frequencies, served under /api/smallvar. Self-contained -- reads
+# its own VCFs and builds a per-sample SQLite index outside the repo (smallvar/samples.py).
+from smallvar.router import router as smallvar_router  # noqa: E402
+
+app.include_router(smallvar_router)
 # Structural variants: genome-wide review of a family's SV calls (sawfish, pbsv, sniffles), annotated
 # with MANE gene models, population SV catalogs and genome tracks, served under /api/structvar.
 # Self-contained -- reads its own VCFs and builds a per-call-set SQLite index outside the repo
@@ -179,6 +185,12 @@ app.include_router(roh_router)
 from pacbio_tools.router import router as pacbio_tools_router  # noqa: E402
 
 app.include_router(pacbio_tools_router)
+
+# Epigenetics (imprinting disorders from genome methylation) is another sibling product, served under
+# /api/epigenetics. Self-contained: reads pb-CpG-tools beds listed in a local config (epigenetics/samples.py).
+from epigenetics.router import router as epigenetics_router  # noqa: E402
+
+app.include_router(epigenetics_router)
 
 # Per-mode state: {mode_key: {label, sample_paths: {sample: vcf_path}, locus_ids: set|None}}
 _modes: dict[str, dict] = {}

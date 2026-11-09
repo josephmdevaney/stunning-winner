@@ -166,6 +166,13 @@ app.include_router(kivvi_router)
 from smallvar.router import router as smallvar_router  # noqa: E402
 
 app.include_router(smallvar_router)
+# Structural variants: genome-wide review of a family's SV calls (sawfish, pbsv, sniffles), annotated
+# with MANE gene models, population SV catalogs and genome tracks, served under /api/structvar.
+# Self-contained -- reads its own VCFs and builds a per-call-set SQLite index outside the repo
+# (structvar/samples.py).
+from structvar.router import router as structvar_router  # noqa: E402
+
+app.include_router(structvar_router)
 
 from roh.router import router as roh_router  # noqa: E402
 

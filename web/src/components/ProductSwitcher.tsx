@@ -1,6 +1,6 @@
 import { colors } from '../theme'
 
-export type Product = 'genome_wide' | 'puretarget_v2' | 'carrier' | 'mitolr' | 'paraphase' | 'kivvi' | 'roh' | 'epigenetics' | 'cohort'
+export type Product = 'genome_wide' | 'puretarget_v2' | 'carrier' | 'mitolr' | 'paraphase' | 'kivvi' | 'roh' | 'epigenetics' | 'smallvar' | 'cohort'
 
 const PRODUCTS: { key: Product; label: string }[] = [
   { key: 'genome_wide', label: 'RepeatScope' },
@@ -11,6 +11,7 @@ const PRODUCTS: { key: Product; label: string }[] = [
   { key: 'kivvi', label: 'Kivvi' },
   { key: 'roh', label: 'ROH' },
   { key: 'epigenetics', label: 'Epigenetics' },
+  { key: 'smallvar', label: 'Small variants' },
   { key: 'cohort', label: 'Cohort' },
 ]
 

@@ -1,0 +1,85 @@
+gene	category	disease	omim	inheritance	added_in	reportable_genotypes	variant_restriction	rule_ids	other_associations
+APC	Cancer predisposition	Familial adenomatous polyposis	175100	AD	v1.0	1 P/LP variant		R2	
+RET	Cancer predisposition	Familial medullary thyroid cancer / MEN2	155240, 171400, 162300	AD	v1.0	1 P/LP variant		R2	
+BRCA1	Cancer predisposition	Hereditary breast and/or ovarian cancer	604370	AD	v1.0	1 P/LP variant		R2	
+BRCA2	Cancer predisposition	Hereditary breast and/or ovarian cancer	612555	AD	v1.0	1 P/LP variant		R2	
+PALB2	Cancer predisposition	Hereditary breast and/or ovarian cancer	114480	AD	v3.0	1 P/LP variant		R2	
+SDHD	Cancer predisposition	Hereditary paraganglioma-pheochromocytoma syndrome	168000	AD	v1.0	1 P/LP variant		R2	
+SDHAF2	Cancer predisposition	Hereditary paraganglioma-pheochromocytoma syndrome	601650	AD	v1.0	1 P/LP variant		R2	
+SDHC	Cancer predisposition	Hereditary paraganglioma-pheochromocytoma syndrome	605373	AD	v1.0	1 P/LP variant		R2	
+SDHB	Cancer predisposition	Hereditary paraganglioma-pheochromocytoma syndrome	115310	AD	v1.0	1 P/LP variant		R2	
+MAX	Cancer predisposition	Hereditary paraganglioma-pheochromocytoma syndrome	171300	AD	v3.0	1 P/LP variant		R2	
+TMEM127	Cancer predisposition	Hereditary paraganglioma-pheochromocytoma syndrome	171300	AD	v3.0	1 P/LP variant		R2	
+BMPR1A	Cancer predisposition	Juvenile polyposis syndrome	174900	AD	v2.0	1 P/LP variant		R2	
+SMAD4	Cancer predisposition	Juvenile polyposis syndrome / hereditary hemorrhagic telangiectasia	175050	AD	v2.0	1 P/LP variant		R2	
+TP53	Cancer predisposition	Li-Fraumeni syndrome	151623	AD	v1.0	1 P/LP variant		R2	
+MLH1	Cancer predisposition	Lynch syndrome / HNPCC	609310	AD	v1.0	1 P/LP variant		R2	
+MSH2	Cancer predisposition	Lynch syndrome / HNPCC	120435	AD	v1.0	1 P/LP variant		R2	
+MSH6	Cancer predisposition	Lynch syndrome / HNPCC	614350	AD	v1.0	1 P/LP variant		R2	
+PMS2	Cancer predisposition	Lynch syndrome / HNPCC	614337	AD	v1.0	1 P/LP variant		R2	
+MEN1	Cancer predisposition	Multiple endocrine neoplasia type 1	131100	AD	v1.0	1 P/LP variant		R2	
+MUTYH	Cancer predisposition	MUTYH-associated polyposis	608456	AR	v1.0	2 P/LP variants (phase may be unknown)		R3	
+NF2	Cancer predisposition	NF2-related schwannomatosis	101000	AD	v1.0	1 P/LP variant		R2	
+STK11	Cancer predisposition	Peutz-Jeghers syndrome	175200	AD	v1.0	1 P/LP variant		R2	
+PTEN	Cancer predisposition	PTEN hamartoma tumor syndrome	158350	AD	v1.0	1 P/LP variant		R2	
+RB1	Cancer predisposition	Retinoblastoma	180200	AD	v1.0	1 P/LP variant		R2	
+TSC1	Cancer predisposition	Tuberous sclerosis complex	191100	AD	v1.0	1 P/LP variant		R2	
+TSC2	Cancer predisposition	Tuberous sclerosis complex	613254	AD	v1.0	1 P/LP variant		R2	
+VHL	Cancer predisposition	von Hippel-Lindau syndrome	193300	AD	v1.0	1 P/LP variant		R2	
+WT1	Cancer predisposition	WT1-related Wilms tumor	194070	AD	v1.0	1 P/LP variant		R2	
+FBN1	Cardiovascular	Aortopathies	154700	AD	v1.0	1 P/LP variant		R2	
+TGFBR1	Cardiovascular	Aortopathies	609192	AD	v1.0	1 P/LP variant		R2	
+TGFBR2	Cardiovascular	Aortopathies	610168	AD	v1.0	1 P/LP variant		R2	
+SMAD3	Cardiovascular	Aortopathies	613795	AD	v1.0	1 P/LP variant		R2	
+ACTA2	Cardiovascular	Aortopathies	611788	AD	v1.0	1 P/LP variant		R2	
+MYH11	Cardiovascular	Aortopathies	132900	AD	v1.0	1 P/LP variant		R2	
+PKP2	Cardiovascular	Arrhythmogenic right ventricular cardiomyopathy	609040	AD	v1.0	1 P/LP variant		R2	
+DSP	Cardiovascular	Arrhythmogenic right ventricular cardiomyopathy	607450	AD	v1.0	1 P/LP variant		R2	Also dilated cardiomyopathy (primary disease)
+DSC2	Cardiovascular	Arrhythmogenic right ventricular cardiomyopathy	610476	AD	v1.0	1 P/LP variant		R2	
+TMEM43	Cardiovascular	Arrhythmogenic right ventricular cardiomyopathy	604400	AD	v1.0	1 P/LP variant		R2	
+DSG2	Cardiovascular	Arrhythmogenic right ventricular cardiomyopathy	610193	AD	v1.0	1 P/LP variant		R2	
+RYR2	Cardiovascular	Catecholaminergic polymorphic ventricular tachycardia	604772	AD	v1.0	1 P/LP variant		R2	
+CASQ2	Cardiovascular	Catecholaminergic polymorphic ventricular tachycardia	611938	AR	v3.0	2 P/LP variants (phase may be unknown)		R3	
+TRDN	Cardiovascular	Catecholaminergic polymorphic ventricular tachycardia	615441	AR	v3.0	2 P/LP variants (phase may be unknown)		R3	Also long QT syndrome
+TNNT2	Cardiovascular	Dilated cardiomyopathy	601494	AD	v1.0	1 P/LP variant		R2	Also hypertrophic cardiomyopathy
+LMNA	Cardiovascular	Dilated cardiomyopathy	115200	AD	v1.0	1 P/LP variant	Needs case-level cardiac phenotype evidence; exclude P/LP missense never linked to cardiac disease; novel pLOF reaching LP reportable	R2, R8	
+FLNC	Cardiovascular	Dilated cardiomyopathy	617047	AD	v3.0	1 P/LP variant		R2	Also hypertrophic cardiomyopathy
+TTN	Cardiovascular	Dilated cardiomyopathy	604145	AD	v3.0	1 P/LP variant	Truncating variants only (TTNtv)	R2, R7	
+BAG3	Cardiovascular	Dilated cardiomyopathy	613881	AD	v3.1	1 P/LP variant		R2	
+DES	Cardiovascular	Dilated cardiomyopathy	604765	AD	v3.1	1 P/LP variant		R2	
+RBM20	Cardiovascular	Dilated cardiomyopathy	613172	AD	v3.1	1 P/LP variant		R2	
+TNNC1	Cardiovascular	Dilated cardiomyopathy	611879	AD	v3.1	1 P/LP variant		R2	
+PLN	Cardiovascular	Dilated cardiomyopathy	609909	AD	v3.3	1 P/LP variant		R2	Also hypertrophic cardiomyopathy and arrhythmogenic right ventricular cardiomyopathy
+COL3A1	Cardiovascular	Ehlers-Danlos syndrome, vascular type	130050	AD	v1.0	1 P/LP variant		R2	
+LDLR	Cardiovascular	Familial hypercholesterolemia	143890	SD	v1.0	1 P/LP variant		R2	
+APOB	Cardiovascular	Familial hypercholesterolemia	144010	AD	v1.0	1 P/LP variant		R2	
+PCSK9	Cardiovascular	Familial hypercholesterolemia	603776	AD	v1.0	1 P/LP variant		R2	
+MYH7	Cardiovascular	Hypertrophic cardiomyopathy	192600	AD	v1.0	1 P/LP variant		R2	Also dilated cardiomyopathy (primary disease)
+MYBPC3	Cardiovascular	Hypertrophic cardiomyopathy	115197	AD	v1.0	1 P/LP variant		R2	
+TNNI3	Cardiovascular	Hypertrophic cardiomyopathy	613690	AD	v1.0	1 P/LP variant		R2	
+TPM1	Cardiovascular	Hypertrophic cardiomyopathy	115196	AD	v1.0	1 P/LP variant		R2	
+MYL3	Cardiovascular	Hypertrophic cardiomyopathy	608751	AD	v1.0	1 P/LP variant		R2	
+ACTC1	Cardiovascular	Hypertrophic cardiomyopathy	612098	AD	v1.0	1 P/LP variant		R2	
+PRKAG2	Cardiovascular	Hypertrophic cardiomyopathy	600858	AD	v1.0	1 P/LP variant		R2	
+MYL2	Cardiovascular	Hypertrophic cardiomyopathy	608758	AD	v1.0	1 P/LP variant		R2	
+KCNQ1	Cardiovascular	Long QT syndrome types 1 and 2	192500	AD	v1.0	1 P/LP variant		R2	
+KCNH2	Cardiovascular	Long QT syndrome types 1 and 2	613688	AD	v1.0	1 P/LP variant		R2	
+SCN5A	Cardiovascular	Long QT syndrome 3; Brugada syndrome	603830, 601144	AD	v1.0	1 P/LP variant		R2	Also dilated cardiomyopathy (primary disease)
+CALM1	Cardiovascular	Long QT syndrome types 14-16	616247	AD	v3.2	1 P/LP variant		R2	Also catecholaminergic polymorphic ventricular tachycardia
+CALM2	Cardiovascular	Long QT syndrome types 14-16	616249	AD	v3.2	1 P/LP variant		R2	Also catecholaminergic polymorphic ventricular tachycardia
+CALM3	Cardiovascular	Long QT syndrome types 14-16	618782	AD	v3.2	1 P/LP variant		R2	Also catecholaminergic polymorphic ventricular tachycardia
+BTD	Inborn errors of metabolism	Biotinidase deficiency	253260	AR	v3.0	2 P/LP variants (phase may be unknown)		R3	
+CYP27A1	Inborn errors of metabolism	Cerebrotendinous xanthomatosis	213700	AR	v3.3	2 P/LP variants (phase may be unknown)		R3	
+GLA	Inborn errors of metabolism	Fabry disease	301500	XL	v1.0	P/LP hemizygous, heterozygous or homozygous		R4	Also applies to cardiovascular category
+HFE	Inborn errors of metabolism	Hereditary hemochromatosis	235200	AR	v3.0	p.C282Y homozygous only	p.C282Y only (transcript NM_000410.3)	R6	
+OTC	Inborn errors of metabolism	Ornithine transcarbamylase deficiency	311250	XL	v2.0	P/LP hemizygous, heterozygous or homozygous		R4	
+GAA	Inborn errors of metabolism	Pompe disease	232300	AR	v3.0	2 P/LP variants (phase may be unknown)		R3	
+ABCD1	Inborn errors of metabolism	X-linked adrenoleukodystrophy	300100	XL	v3.3	P/LP hemizygous, homozygous or 2 heterozygous; not 1 heterozygous	Single heterozygous P/LP variant not reported	R5	
+ACVRL1	Other	Hereditary hemorrhagic telangiectasia	600376	AD	v3.0	1 P/LP variant		R2	
+ENG	Other	Hereditary hemorrhagic telangiectasia	187300	AD	v3.0	1 P/LP variant		R2	
+TTR	Other	Hereditary TTR amyloidosis	105210	AD	v3.1	1 P/LP variant		R2	
+RYR1	Other	Malignant hyperthermia	145600	AD	v1.0	1 P/LP variant	Reportable for malignant hyperthermia, not congenital myopathy (ClinGen ACMG SF page)	R2, R9	
+CACNA1S	Other	Malignant hyperthermia	601887	AD	v1.0	1 P/LP variant		R2	
+HNF1A	Other	Maturity-onset diabetes of the young	600496	AD	v3.0	1 P/LP variant		R2	
+RPE65	Other	RPE65-related retinopathy	204100, 613794	AR	v3.0	2 P/LP variants (phase may be unknown)		R3	
+ATP7B	Other	Wilson disease	277900	AR	v2.0	2 P/LP variants (phase may be unknown)		R3	

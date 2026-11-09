@@ -27,7 +27,9 @@ export function FSHD2Screen({ sample }: { sample: string }) {
   const { data, error } = useLoad(() => kivviApi.d4z4(sample), sample)
   if (!data) return <LoadState data={data} error={error} />
   const { fshd2 } = data
-  const { summary } = fshd2
+  const { summary, hypomethylation } = fshd2
+  const hypo = hypomethylation.positive
+  const cutoffLabel = `${Math.round(hypomethylation.cutoff * 100)}%`
 
   return (
     <div style={pageStyle}>
@@ -36,7 +38,7 @@ export function FSHD2Screen({ sample }: { sample: string }) {
           <div>
             <div style={{ fontSize: 17, fontWeight: 600 }}>FSHD2 evidence</div>
             <div style={{ fontSize: 13, color: colors.textBody, marginTop: 6, maxWidth: 760, lineHeight: 1.55 }}>
-              What Kivvi reports that bears on FSHD2, side by side. No call is made: Kivvi defines no FSHD2 rule and no methylation cut-off, and its preprint validated it on FSHD1 and control samples, not on confirmed FSHD2 cases.
+              What Kivvi reports that bears on FSHD2, side by side. Hypomethylation is scored against a {cutoffLabel} sample-methylation cut-off. No FSHD2 call is made: Kivvi defines no FSHD2 rule, its preprint validated it on FSHD1 and control samples, not on confirmed FSHD2 cases, and the variant evidence is not assessed here.
             </div>
           </div>
           <span style={{ padding: '3px 10px', borderRadius: 999, fontSize: 11.5, fontWeight: 600, color: colors.textSecondary, background: colors.chipBg, whiteSpace: 'nowrap' }}>No call made</span>
@@ -48,6 +50,12 @@ export function FSHD2Screen({ sample }: { sample: string }) {
           label="Sample methylation"
           value={fmtPct(fshd2.sample_methylation)}
           sub="Methylated reads over all reads across every D4Z4 unit (Kivvi's methylation_all_sites). Kivvi notes it is low in FSHD2 samples."
+        />
+        <Stat
+          label={`Hypomethylation (<${cutoffLabel})`}
+          value={hypo == null ? 'No data' : hypo ? 'Positive' : 'Negative'}
+          sub={hypo == null ? 'Kivvi reported no sample methylation.' : `Sample methylation ${fmtPct(hypomethylation.sample_methylation)} is ${hypo ? 'below' : `at or above`} the ${cutoffLabel} cut-off. The cut-off is this project's, not Kivvi's.`}
+          accent={hypo === true}
         />
         <Stat
           label="Permissive alleles"
@@ -83,8 +91,8 @@ export function FSHD2Screen({ sample }: { sample: string }) {
           />
           <Item
             title="Hypomethylation across D4Z4, including alleles that are not permissive"
-            state="Shown above, no cut-off applied"
-            text="In the preprint's six samples with candidate SMCHD1 variants, most D4Z4 alleles were hypomethylated whatever their allele type and size, and their sample-level methylation was lower than the FSHD1 samples'. The two groups overlapped: one FSHD1 sample fell within the SMCHD1 samples' range."
+            state={hypo == null ? 'No data' : hypo ? `Positive (<${cutoffLabel})` : `Negative (≥${cutoffLabel})`}
+            text="A sample is positive when its overall methylation is below the cut-off. In the preprint's six samples with candidate SMCHD1 variants, most D4Z4 alleles were hypomethylated whatever their allele type and size, and their sample-level methylation was lower than the FSHD1 samples'. The two groups overlapped: one FSHD1 sample fell within the SMCHD1 samples' range."
           />
           <Item
             title="A pathogenic variant in SMCHD1, DNMT3B or LRIF1"
@@ -118,11 +126,11 @@ export function FSHD2Screen({ sample }: { sample: string }) {
   )
 }
 
-function Stat({ label, value, sub }: { label: string; value: string; sub: string }) {
+function Stat({ label, value, sub, accent = false }: { label: string; value: string; sub: string; accent?: boolean }) {
   return (
     <div style={{ ...cardStyle, padding: '18px 20px' }}>
       <div style={{ fontSize: 12, fontWeight: 600, color: colors.textSecondary }}>{label}</div>
-      <div style={{ fontSize: 26, fontWeight: 700, marginTop: 8 }}>{value}</div>
+      <div style={{ fontSize: 26, fontWeight: 700, marginTop: 8, color: accent ? PERMISSIVE : undefined }}>{value}</div>
       <div style={{ fontSize: 12, color: colors.textTertiary, marginTop: 4, lineHeight: 1.5 }}>{sub}</div>
     </div>
   )

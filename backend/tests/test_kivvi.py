@@ -228,6 +228,19 @@ def test_fshd2_evidence_lays_out_each_allele_without_making_a_call():
     assert parse.shape_d4z4(data)["summary"]["status"] == "pathogenic"
 
 
+@pytest.mark.parametrize(
+    "methylation, positive",
+    [(0.249, True), (0.299, True), (0.30, False), (0.301, False), (0.796, False), (None, None)],
+)
+def test_hypomethylation_is_positive_below_the_30_percent_cutoff(methylation, positive):
+    data = _d4z4_json([_meth_allele(14, 0.5)])
+    data["additional"]["methylation_all_sites"] = methylation
+    fshd2 = parse.shape_d4z4(data)["fshd2"]
+    assert fshd2["hypomethylation"] == {"cutoff": 0.30, "sample_methylation": methylation, "positive": positive}
+    # one strand of the evidence, not an FSHD2 call
+    assert not {"status", "label", "call"} & set(fshd2["hypomethylation"])
+
+
 def test_fshd2_evidence_tolerates_alleles_without_methylation_and_no_alleles():
     info = _allele_info(14)
     info["methylation"] = None

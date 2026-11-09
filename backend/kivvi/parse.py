@@ -13,7 +13,7 @@ FLANKS = ("LeftFlank", "RightFlank")
 
 # Kivvi's docs: FSHD1 is caused by contraction of D4Z4 to 1-10 repeat units on a
 # qA haplotype with an intact PolyA signal. Kivvi defines no other cutoffs, so
-# none are applied here (in particular no hypomethylation or KIV2 cutoff).
+# none come from Kivvi (in particular no hypomethylation or KIV2 cutoff).
 FSHD1_MAX_UNITS = 10
 PATHOGENIC_DISTAL = "qAIntactPolyA"
 # chr4 upstream group "Group2.1" is the 4A166 haplotype, "not pathogenic when
@@ -23,6 +23,10 @@ NON_PATHOGENIC_UPSTREAM_GROUP = "Group2.1"
 # that Kivvi's accuracy there was not measured. It only labels an allele's size for the FSHD2 evidence view; no call
 # depends on it.
 FSHD2_RANGE = (11, 20)
+# D4Z4 hypomethylation: a sample whose overall methylation (Kivvi's methylation_all_sites, a 0-1 fraction) is below
+# 30% is positive. The cut-off was set for this tool by the project team; it is not from Kivvi or its preprint,
+# which define none. It speaks to one strand of FSHD2 evidence and makes no FSHD2 call on its own.
+HYPOMETHYLATION_CUTOFF = 0.30
 # Kivvi's D4Z4 preset "expects four alleles" (two chr4 + two chr10).
 EXPECTED_D4Z4_ALLELES = 4
 EXPECTED_KIV2_ALLELES = 2
@@ -117,13 +121,20 @@ def size_range(size: int, lower_bound: bool) -> str:
     return "fshd2_range" if size <= high else "above"
 
 
-def shape_fshd2(alleles: list[dict], sample_methylation: Optional[float]) -> dict:
-    """The facts that bear on FSHD2, laid side by side. Nothing is concluded from them.
+def hypomethylation(sample_methylation: Optional[float]) -> dict:
+    """The sample's D4Z4 hypomethylation result: positive when overall methylation is below the cut-off, None when
+    Kivvi reported no sample methylation."""
+    positive = None if sample_methylation is None else sample_methylation < HYPOMETHYLATION_CUTOFF
+    return {"cutoff": HYPOMETHYLATION_CUTOFF, "sample_methylation": sample_methylation, "positive": positive}
 
-    Kivvi defines no FSHD2 rule and no methylation cut-off, and its preprint validated it on FSHD1 and control
-    samples only, so this gathers what Kivvi reports (each allele's haplotype, size and methylation, and the sample's
-    overall methylation) and leaves the reading to the reader. Variants in SMCHD1, DNMT3B or LRIF1, the other part of
-    an FSHD2 finding, are not something Kivvi reports and are not assessed.
+
+def shape_fshd2(alleles: list[dict], sample_methylation: Optional[float]) -> dict:
+    """The facts that bear on FSHD2, laid side by side. No FSHD2 call is made from them.
+
+    Kivvi defines no FSHD2 rule, and its preprint validated it on FSHD1 and control samples only, so this gathers
+    what Kivvi reports (each allele's haplotype, size and methylation, and the sample's overall methylation) and
+    scores one strand, hypomethylation, against the 30% cut-off above. Variants in SMCHD1, DNMT3B or LRIF1, the other
+    part of an FSHD2 finding, are not something Kivvi reports and are not assessed here.
     """
     rows = []
     for index, a in enumerate(alleles, start=1):
@@ -146,6 +157,7 @@ def shape_fshd2(alleles: list[dict], sample_methylation: Optional[float]) -> dic
     return {
         "alleles": rows,
         "sample_methylation": sample_methylation,
+        "hypomethylation": hypomethylation(sample_methylation),
         "summary": {
             "permissive_alleles": len(permissive),
             "permissive_contracted": sum(r["size_range"] == "contracted" for r in permissive),

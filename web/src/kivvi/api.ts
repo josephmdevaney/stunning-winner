@@ -71,10 +71,20 @@ export interface Fshd2Allele {
   methylation: number | null
 }
 
-// The facts that bear on FSHD2, side by side. Kivvi defines no FSHD2 rule or cut-off, so this carries no verdict.
+// Sample-level D4Z4 hypomethylation: positive when overall methylation is below `cutoff` (0.30), null when Kivvi
+// reported no sample methylation. The cut-off is this project's, not Kivvi's.
+export interface Hypomethylation {
+  cutoff: number
+  sample_methylation: number | null
+  positive: boolean | null
+}
+
+// The facts that bear on FSHD2, side by side. Kivvi defines no FSHD2 rule, so this carries no FSHD2 verdict; the
+// hypomethylation result scores one strand of the evidence.
 export interface Fshd2Evidence {
   alleles: Fshd2Allele[]
   sample_methylation: number | null
+  hypomethylation: Hypomethylation
   summary: {
     permissive_alleles: number
     permissive_contracted: number

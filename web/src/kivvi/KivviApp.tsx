@@ -6,12 +6,14 @@ import { colors } from './theme'
 import { kivviApi, type KivviMeta, type SampleInfo } from './api'
 import { KivviOverviewScreen } from './screens/KivviOverviewScreen'
 import { D4Z4Screen } from './screens/D4Z4Screen'
+import { FSHD2Screen } from './screens/FSHD2Screen'
 import { Kiv2Screen } from './screens/Kiv2Screen'
 import { KivviQCScreen } from './screens/KivviQCScreen'
 
 const TITLES: Record<KivviScreen, string> = {
   overview: 'Overview',
   d4z4: 'D4Z4 Repeat (FSHD)',
+  fshd2: 'FSHD2 Evidence',
   kiv2: 'LPA KIV2 Repeat',
   qc: 'Sample QC',
 }
@@ -70,6 +72,7 @@ export default function KivviApp({
           {loaded && !sample && <NoSamples />}
           {sample && screen === 'overview' && <KivviOverviewScreen sample={sample} onNavigate={setScreen} />}
           {sample && screen === 'd4z4' && <D4Z4Screen sample={sample} />}
+          {sample && screen === 'fshd2' && <FSHD2Screen sample={sample} />}
           {sample && screen === 'kiv2' && <Kiv2Screen sample={sample} />}
           {sample && screen === 'qc' && <KivviQCScreen sample={sample} />}
         </div>

@@ -17,7 +17,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Optional
 
-from . import generate, qc, vcf
+from . import generate, haplogroup, qc, vcf
 from .reference import GENE_MAP, GENOME_LENGTH, HAPLOGROUP
 
 BACKEND_ROOT = Path(__file__).resolve().parent
@@ -30,6 +30,57 @@ REFERENCE_RANGES = [
 
 # key -> descriptor. `source` selects the builder.
 SAMPLES: dict[str, dict] = {
+    "CDS57401": {
+        "label": "CDS57401 (MitoRSaw)",
+        "source": "vcf",
+        # Real per-participant hackathon data -- kept outside the repo
+        # (never committed). No mosdepth summary supplied for this sample
+        # either (see CDS48001's own comment below for what that means).
+        "vcf": "/Users/joedevaney/hackathon_cds57401/CDS57401.GRCh38.mitorsaw.vcf.gz",
+        "caller": "mitorsaw 0.2.7-8ee9b5b",
+        "instrument_line": "PacBio HiFi · GRCh38 chrM",
+        "reference": "GRCh38 chrM (rCRS · NC_012920.1)",
+        "run_date": "Hackathon run",
+        # Tissue provenance not supplied for this sample -- left unset
+        # rather than fabricated, same reasoning as CDS27601/MT-0417-P2 below.
+    },
+    "CDS48001": {
+        "label": "CDS48001 (MitoRSaw)",
+        "source": "vcf",
+        # Real per-participant hackathon data -- kept outside the repo
+        # (never committed). Unlike CDS27601, no mosdepth summary was
+        # supplied for this sample -- "mosdepth" key is intentionally
+        # omitted rather than pointed at a nonexistent file; coverage/sex
+        # inference falls back accordingly (see sex_for_sample in roh/analysis.py).
+        "vcf": "/Users/joedevaney/hackathon_cds48001/CDS48001.GRCh38.mitorsaw.vcf.gz",
+        "caller": "mitorsaw 0.2.7-8ee9b5b",
+        "instrument_line": "PacBio HiFi · GRCh38 chrM",
+        "reference": "GRCh38 chrM (rCRS · NC_012920.1)",
+        "run_date": "Hackathon run",
+        # Tissue provenance not supplied for this sample -- left unset
+        # rather than fabricated, same reasoning as CDS27601/MT-0417-P2 below.
+    },
+    "CDS27601": {
+        "label": "CDS27601 (MitoRSaw)",
+        "source": "vcf",
+        # Real per-participant hackathon data -- kept outside the repo
+        # (never committed), unlike HG002's public GIAB fixture below.
+        "vcf": "/Users/joedevaney/hackathon_cds2760x/CDS27601.GRCh38.mitorsaw.vcf.gz",
+        # No aligned-BAM QC precomputed for this sample (see
+        # scripts/real_data/build_mito_bam_qc.py) -- falls back to
+        # VCF-derived QC automatically, same as MT-0417-P2. Real whole-genome
+        # chrM coverage is available from mosdepth, though (see
+        # roh/sex_inference.py's own use of this same file for chrX/Y).
+        "mosdepth": "/Users/joedevaney/hackathon_cds2760x/CDS27601.GRCh38.mosdepth.summary.txt",
+        "caller": "mitorsaw 0.2.7-8ee9b5b",
+        "instrument_line": "PacBio HiFi · GRCh38 chrM",
+        "reference": "GRCh38 chrM (rCRS · NC_012920.1)",
+        "run_date": "Hackathon run",
+        # Tissue provenance not supplied for this sample -- left unset
+        # rather than fabricated, same as MT-0417-P2 (see its own comment
+        # below), so the Parikh et al. tissue-discordance caveat correctly
+        # stays silent rather than asserting a tissue type nobody confirmed.
+    },
     "HG002": {
         "label": "HG002 (MitoRSaw)",
         "source": "vcf",
@@ -42,6 +93,13 @@ SAMPLES: dict[str, dict] = {
         "instrument_line": "PacBio HiFi · GRCh38 chrM",
         "reference": "GRCh38 chrM (rCRS · NC_012920.1)",
         "run_date": "GIAB HG002",
+        # NA24385/HG002's DNA source is documented, public GIAB provenance (Coriell
+        # GM24385, an EBV-transformed blood lymphoblastoid cell line) -- not a
+        # per-run fact this pipeline observes, so it's recorded here rather than
+        # inferred. Enables the Parikh et al. (2015) tissue-discordance caveat
+        # (see annotate.tissue_caveat) for any pathogenic-panel call that reads
+        # negative/low on this sample.
+        "tissue": "blood",
     },
     "MT-0417-P2": {
         "label": "MT-0417-P2 (demo)",
@@ -50,10 +108,12 @@ SAMPLES: dict[str, dict] = {
         "instrument_line": "PacBio HiFi · mtDNA amplicon",
         "reference": "rCRS (NC_012920.1)",
         "run_date": "2026-07-02",
+        # No real tissue provenance for the synthetic demo sample -- left unset
+        # rather than fabricated, so the tissue caveat correctly stays silent.
     },
 }
 
-DEFAULT_SAMPLE = "HG002"
+DEFAULT_SAMPLE = "CDS27601"
 
 
 def sample_keys() -> list[str]:
@@ -76,6 +136,7 @@ def meta(sample: str) -> dict:
         "reference": s["reference"],
         "run_date": s["run_date"],
         "caller": s["caller"],
+        "tissue": s.get("tissue"),
     }
 
 
@@ -83,7 +144,7 @@ def meta(sample: str) -> dict:
 def variants(sample: str) -> list[dict]:
     s = SAMPLES[sample]
     if s["source"] == "vcf":
-        return vcf.build_variants(s["vcf"])
+        return vcf.build_variants(s["vcf"], tissue=s.get("tissue"))
     return generate.build_variants()
 
 
@@ -101,36 +162,61 @@ def variant_by_id(sample: str, variant_id: str) -> Optional[dict]:
     return next((v for v in variants(sample) if v["id"] == variant_id), None)
 
 
+@lru_cache(maxsize=None)
+def _mtdna_coverage(sample: str) -> dict:
+    """Best-available whole-mtDNA-genome mean coverage: real mosdepth (all
+    16,569 bp) if on file, else the real aligned-BAM mean (also genome-wide),
+    else the synthetic demo's seeded figure, else honestly unavailable --
+    never the sparse per-called-site depth (that's not genome-wide)."""
+    s = SAMPLES[sample]
+    mosdepth_path = s.get("mosdepth")
+    if mosdepth_path and Path(mosdepth_path).exists():
+        mean = qc.mtdna_coverage_from_mosdepth(mosdepth_path)
+        if mean is not None:
+            return {"mean_coverage": mean, "source": "mosdepth, real per-base depth across the whole 16,569 bp genome"}
+
+    bam = _bam_qc(sample)
+    if bam is not None:
+        return {"mean_coverage": bam["coverage_mean"], "source": "aligned HiFi BAM, real per-base depth across the whole genome"}
+
+    if s["source"] == "seeded":
+        return {"mean_coverage": 4820, "source": "synthetic demo coverage (seeded, not real sequencing data)"}
+
+    return {"mean_coverage": None, "source": None}
+
+
 def _haplogroup(sample: str) -> dict:
     if SAMPLES[sample]["source"] == "seeded":
         return dict(HAPLOGROUP)
-    # Real sample: haplogroup requires a phylogenetic classifier (Haplogrep /
-    # PhyloTree), which is out of scope for a variant-call parser. Report that
-    # honestly and surface the actual SNVs vs rCRS as informative markers.
+    # Real sample: classify via Haplogrep 3 against the sample's real VCF calls
+    # (see haplogroup.py) -- an actual phylogenetic classification, run locally.
+    # Still surface the real SNVs vs rCRS as markers regardless of whether
+    # classification succeeded, same as before real classification existed.
     snv_markers = [
         f"{v['change'].split('>')[0]}{v['pos']}{v['change'].split('>')[1]}"
         for v in variants(sample)
         if ">" in v["change"]
     ]
-    return {
-        "name": "Unclassified",
-        "confidence": None,
-        "region": "Requires phylogenetic classification (e.g. Haplogrep against PhyloTree)",
-        "markers": snv_markers,
-    }
+    result = haplogroup.classify(sample, SAMPLES[sample]["vcf"])
+    return {**result, "markers": snv_markers}
 
 
 def overview(sample: str) -> dict:
     vs = variants(sample)
     haplo = _haplogroup(sample)
     pathogenic = [v for v in vs if v["status"] == "Pathogenic"]
+    coverage = _mtdna_coverage(sample)
+    qc_result = sample_qc(sample)
     return {
         **meta(sample),
         "stats": {
             "variants_called": len(vs),
             "pathogenic_findings": len(pathogenic),
             "haplogroup": haplo["name"],
-            "qc_status": "Pass",
+            "qc_status": qc_result["overall_status"],
+            "qc_summary": qc_result["stats"][0]["sub"],
+            "mtdna_mean_coverage": coverage["mean_coverage"],
+            "mtdna_coverage_source": coverage["source"],
         },
         "variants": vs,
         "haplogroup": haplo,
@@ -183,9 +269,10 @@ def variant_detail(sample: str, variant_id: str) -> Optional[dict]:
 
 
 def sample_qc(sample: str) -> dict:
+    caller = SAMPLES[sample]["caller"]
     bam = _bam_qc(sample)
     if bam is not None:
-        return {**meta(sample), **qc.build_bam_qc(bam)}
+        return {**meta(sample), **qc.build_bam_qc(bam, caller=caller)}
     if SAMPLES[sample]["source"] == "vcf":
-        return {**meta(sample), **qc.build_vcf_qc(variants(sample))}
+        return {**meta(sample), **qc.build_vcf_qc(variants(sample), caller=caller)}
     return {**meta(sample), **qc.build_qc()}

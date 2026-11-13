@@ -80,6 +80,15 @@ UPD_INTERSTITIAL_NONIMPRINTED_BP = 15_000_000
 # distinction (not tied to a specific cited threshold).
 F_VALUE_MIN_LENGTH_BP = 3_000_000
 
+# Minimum ROH length for surfacing an AR (autosomal-recessive) gene as an
+# autozygosity-mapping candidate, bp. Deliberately a separate, lower floor
+# than F_VALUE_MIN_LENGTH_BP above: the F-value estimate specifically needs
+# ACMG's IBD-informative floor to avoid inflating the inbreeding coefficient
+# with background LD, but a real AR disease-causing variant can sit in a
+# smaller genuinely-autozygous ROH than that -- requiring the same 3 Mb floor
+# here would silently drop real candidate genes rather than being conservative.
+AR_CANDIDATE_MIN_LENGTH_BP = 1_000_000
+
 # Theoretical inbreeding coefficient (F) by pedigree relationship degree,
 # derived from the standard F = (1/2)^n formula for n meioses separating
 # the parents' common ancestor. Textbook population-genetics values, not

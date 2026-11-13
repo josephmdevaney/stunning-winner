@@ -3,7 +3,8 @@
     "label": "Genome-wide",
     "vcf_dir": "fixtures/hg002_real",
     "panel_bed": null,
-    "sample_sex": "fixtures/hg002_real/sample_sex.json"
+    "sample_sex": "fixtures/hg002_real/sample_sex.json",
+    "catalog_vcf_dir": "fixtures/hg002_real_genomewide"
   },
   "puretarget_v2": {
     "label": "PureTarget V2",

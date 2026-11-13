@@ -7,6 +7,21 @@ backend/.pytest_cache/
 backend/repeatscope.egg-info/
 *.pyc
 
+# Haplogrep 3 (mtDNA haplogroup classifier) + vendored PhyloTree data -- a
+# fetched build dependency, not project source. See
+# backend/scripts/setup_haplogrep.py.
+backend/mitolr/vendor/
+
+# PacBio's own interpret_paraphase.py annotation script + data -- fetched build
+# dependency, not project source (and not ours to redistribute: Paraphase ships
+# under PacBio's proprietary EULA, "distribute in binary form only"). See
+# backend/scripts/setup_paraphase_annotate.py.
+backend/paraphase_annotate/vendor/
+
+# Per-sample Paraphase annotation output (CSVs from interpret_paraphase.py) --
+# derived, sample-specific results, not project source.
+backend/paraphase_annotate/results/
+
 # Node / frontend
 web/node_modules/
 web/dist/
@@ -19,3 +34,14 @@ backend/HG002_PacBio-HiFi-Revio_20231031_48x_GRCh38-GIABv3.bam.bai
 # outside the repo) -- see backend/config/modes.local.json.example. Never
 # committed since it typically contains machine-specific absolute paths.
 backend/config/modes.local.json
+
+# Local epigenetics sample registry (machine-specific genome paths) -- see backend/config/epigenetics.local.json.example.
+backend/config/epigenetics.local.json
+
+# EpiSignaLR episignature models fetched at setup (the repository publishes no licence, so none of it is
+# committed) -- see backend/scripts/setup_episignalr.py.
+backend/epigenetics/episignature/vendor/
+# Local Paraphase sample registry (machine-specific paths) -- see backend/config/paraphase.local.json.example.
+backend/config/paraphase.local.json
+# Local ROH sample registry (machine-specific paths, participant IDs) -- see backend/config/roh.local.json.example.
+backend/config/roh.local.json

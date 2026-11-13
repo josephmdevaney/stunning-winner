@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import gzip
 from pathlib import Path
+from typing import Optional
 
 from . import annotate, constraint, gnomad
 
@@ -83,17 +84,23 @@ def _format_gnomad_freq(hit: dict | None) -> str:
     return f"{af_het:.2%} (het)"
 
 
-def build_variants(path: str) -> list[dict]:
-    """Parse + annotate a MitoRSaw VCF into sorted MitoLR variant dicts."""
+def build_variants(path: str, tissue: Optional[str] = None) -> list[dict]:
+    """Parse + annotate a MitoRSaw VCF into sorted MitoLR variant dicts.
+
+    ``tissue`` (e.g. "blood", "buccal"), when known for the sample, is passed
+    through to annotate.classify() so a negative/low pathogenic-panel finding
+    can carry the Parikh et al. (2015) tissue-discordance caveat."""
     out: list[dict] = []
     for r in parse_records(path):
         pos, ref, alt = r["pos"], r["ref"], r["alt"]
         het = _fmt_pct(r["vaf"]) if r["vaf"] is not None else 0.0
         position, change, is_del = annotate.variant_notation(pos, ref, alt)
-        locus, consequence = annotate.locus_and_consequence(pos)
+        locus, consequence, genes = annotate.locus_and_consequence(pos)
         gnomad_hit = gnomad.frequency_for(pos, ref, alt)
-        cls = annotate.classify(pos, ref, alt, het, gnomad_hit=gnomad_hit, gnomad_checked=True)
-        gene_constraint = constraint.constraint_for_variant(pos, locus)
+        cls = annotate.classify(
+            pos, ref, alt, het, gnomad_hit=gnomad_hit, gnomad_checked=True, tissue=tissue
+        )
+        gene_constraint = constraint.constraint_for_variant(pos, genes)
 
         # ACMG/AMP evidence tags (McCormick et al. 2020) only for calls that aren't
         # already an exact curated-pathogenic match -- BA1/BS1 benign evidence would

@@ -1,17 +1,48 @@
 import { useState } from 'react'
-import RepeatScopeApp from './RepeatScopeApp'
+import GenomeWideApp from './repeatscope/GenomeWideApp'
+import PureTargetV2App from './repeatscope/PureTargetV2App'
+import CarrierApp from './repeatscope/CarrierApp'
 import MitoApp from './mito/MitoApp'
+import ParaphaseApp from './paraphase/ParaphaseApp'
+import KivviApp from './kivvi/KivviApp'
+import ROHApp from './roh/ROHApp'
+import EpigeneticsApp from './epigenetics/EpigeneticsApp'
+import SmallVarApp from './smallvar/SmallVarApp'
+import StructVarApp from './structvar/StructVarApp'
+import CohortApp from './cohort/CohortApp'
 import type { Product } from './components/ProductSwitcher'
 
-// The suite ships two sibling products behind one deployable, sharing the same
-// visual system: RepeatScope (nuclear tandem-repeat expansions) and MitoLR
-// (mitochondrial variant review). A sidebar switcher moves between them.
+// The suite ships eight separate tools behind one deployable, combined into a
+// single Suite switcher and sharing one visual system: three RepeatScope
+// assay-mode apps (GenomeWideApp, PureTargetV2App, CarrierApp -- each its own
+// component, not one app internally reassigning its mode), MitoLR (MitoApp),
+// Paraphase Annotation (ParaphaseApp), Kivvi (KivviApp), and Runs of
+// Homozygosity (ROHApp), Epigenetics (EpigeneticsApp), Small variants (SmallVarApp), and Structural variants (StructVarApp). Switching `product` swaps which tool is mounted.
 export default function App() {
-  const [product, setProduct] = useState<Product>('repeatscope')
+  const [product, setProduct] = useState<Product>('genome_wide')
 
-  return product === 'repeatscope' ? (
-    <RepeatScopeApp product={product} onSwitchProduct={setProduct} />
-  ) : (
-    <MitoApp product={product} onSwitchProduct={setProduct} />
-  )
+  switch (product) {
+    case 'mitolr':
+      return <MitoApp product={product} onSwitchProduct={setProduct} />
+    case 'paraphase':
+      return <ParaphaseApp product={product} onSwitchProduct={setProduct} />
+    case 'kivvi':
+      return <KivviApp product={product} onSwitchProduct={setProduct} />
+    case 'roh':
+      return <ROHApp product={product} onSwitchProduct={setProduct} />
+    case 'epigenetics':
+      return <EpigeneticsApp product={product} onSwitchProduct={setProduct} />
+    case 'smallvar':
+      return <SmallVarApp product={product} onSwitchProduct={setProduct} />
+    case 'structvar':
+      return <StructVarApp product={product} onSwitchProduct={setProduct} />
+    case 'cohort':
+      return <CohortApp product={product} onSwitchProduct={setProduct} />
+    case 'puretarget_v2':
+      return <PureTargetV2App product={product} onSwitchProduct={setProduct} />
+    case 'carrier':
+      return <CarrierApp product={product} onSwitchProduct={setProduct} />
+    default:
+      return <GenomeWideApp product={product} onSwitchProduct={setProduct} />
+  }
 }

@@ -65,6 +65,7 @@ export default function MitoApp({
         onSelectSample={onSelectSample}
         caller={meta?.caller ?? ''}
         instrumentLine={meta?.instrument_line ?? ''}
+        tissue={meta?.tissue}
       />
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>

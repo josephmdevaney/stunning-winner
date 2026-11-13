@@ -137,14 +137,16 @@ CONSEQUENCE_BY_TYPE = {
 }
 
 
-def feature_for_pos(pos: int) -> Optional[GeneRegion]:
-    """Precise locus lookup against MT_FEATURES; control region wraps the origin."""
+def features_for_pos(pos: int) -> list[GeneRegion]:
+    """All rCRS features overlapping this position; control region wraps the
+    origin. Usually a single feature, but mtDNA has two genuinely overlapping
+    reading frames -- MT-ATP8/MT-ATP6 (8527-8572) and MT-ND4L/MT-ND4
+    (10760-10766) -- where a variant belongs to both genes at once. Returns
+    every match rather than only the first one in MT_FEATURES's list order, so
+    callers don't silently drop one gene's annotation/constraint context."""
     if pos >= 16024 or pos <= 576:
-        return {"name": "MT-CR", "start": 16024, "stop": 576, "type": "control"}
-    for f in MT_FEATURES:
-        if f["start"] <= pos <= f["stop"]:
-            return f
-    return None
+        return [{"name": "MT-CR", "start": 16024, "stop": 576, "type": "control"}]
+    return [f for f in MT_FEATURES if f["start"] <= pos <= f["stop"]]
 
 
 class Haplogroup(TypedDict):

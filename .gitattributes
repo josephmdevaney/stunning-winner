@@ -1,0 +1,14 @@
+# Large real genomic data fixtures tracked via Git LFS -- see
+# backend/fixtures/hg002_real_genomewide/README.md for provenance. Existing small fixture
+# VCFs (disease-panel-scoped, tens of KB) are left as regular git blobs; only genuinely
+# large, genome-wide files need LFS.
+#
+# repeat_catalog.hg38.bed and the genome-wide VCF were briefly the full
+# TRExplorer v2.0 catalog (5,339,786 regions, ~536MB/278MB) and dropped LFS
+# tracking on 2026-08-21 when both were rescoped down to just the ~24,956
+# RExPRT-predicted-pathogenic regions (~2.5MB/1.5MB) -- see
+# project/uploads/README.md for why. The full-catalog LFS objects remain in
+# git history if ever needed again.
+# RExPRT scores (727,004 real matches against the full v2.0 catalog, ~166MB)
+# stays as the full reference table regardless of catalog scope above.
+project/uploads/rexprt_scores.hg38.tsv filter=lfs diff=lfs merge=lfs -text

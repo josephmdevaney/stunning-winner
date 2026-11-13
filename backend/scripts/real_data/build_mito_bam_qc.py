@@ -45,7 +45,7 @@ FEATURES = [
     ("MT-ND5", 12337, 14148), ("MT-ND6", 14149, 14673), ("MT-CYB", 14747, 15887),
 ]
 DLOOP = ("D-loop", 16024, 576)  # wraps origin
-MIN_REQUIRED = 500
+DEFAULT_MIN_REQUIRED = 150  # same floor as the app's QC (mitolr/qc.py MIN_REQUIRED_COVERAGE)
 N_COVERAGE_POINTS = 200
 N_PILEUP_READS = 48
 
@@ -87,6 +87,8 @@ def main() -> None:
     ap.add_argument("--vcf", required=True, help="MitoRSaw VCF, for per-variant pileup positions")
     ap.add_argument("--contig", default="chrM", help="mitochondrial contig name (chrM / MT)")
     ap.add_argument("--out", required=True)
+    ap.add_argument("--min-required", type=int, default=DEFAULT_MIN_REQUIRED,
+                    help="minimum mean depth (x) for a region to flag Pass (default: %(default)s)")
     args = ap.parse_args()
 
     bam = pysam.AlignmentFile(args.bam, "rb")
@@ -147,7 +149,7 @@ def main() -> None:
             "region": name,
             "depth": mean_d,
             "strandBalance": bal,
-            "flag": "Pass" if mean_d >= MIN_REQUIRED else "Low depth",
+            "flag": "Pass" if mean_d >= args.min_required else "Low depth",
         })
 
     # --- per-variant pileup (real per-read alleles) ---------------------------
@@ -199,7 +201,7 @@ def main() -> None:
         "read_length_histogram": hist,
         "coverage_track": coverage_track,
         "regions": regions,
-        "min_required": MIN_REQUIRED,
+        "min_required": args.min_required,
         "variants": variants,
     }
     with open(args.out, "w") as fh:

@@ -9,3 +9,19 @@ def is_cyclic_rotation(a: str, b: str) -> bool:
     (e.g. STRchive and a VCF's own MOTIFS field) may record the "same" repeat unit
     starting at a different base."""
     return len(a) == len(b) and a in (b + b)
+
+
+_COMPLEMENT = str.maketrans("ACGT", "TGCA")
+
+
+def reverse_complement(seq: str) -> str:
+    return seq.upper().translate(_COMPLEMENT)[::-1]
+
+
+def is_same_repeat_unit(a: str, b: str) -> bool:
+    """True if `a` and `b` are one repeat unit read from either strand and any starting
+    base (CAG, AGC, GCA, CTG, TGC and GCT are all the same unit) -- how a catalog built
+    from the reference strand and STRchive's gene-orientation motif can describe the
+    same repeat."""
+    a, b = a.upper(), b.upper()
+    return is_cyclic_rotation(a, b) or is_cyclic_rotation(a, reverse_complement(b))

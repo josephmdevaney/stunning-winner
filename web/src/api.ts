@@ -86,7 +86,44 @@ export interface LocusDetail {
   pileup_source: string
   methylation_source: string
   caller: string
+  // null when the annotation file isn't installed or has no entry for this locus
+  expression_effects: ExpressionEffects | null
 }
+
+export interface ScEtrEffect {
+  cell_type: string
+  coeff: number
+  se: number
+  pval: number
+  qval: number
+}
+
+export interface ScEtrTarget {
+  gene_id: string
+  gene: string | null
+  effects: ScEtrEffect[]
+}
+
+export interface ScEtrLead {
+  chrom: string
+  start: number
+  stop: number
+  motif: string
+  relation: 'overlaps' | 'adjacent'
+  distance_bp: number
+  same_motif: boolean
+  targets: ScEtrTarget[]
+}
+
+export interface ScEtrSource {
+  paper: { title: string; authors: string; doi: string; version: string; license: string; data_doi: string; cohort: string }
+  significance: string
+  built: string
+}
+
+export type ExpressionEffects =
+  | { available: false; error: string }
+  | { available: true; polymorphic: boolean; leads: ScEtrLead[]; source: ScEtrSource }
 
 export interface GeneFindingDetail {
   gene: string

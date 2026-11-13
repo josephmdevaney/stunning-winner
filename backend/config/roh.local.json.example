@@ -1,0 +1,5 @@
+{
+  "samples": {
+    "SAMPLE_A": "/path/to/SAMPLE_A.GRCh38.roh.txt"
+  }
+}

@@ -20,6 +20,9 @@ diploid homozygosity concept at all.
 
 from __future__ import annotations
 
+import json
+import logging
+import os
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
@@ -40,6 +43,31 @@ ROH_SAMPLES: dict[str, str] = {
     "CDS48001": "/Users/joedevaney/hackathon_cds48001/CDS48001.GRCh38.roh.txt",
     "CDS57401": "/Users/joedevaney/hackathon_cds57401/CDS57401.GRCh38.roh.txt",
 }
+
+# This machine's own samples: {"samples": {"<key>": "/path/to/roh.txt"}}, in a gitignored file so machine-specific
+# paths and participant IDs stay out of the repository (see roh.local.json.example). Read when this module is
+# imported, so the server needs a restart to pick up a change.
+LOCAL_CONFIG = Path(os.environ.get("ROH_SAMPLES_CONFIG", BACKEND_ROOT / "config" / "roh.local.json"))
+
+
+def _local_samples(config: Path = LOCAL_CONFIG) -> dict[str, str]:
+    """The samples listed in the local config whose ROH file exists. Anything else is skipped with a warning rather
+    than breaking the app."""
+    try:
+        raw = json.loads(config.read_text())
+    except (OSError, ValueError):
+        return {}
+    found: dict[str, str] = {}
+    for key, path in (raw.get("samples") or {}).items():
+        path = Path(path).expanduser()
+        if not path.is_file():
+            logging.warning("ROH sample %r in %s skipped: no file at %s", key, config, path)
+            continue
+        found[key] = str(path)
+    return found
+
+
+ROH_SAMPLES.update(_local_samples())
 
 # sample -> real mosdepth `*.mosdepth.summary.txt`, used to infer biological
 # sex from chrX/chrY coverage relative to the autosomal mean (see

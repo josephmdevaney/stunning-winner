@@ -158,7 +158,8 @@ def test_query_regions_paginates():
 def test_roh_samples_endpoint():
     body = client.get("/api/roh/samples").json()
     assert body["default"] == "HG002"
-    assert set(body["samples"]) == {"HG002", "CDS27601", "CDS48001", "CDS57401"}
+    # A machine's own samples (backend/config/roh.local.json) are added to these, so this is a subset check.
+    assert {"HG002", "CDS27601", "CDS48001", "CDS57401"} <= set(body["samples"])
 
 
 def test_roh_overview_endpoint_defaults_to_hg002():

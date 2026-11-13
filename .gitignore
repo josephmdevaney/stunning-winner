@@ -43,3 +43,5 @@ backend/config/epigenetics.local.json
 backend/epigenetics/episignature/vendor/
 # Local Paraphase sample registry (machine-specific paths) -- see backend/config/paraphase.local.json.example.
 backend/config/paraphase.local.json
+# Local ROH sample registry (machine-specific paths, participant IDs) -- see backend/config/roh.local.json.example.
+backend/config/roh.local.json

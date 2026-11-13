@@ -83,6 +83,45 @@ was a full 5,339,786-record genome-wide run genotyped directly against the
 full v2.0 catalog -- see git history for that provenance if the full run is
 ever needed again.
 
+## pangenome_repeat_catalog.hg38.bed (added 2026-10-26: the second catalog, "Pangenome Repeat Catalog")
+
+5,709 regions -- the TRExplorer v2.0 variation-cluster loci that the pangenome SV paper's
+Supplementary Table 3 (Lin et al., medRxiv
+[10.64898/2026.08.21.26361050](https://www.medrxiv.org/content/10.64898/2026.08.21.26361050v1.full),
+CC BY; tables 3a, 3b, 3d, 3e and 3f) *found* in TRExplorer. Same TRGT `--repeats` BED format and
+ID convention as `repeat_catalog.hg38.bed`, and picked on the Repeat Catalog screen alongside it
+(`GET /api/catalogs`, `GET /api/catalog?catalog=pangenome`).
+
+Built by `backend/scripts/real_data/build_pangenome_catalog.py` from the found rows of the
+comparison sheet `TRExplorer_v2_vs_SuppTable3_comparison` (the 8,048 found rows of the "In
+Repeat Catalog" and "Not in Repeat Catalog" tabs) and the full v2.0 variation-cluster catalog.
+Each found paper locus maps to the one variation-cluster locus that TRGT would genotype it as:
+
+- the variation-cluster locus containing the locus the TRExplorer portal matched to the paper
+  locus, by ID (a cluster's ID is the comma-joined IDs of the TRs merged into it);
+- otherwise the variation-cluster locus overlapping the paper locus by the most bases (71 of the
+  8,041 paper rows with coordinates: 67 had no portal locus at all, 4 a portal locus that is not in
+  the variation-cluster catalog);
+- otherwise left out: 2 of those 71 have no variation-cluster locus overlapping them (table 3e
+  `chr17_41265399_41265765`, table 3f `chr9_137048431_137048637`), and 7 rows (MUC6, ACAN, ATXN8OS,
+  HOXA13-I/II/III, in tables 3a/3d/3e) give a gene name and no coordinates. No definition was
+  invented for any of them.
+
+8,048 found rows -> 5,709 distinct loci, since many paper loci share a cluster. One locus is
+the portal's match for a paper locus that abuts rather than overlaps it
+(`11-10808754-10808761-GTC` for `chr11_10808761_10808828`, in tables 3a and 3f). 961 of the 5,709 are also in the
+Repeat Catalog (those are its RExPRT-positive loci; the other 4,748 are new to this app). C9orf72's
+GGCCCC repeat (`9-27573484-27573546-GGCCCC`) is in this catalog, which the Repeat Catalog leaves out
+because RExPRT scores it benign.
+
+Genotypes come from `backend/fixtures/hg002_real_pangenome/` (HG002, real `bcftools view -R` extraction
+from the same full genome-wide TRGT run as the Repeat Catalog's VCF; every locus has a record and
+TRGT called all but one, chr20:43,189,969-43,189,980). Genotypes are matched by TRID only: a locus
+no TRGT record names is shown ungenotyped, never given the call of a neighbouring locus.
+RExPRT scores and gene annotation are the same tables the Repeat Catalog uses. The full
+variation-cluster catalog and genome-wide VCF the script reads are not kept in the repo; they are
+the Git LFS objects of commit `5783ff5` (see above).
+
 ## rexprt_scores.hg38.tsv (added 2026-08-01; rebuilt 2026-08-14 for the v2.0 catalog)
 
 Real, published tandem-repeat pathogenicity predictions from **RExPRT**
